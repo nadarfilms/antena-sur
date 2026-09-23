@@ -15,6 +15,8 @@ jobs:
     steps:
     - name: Clonar Repositorio
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Configurar JDK 17
       uses: actions/setup-java@v4
@@ -34,13 +36,16 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Mostrar registro en caso de fallo
+    - name: Guardar registro de error si falla
       if: failure()
       run: |
-        echo "## Detalle del error de Gradle" >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
-        tail -n 120 gradle_build.log >> $GITHUB_STEP_SUMMARY
-        echo '```' >> $GITHUB_STEP_SUMMARY
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git checkout -B build-logs
+        cp gradle_build.log gradle_error.txt || true
+        git add gradle_error.txt
+        git commit -m "Gradle Error Log" || true
+        git push origin build-logs -f || true
 
     - name: Subir APK como Artefacto
       uses: actions/upload-artifact@v4
