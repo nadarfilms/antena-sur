@@ -34,11 +34,13 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Mostrar registro si falla
+    - name: Mostrar registro en caso de fallo
       if: failure()
       run: |
-        echo "=== ERROR LOG ==="
-        tail -n 100 gradle_build.log || true
+        echo "## Detalle del error de Gradle" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        tail -n 120 gradle_build.log >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
 
     - name: Subir APK como Artefacto
       uses: actions/upload-artifact@v4
