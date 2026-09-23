@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 mWebView.requestFocus();
+                mWebView.evaluateJavascript("if (window.initTvFocus) window.initTvFocus();", null);
             }
         });
 
@@ -223,7 +224,13 @@ public class MainActivity extends AppCompatActivity {
             keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
             keyCode == KeyEvent.KEYCODE_ENTER ||
             keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER ||
+            keyCode == KeyEvent.KEYCODE_BUTTON_A ||
+            keyCode == KeyEvent.KEYCODE_BUTTON_SELECT ||
             keyCode == KeyEvent.KEYCODE_BACK ||
+            keyCode == KeyEvent.KEYCODE_BUTTON_B ||
+            keyCode == KeyEvent.KEYCODE_MEDIA_PLAY ||
+            keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE ||
+            keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE ||
             keyCode == KeyEvent.KEYCODE_CHANNEL_UP ||
             keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN ||
             (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)) {
@@ -231,31 +238,44 @@ public class MainActivity extends AppCompatActivity {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 switch (keyCode) {
                     case KeyEvent.KEYCODE_DPAD_UP:
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', code: 'ArrowUp', keyCode: 38, bubbles: true}));", null);
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowUp');", null);
                         break;
                     case KeyEvent.KEYCODE_DPAD_DOWN:
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, bubbles: true}));", null);
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowDown');", null);
                         break;
                     case KeyEvent.KEYCODE_DPAD_LEFT:
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, bubbles: true}));", null);
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowLeft');", null);
                         break;
                     case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, bubbles: true}));", null);
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowRight');", null);
                         break;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
                     case KeyEvent.KEYCODE_ENTER:
                     case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true}));", null);
+                    case KeyEvent.KEYCODE_BUTTON_A:
+                    case KeyEvent.KEYCODE_BUTTON_SELECT:
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('Enter');", null);
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_PLAY:
+                    case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                    case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('PlayPause');", null);
                         break;
                     case KeyEvent.KEYCODE_BACK:
-                        long now = System.currentTimeMillis();
-                        if (now - mLastBackPressTime < 2500) {
-                            finish();
-                            return true;
-                        }
-                        mLastBackPressTime = now;
-                        Toast.makeText(this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
-                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true}));", null);
+                    case KeyEvent.KEYCODE_BUTTON_B:
+                        mWebView.evaluateJavascript("window.onTvBack ? window.onTvBack() : false;", value -> {
+                            if ("true".equalsIgnoreCase(value)) {
+                                mLastBackPressTime = 0;
+                            } else {
+                                long now = System.currentTimeMillis();
+                                if (now - mLastBackPressTime < 2500) {
+                                    finish();
+                                } else {
+                                    mLastBackPressTime = now;
+                                    Toast.makeText(MainActivity.this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
                         break;
                     case KeyEvent.KEYCODE_CHANNEL_UP:
                         mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);

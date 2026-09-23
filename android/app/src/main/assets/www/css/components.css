@@ -34,11 +34,13 @@
 
 .hero-action-card:hover,
 .hero-action-card:focus,
-.hero-action-card:focus-visible {
-  transform: translateY(-5px) scale(1.02);
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 3px var(--accent-cyan), 0 16px 40px rgba(0, 229, 255, 0.35);
+.hero-action-card:focus-visible,
+.hero-action-card.is-tv-focused {
+  transform: translateY(-5px) scale(1.03);
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 0 4px #00e5ff, 0 16px 40px rgba(0, 229, 255, 0.5) !important;
   outline: none;
+  z-index: 20;
 }
 
 .hero-action-card:active {
@@ -656,13 +658,14 @@
 
 .station-card:hover,
 .station-card:focus,
-.station-card:focus-visible {
-  transform: translateY(-4px) scale(1.03);
+.station-card:focus-visible,
+.station-card.is-tv-focused {
+  transform: translateY(-4px) scale(1.04);
   background: var(--bg-card-hover);
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 3px var(--accent-cyan), 0 12px 30px rgba(0, 229, 255, 0.4);
+  border-color: #00e5ff !important;
+  box-shadow: 0 0 0 4px #00e5ff, 0 12px 30px rgba(0, 229, 255, 0.5) !important;
   outline: none;
-  z-index: 5;
+  z-index: 20;
 }
 
 .station-card.is-active {

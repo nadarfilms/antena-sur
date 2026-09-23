@@ -7,6 +7,7 @@ import { DataManager } from './data-manager.js';
 import { FavoritesManager } from './favorites.js';
 import { FiltersEngine } from './filters.js';
 import { PlayerEngine } from './player.js';
+import { initTvNavigation } from './tv-navigation.js';
 
 class App {
   constructor() {
@@ -85,16 +86,8 @@ class App {
     // Exponer el reproductor globalmente para botones nativos de Android TV (Zap+/Zap-)
     window.AntenaSurPlayer = this.player;
 
-    // Detección de Android TV / Smart TV: Enfocar la primera tarjeta para control remoto
-    const isTv = navigator.userAgent.includes('AntenaSurTV') || navigator.userAgent.includes('Android TV') || navigator.userAgent.includes('SmartTV');
-    if (isTv) {
-      setTimeout(() => {
-        const firstCard = this.dom.stationsGrid ? this.dom.stationsGrid.querySelector('.station-card') : null;
-        if (firstCard) {
-          firstCard.focus();
-        }
-      }, 300);
-    }
+    // Inicializar motor de navegación por control remoto Android TV
+    initTvNavigation();
   }
 
   initMainSectionTabs() {
@@ -489,12 +482,6 @@ class App {
         return;
       }
 
-      // Navegación por la cuadrícula del menú principal con D-pad (Control Remoto)
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(e.key)) {
-        this.handleMenuDpadNavigation(e);
-        return;
-      }
-
       switch (e.key) {
         case ' ': // Barra espaciadora: Play/Pause
           e.preventDefault();
@@ -531,135 +518,6 @@ class App {
           break;
       }
     });
-  }
-
-  handleMenuDpadNavigation(e) {
-    const cards = Array.from(document.querySelectorAll('.station-card'));
-    if (!cards.length) return;
-
-    const activeEl = document.activeElement;
-    const currentCardIndex = cards.indexOf(activeEl);
-
-    // Caso 1: Ninguna tarjeta tiene foco -> enfocar la primera tarjeta
-    if (currentCardIndex === -1 && !activeEl?.classList?.contains('hero-card') && !activeEl?.classList?.contains('section-nav-tab')) {
-      e.preventDefault();
-      cards[0].focus();
-      cards[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      return;
-    }
-
-    // Caso 2: El foco está en una tarjeta de canal (.station-card)
-    if (currentCardIndex !== -1) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        cards[currentCardIndex].click();
-        return;
-      }
-
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        const next = Math.min(cards.length - 1, currentCardIndex + 1);
-        cards[next].focus();
-        cards[next].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        return;
-      }
-
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const prev = Math.max(0, currentCardIndex - 1);
-        cards[prev].focus();
-        cards[prev].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        return;
-      }
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        const currentRect = cards[currentCardIndex].getBoundingClientRect();
-        const targetCenterX = currentRect.left + currentRect.width / 2;
-
-        const below = cards.filter(c => c.getBoundingClientRect().top > currentRect.bottom - 10);
-        if (below.length > 0) {
-          const rowTop = below[0].getBoundingClientRect().top;
-          const nextRowCards = below.filter(c => Math.abs(c.getBoundingClientRect().top - rowTop) < 40);
-          let closest = nextRowCards[0];
-          let minDist = Math.abs((closest.getBoundingClientRect().left + closest.getBoundingClientRect().width / 2) - targetCenterX);
-          for (let i = 1; i < nextRowCards.length; i++) {
-            const dist = Math.abs((nextRowCards[i].getBoundingClientRect().left + nextRowCards[i].getBoundingClientRect().width / 2) - targetCenterX);
-            if (dist < minDist) {
-              minDist = dist;
-              closest = nextRowCards[i];
-            }
-          }
-          closest.focus();
-          closest.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-        return;
-      }
-
-      if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        const currentRect = cards[currentCardIndex].getBoundingClientRect();
-        const targetCenterX = currentRect.left + currentRect.width / 2;
-
-        const above = cards.filter(c => c.getBoundingClientRect().bottom < currentRect.top + 10);
-        if (above.length > 0) {
-          const rowBottom = above[above.length - 1].getBoundingClientRect().bottom;
-          const prevRowCards = above.filter(c => Math.abs(c.getBoundingClientRect().bottom - rowBottom) < 40);
-          let closest = prevRowCards[0];
-          let minDist = Math.abs((closest.getBoundingClientRect().left + closest.getBoundingClientRect().width / 2) - targetCenterX);
-          for (let i = 1; i < prevRowCards.length; i++) {
-            const dist = Math.abs((prevRowCards[i].getBoundingClientRect().left + prevRowCards[i].getBoundingClientRect().width / 2) - targetCenterX);
-            if (dist < minDist) {
-              minDist = dist;
-              closest = prevRowCards[i];
-            }
-          }
-          closest.focus();
-          closest.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        } else {
-          // Estamos en la primera fila: subir enfoca el botón héroe TV
-          const heroTv = document.getElementById('heroCardTv');
-          if (heroTv) {
-            heroTv.focus();
-            heroTv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        }
-        return;
-      }
-    }
-
-    // Caso 3: El foco está en el botón héroe TV o Radio
-    const heroTv = document.getElementById('heroCardTv');
-    const heroRadio = document.getElementById('heroCardRadio');
-    if (activeEl === heroTv) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        heroTv.click();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        if (heroRadio) heroRadio.focus();
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        cards[0].focus();
-        cards[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-      return;
-    }
-
-    if (activeEl === heroRadio) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        heroRadio.click();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        if (heroTv) heroTv.focus();
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        cards[0].focus();
-        cards[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-      return;
-    }
   }
 
   showToast(message, type = 'info') {

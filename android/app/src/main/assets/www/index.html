@@ -49,12 +49,12 @@
 
         <!-- Menú Principal de Secciones (Solo TV y Radios) -->
         <nav class="main-sections-nav" id="mainSectionsNav">
-          <button class="section-nav-tab active" data-section="tv" id="sectionTabTv">
+          <button class="section-nav-tab active" data-section="tv" id="sectionTabTv" tabindex="0">
             <span class="tab-icon">📺</span>
             <span class="tab-label">Canales de TV</span>
             <span class="tab-counter" id="tvCounter">37</span>
           </button>
-          <button class="section-nav-tab" data-section="radio" id="sectionTabRadio">
+          <button class="section-nav-tab" data-section="radio" id="sectionTabRadio" tabindex="0">
             <span class="tab-icon">📻</span>
             <span class="tab-label">Radios de Chile</span>
             <span class="tab-counter" id="radioCounter">23</span>
@@ -70,7 +70,7 @@
     <section class="home-hero-section" id="homeHeroSection">
       <div class="home-hero-grid">
         <!-- Gran Botón 1: Canales de TV (Acceso Directo a Televisión en Vivo) -->
-        <button class="hero-action-card hero-card-tv" id="heroCardTv" title="Entrar directamente a Canales de TV en Directo">
+        <button class="hero-action-card hero-card-tv" id="heroCardTv" tabindex="0" title="Entrar directamente a Canales de TV en Directo">
           <div class="hero-card-glow"></div>
           <div class="hero-card-content">
             <div class="hero-card-icon-wrapper">
@@ -93,7 +93,7 @@
         </button>
 
         <!-- Gran Botón 2: Radios de Chile -->
-        <button class="hero-action-card hero-card-radio" id="heroCardRadio" title="Escuchar Radios de Chile en Vivo">
+        <button class="hero-action-card hero-card-radio" id="heroCardRadio" tabindex="0" title="Escuchar Radios de Chile en Vivo">
           <div class="hero-card-glow"></div>
           <div class="hero-card-content">
             <div class="hero-card-icon-wrapper">
@@ -503,6 +503,8 @@
 
   <!-- Base de datos de señales precargada en memoria (carga instantánea sin requerir red) -->
   <script src="./js/stations-data.js"></script>
+  <!-- Motor de Navegación Espacial para Android TV -->
+  <script type="module" src="./js/tv-navigation.js"></script>
   <!-- Script Principal de la Aplicación -->
   <script type="module" src="./js/app.js"></script>
 </body>
