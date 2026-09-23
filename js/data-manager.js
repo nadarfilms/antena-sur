@@ -13,21 +13,36 @@ export class DataManager {
 
   async load() {
     try {
-      const response = await fetch('./data/stations.json');
-      if (!response.ok) {
-        throw new Error(`Error HTTP: ${response.status}`);
+      let data = (typeof window !== 'undefined' && window.STATIONS_DATA) ? window.STATIONS_DATA : null;
+      if (!data) {
+        const response = await fetch('./data/stations.json');
+        if (response.ok) {
+          data = await response.json();
+        }
       }
-      const data = await response.json();
-      this.countries = data.countries || [];
-      
-      // Cargar estaciones personalizadas del usuario desde localStorage si existen
-      this.loadCustomStations();
 
-      this.stations = [...(data.stations || []), ...this.customStations];
-      this.isLoaded = true;
-      return true;
+      if (!data && typeof window !== 'undefined' && window.STATIONS_DATA) {
+        data = window.STATIONS_DATA;
+      }
+
+      if (data) {
+        this.countries = data.countries || [];
+        this.loadCustomStations();
+        this.stations = [...(data.stations || []), ...this.customStations];
+        this.isLoaded = true;
+        return true;
+      }
+      throw new Error('No se encontraron datos de estaciones');
     } catch (error) {
-      console.error('Error cargando la base de datos de estaciones:', error);
+      console.warn('Carga alternativa de estaciones:', error);
+      if (typeof window !== 'undefined' && window.STATIONS_DATA) {
+        const data = window.STATIONS_DATA;
+        this.countries = data.countries || [];
+        this.loadCustomStations();
+        this.stations = [...(data.stations || []), ...this.customStations];
+        this.isLoaded = true;
+        return true;
+      }
       return false;
     }
   }

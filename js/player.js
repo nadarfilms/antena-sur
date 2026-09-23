@@ -146,11 +146,11 @@ export class PlayerEngine {
     if (window.Hls) return;
     try {
       const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+      script.src = './js/hls.min.js';
       script.async = true;
       document.head.appendChild(script);
     } catch (e) {
-      console.warn('No se pudo cargar Hls.js desde CDN:', e);
+      console.warn('No se pudo cargar Hls.js local:', e);
     }
   }
 

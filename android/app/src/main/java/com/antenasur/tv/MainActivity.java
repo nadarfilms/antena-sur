@@ -86,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
@@ -213,50 +215,64 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            int keyCode = event.getKeyCode();
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_DPAD_UP:
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', code: 'ArrowUp', keyCode: 38, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_DOWN:
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_DPAD_CENTER:
-                case KeyEvent.KEYCODE_ENTER:
-                case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_BACK:
-                    long now = System.currentTimeMillis();
-                    if (now - mLastBackPressTime < 2500) {
-                        finish();
-                        return true;
-                    }
-                    mLastBackPressTime = now;
-                    Toast.makeText(this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true}));", null);
-                    return true;
-                case KeyEvent.KEYCODE_CHANNEL_UP:
-                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
-                    return true;
-                case KeyEvent.KEYCODE_CHANNEL_DOWN:
-                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
-                    return true;
-                case KeyEvent.KEYCODE_0: case KeyEvent.KEYCODE_1: case KeyEvent.KEYCODE_2:
-                case KeyEvent.KEYCODE_3: case KeyEvent.KEYCODE_4: case KeyEvent.KEYCODE_5:
-                case KeyEvent.KEYCODE_6: case KeyEvent.KEYCODE_7: case KeyEvent.KEYCODE_8:
-                case KeyEvent.KEYCODE_9:
-                    int digit = keyCode - KeyEvent.KEYCODE_0;
-                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + digit + "', code: 'Digit" + digit + "', keyCode: " + (48 + digit) + ", bubbles: true}));", null);
-                    return true;
+        int keyCode = event.getKeyCode();
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP ||
+            keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+            keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
+            keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+            keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
+            keyCode == KeyEvent.KEYCODE_ENTER ||
+            keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER ||
+            keyCode == KeyEvent.KEYCODE_BACK ||
+            keyCode == KeyEvent.KEYCODE_CHANNEL_UP ||
+            keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN ||
+            (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)) {
+
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_UP:
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', code: 'ArrowUp', keyCode: 38, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_DOWN:
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_DPAD_CENTER:
+                    case KeyEvent.KEYCODE_ENTER:
+                    case KeyEvent.KEYCODE_NUMPAD_ENTER:
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_BACK:
+                        long now = System.currentTimeMillis();
+                        if (now - mLastBackPressTime < 2500) {
+                            finish();
+                            return true;
+                        }
+                        mLastBackPressTime = now;
+                        Toast.makeText(this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true}));", null);
+                        break;
+                    case KeyEvent.KEYCODE_CHANNEL_UP:
+                        mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
+                        break;
+                    case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                        mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
+                        break;
+                    case KeyEvent.KEYCODE_0: case KeyEvent.KEYCODE_1: case KeyEvent.KEYCODE_2:
+                    case KeyEvent.KEYCODE_3: case KeyEvent.KEYCODE_4: case KeyEvent.KEYCODE_5:
+                    case KeyEvent.KEYCODE_6: case KeyEvent.KEYCODE_7: case KeyEvent.KEYCODE_8:
+                    case KeyEvent.KEYCODE_9:
+                        int digit = keyCode - KeyEvent.KEYCODE_0;
+                        mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + digit + "', code: 'Digit" + digit + "', keyCode: " + (48 + digit) + ", bubbles: true}));", null);
+                        break;
+                }
             }
+            return true;
         }
         return super.dispatchKeyEvent(event);
     }
