@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,13 +25,24 @@ jobs:
     - name: Configurar Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    - name: Compilar APK Android TV (Debug / Release)
+    - name: Compilar APK Android TV
       run: |
         cd android
         gradle assembleDebug --stacktrace
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Subir APK Generado como Artefacto
+    - name: Subir APK como Artefacto
       uses: actions/upload-artifact@v4
       with:
         name: AntenaSur-AndroidTV
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        path: android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
+
+    - name: Publicar Release con APK Directo
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.0.0"
+        name: "Antena Sur Android TV v1.0.0"
+        body: "Descarga directa del APK oficial de Antena Sur para Android TV y Google TV."
+        allowUpdates: true
+        token: ${{ secrets.GITHUB_TOKEN }}
