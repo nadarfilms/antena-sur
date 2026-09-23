@@ -1,0 +1,47 @@
+#EXTM3U name="Antena Sur - Radios de Chile"
+#EXTINF:-1 tvg-id="cl-rad-biobiosantiago" tvg-name="Radio Bío Bío (Santiago 99.7 FM)" tvg-logo="./img/logos/cl-rad-biobiosantiago.svg" group-title="Noticias",Radio Bío Bío (Santiago 99.7 FM)
+https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobioconcepcion" tvg-name="Radio Bío Bío (Concepción 98.1 FM)" tvg-logo="./img/logos/cl-rad-biobioconcepcion.svg" group-title="Noticias",Radio Bío Bío (Concepción 98.1 FM)
+https://unlimited3-cl.dps.live/biobioconcepcion/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobiovalparaiso" tvg-name="Radio Bío Bío (Valparaíso 94.5 FM)" tvg-logo="./img/logos/cl-rad-biobiovalparaiso.svg" group-title="Noticias",Radio Bío Bío (Valparaíso 94.5 FM)
+https://unlimited3-cl.dps.live/biobiovalparaiso/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobiopuertomontt" tvg-name="Radio Bío Bío (Puerto Montt 94.9 FM)" tvg-logo="./img/logos/cl-rad-biobiopuertomontt.svg" group-title="Noticias",Radio Bío Bío (Puerto Montt 94.9 FM)
+https://unlimited3-cl.dps.live/biobiopuertomontt/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobiotemuco" tvg-name="Radio Bío Bío (Temuco 88.1 FM)" tvg-logo="./img/logos/cl-rad-biobiotemuco.svg" group-title="Noticias / Opinión",Radio Bío Bío (Temuco 88.1 FM)
+https://unlimited3-cl.dps.live/biobiotemuco/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobiovaldivia" tvg-name="Radio Bío Bío (Valdivia 88.9 FM)" tvg-logo="./img/logos/cl-rad-biobiovaldivia.svg" group-title="Noticias / Opinión",Radio Bío Bío (Valdivia 88.9 FM)
+https://unlimited3-cl.dps.live/biobiovaldivia/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-biobioosorno" tvg-name="Radio Bío Bío (Osorno 106.5 FM)" tvg-logo="./img/logos/cl-rad-biobioosorno.svg" group-title="Noticias / Opinión",Radio Bío Bío (Osorno 106.5 FM)
+https://unlimited3-cl.dps.live/biobioosorno/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-cooperativa" tvg-name="Radio Cooperativa (93.3 FM)" tvg-logo="./img/logos/cl-rad-cooperativa.svg" group-title="Noticias",Radio Cooperativa (93.3 FM)
+https://unlimited3-cl.dps.live/cooperativafm/mp3/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-adn" tvg-name="ADN Radio Chile (91.7 FM)" tvg-logo="./img/logos/cl-rad-adn.png" group-title="Noticias",ADN Radio Chile (91.7 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/ADN.mp3
+#EXTINF:-1 tvg-id="cl-rad-futuro" tvg-name="Radio Futuro (88.9 FM)" tvg-logo="./img/logos/cl-rad-futuro.png" group-title="Música Rock",Radio Futuro (88.9 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/FUTURO.mp3
+#EXTINF:-1 tvg-id="cl-rad-concierto" tvg-name="Radio Concierto (88.5 FM)" tvg-logo="./img/logos/cl-rad-concierto.png" group-title="Música Pop/Rock",Radio Concierto (88.5 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/CONCIERTO.mp3
+#EXTINF:-1 tvg-id="cl-rad-rockandpop" tvg-name="Radio Rock & Pop (94.1 FM)" tvg-logo="./img/logos/cl-rad-rockandpop.png" group-title="Rock / Pop / Música",Radio Rock & Pop (94.1 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/ROCK_AND_POP.mp3
+#EXTINF:-1 tvg-id="cl-rad-corazon" tvg-name="Radio Corazón (101.3 FM)" tvg-logo="./img/logos/cl-rad-corazon.png" group-title="Música Tropical/Latina",Radio Corazón (101.3 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/CORAZON.mp3
+#EXTINF:-1 tvg-id="cl-rad-carolina" tvg-name="Radio Carolina (99.3 FM)" tvg-logo="./img/logos/cl-rad-carolina.svg" group-title="Música Juvenil/Urbana",Radio Carolina (99.3 FM)
+https://stream.zeno.fm/sri2de2qdlivv
+#EXTINF:-1 tvg-id="cl-rad-pudahuel" tvg-name="Radio Pudahuel (90.5 FM)" tvg-logo="./img/logos/cl-rad-pudahuel.png" group-title="Música Romántica",Radio Pudahuel (90.5 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/PUDAHUEL.mp3
+#EXTINF:-1 tvg-id="cl-rad-activa" tvg-name="Radio Activa (92.5 FM)" tvg-logo="./img/logos/cl-rad-activa.png" group-title="Música Bailable",Radio Activa (92.5 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/ACTIVA.mp3
+#EXTINF:-1 tvg-id="cl-rad-los40" tvg-name="Los 40 Chile (101.7 FM)" tvg-logo="./img/logos/cl-rad-los40.png" group-title="Música Pop/Hits",Los 40 Chile (101.7 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/LOS40_CHILE.mp3
+#EXTINF:-1 tvg-id="cl-rad-fmdos" tvg-name="FM Dos (98.5 FM)" tvg-logo="./img/logos/cl-rad-fmdos.png" group-title="Música Romántica",FM Dos (98.5 FM)
+https://playerservices.streamtheworld.com/api/livestream-redirect/FMDOS.mp3
+#EXTINF:-1 tvg-id="cl-rad-romantica" tvg-name="Radio Romántica (104.1 FM)" tvg-logo="./img/logos/cl-rad-romantica.svg" group-title="Música Romántica",Radio Romántica (104.1 FM)
+https://mdstrm.com/audio/639b78f7ff35df084fa7f964/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-duna" tvg-name="Radio Duna (89.7 FM)" tvg-logo="./img/logos/cl-rad-duna.svg" group-title="Noticias y Cultura",Radio Duna (89.7 FM)
+https://mdstrm.com/audio/67f42f96e464d19a6eda3c7d/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-infinita" tvg-name="Radio Infinita (100.1 FM)" tvg-logo="./img/logos/cl-rad-infinita.svg" group-title="Noticias",Radio Infinita (100.1 FM)
+https://mdstrm.com/audio/639b791cea22540890cd1d8b/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-beethoven" tvg-name="Radio Beethoven (96.5 FM)" tvg-logo="./img/logos/cl-rad-beethoven.svg" group-title="Música Clásica",Radio Beethoven (96.5 FM)
+https://unlimited4-us.dps.live/beethovenfm/aac/icecast.audio
+#EXTINF:-1 tvg-id="cl-rad-agricultura" tvg-name="Radio Agricultura (92.1 FM)" tvg-logo="./img/logos/cl-rad-agricultura.svg" group-title="Noticias y Deportes",Radio Agricultura (92.1 FM)
+https://unlimited3-cl.dps.live/agricultura/mp3/icecast.audio
