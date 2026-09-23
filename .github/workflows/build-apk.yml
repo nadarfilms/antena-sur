@@ -22,19 +22,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Configurar Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Configurar Gradle 8.5
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: '8.5'
-
-    - name: Compilar APK Android TV
+    - name: Instalar Gradle 8.5 y Compilar APK Android TV
       run: |
+        wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip
+        unzip -q gradle-8.5-bin.zip
+        export GRADLE_BIN=$PWD/gradle-8.5/bin/gradle
+        
         echo "sdk.dir=$ANDROID_HOME" > android/local.properties
         cd android
-        gradle assembleDebug --no-daemon --stacktrace
+        $GRADLE_BIN assembleDebug --no-daemon --stacktrace
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
     - name: Subir APK como Artefacto
