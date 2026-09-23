@@ -1,0 +1,2 @@
+# Antena Sur utiliza exclusivamente módulos de la biblioteca estándar de Python 3.
+# No requiere paquetes pip externos.

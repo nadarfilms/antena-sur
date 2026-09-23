@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Antena Sur | Canales de TV y Radios de Chile en Vivo</title>
+  <meta name="description" content="Sintoniza en vivo todos los canales de televisión abierta y estaciones de radio de Chile con experiencia Zapping TV, guía de canales en vivo y soporte para Smart TV, Apple CarPlay y Android Auto.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇨🇱</text></svg>">
+
+  <!-- Configuración PWA y Dispositivos Móviles (iOS / Android / CarPlay) -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Antena Sur">
+  <meta name="theme-color" content="#070b13">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Hls.js para reproducción de streams M3U8 en navegadores modernos -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Hojas de estilo de la aplicación -->
+  <link rel="stylesheet" href="./css/main.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/player.css">
+</head>
+<body>
+
+  <!-- Atmósfera luminosa de fondo -->
+  <div class="bg-atmosphere"></div>
+
+  <!-- Barra de Navegación Superior -->
+  <header class="top-navbar">
+    <div class="app-container">
+      <div class="nav-wrapper">
+        <!-- Logo y Marca -->
+        <div class="brand-logo" onclick="window.location.reload();" title="Recargar Antena Sur">
+          <div class="logo-icon-wrapper">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>Antena Sur</h1>
+            <p>TV & Radios de Chile en Vivo 🇨🇱</p>
+          </div>
+        </div>
+
+        <!-- Menú Principal de Secciones (Solo TV y Radios) -->
+        <nav class="main-sections-nav" id="mainSectionsNav">
+          <button class="section-nav-tab active" data-section="tv" id="sectionTabTv">
+            <span class="tab-icon">📺</span>
+            <span class="tab-label">Canales de TV</span>
+            <span class="tab-counter" id="tvCounter">37</span>
+          </button>
+          <button class="section-nav-tab" data-section="radio" id="sectionTabRadio">
+            <span class="tab-icon">📻</span>
+            <span class="tab-label">Radios de Chile</span>
+            <span class="tab-counter" id="radioCounter">23</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal del Catálogo -->
+  <main class="app-container" id="mainCatalogContainer">
+    <!-- SECCIÓN DE INICIO: 2 GRANDES BOTONES (CANALES DE TV Y RADIOS) -->
+    <section class="home-hero-section" id="homeHeroSection">
+      <div class="home-hero-grid">
+        <!-- Gran Botón 1: Canales de TV (Acceso Directo a Televisión en Vivo) -->
+        <button class="hero-action-card hero-card-tv" id="heroCardTv" title="Entrar directamente a Canales de TV en Directo">
+          <div class="hero-card-glow"></div>
+          <div class="hero-card-content">
+            <div class="hero-card-icon-wrapper">
+              <span class="hero-card-emoji">📺</span>
+            </div>
+            <div class="hero-card-text">
+              <span class="hero-card-badge"><span class="pulse-dot"></span> EN DIRECTO</span>
+              <h2>Canales de TV</h2>
+              <p>37 señales nacionales y regionales • Sintonización en directo</p>
+            </div>
+          </div>
+          <div class="hero-card-action">
+            <span class="hero-action-label">Ver Televisión</span>
+            <div class="hero-card-arrow">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+
+        <!-- Gran Botón 2: Radios de Chile -->
+        <button class="hero-action-card hero-card-radio" id="heroCardRadio" title="Escuchar Radios de Chile en Vivo">
+          <div class="hero-card-glow"></div>
+          <div class="hero-card-content">
+            <div class="hero-card-icon-wrapper">
+              <span class="hero-card-emoji">📻</span>
+            </div>
+            <div class="hero-card-text">
+              <span class="hero-card-badge"><span class="pulse-dot"></span> EN VIVO</span>
+              <h2>Radios de Chile</h2>
+              <p>23 emisoras en vivo • Carátulas en grande, banda y tema sonando en directo</p>
+            </div>
+          </div>
+          <div class="hero-card-action">
+            <span class="hero-action-label">Escuchar Radios</span>
+            <div class="hero-card-arrow">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- REPRODUCTOR DE RADIO MÓVIL ESTILO SPOTIFY / APPLE MUSIC -->
+    <section class="radio-mobile-player-section is-hidden" id="radioSectionContainer">
+      <div class="radio-ambient-backdrop" id="radioAmbientBackdrop"></div>
+
+      <div class="radio-player-mobile-card">
+        <!-- Header superior del reproductor móvil -->
+        <div class="radio-mobile-top-bar">
+          <span class="radio-player-pill"><span class="pulse-dot"></span> EMISIÓN EN VIVO 🇨🇱</span>
+          <span class="radio-player-count-badge" id="radioActiveCountBadge">23 Emisoras</span>
+        </div>
+
+        <!-- Gran Carátula Cuadrada con Efecto de Elevación y Sombra Profunda -->
+        <div class="radio-big-artwork-wrapper">
+          <img id="radioBigArtwork" class="radio-big-artwork-img" src="./img/logos/cl-rad-rockandpop.png" alt="Radio Portada">
+          <div class="radio-artwork-ambient-glow" id="radioArtworkGlow"></div>
+        </div>
+
+        <!-- Información de Pista / Banda y Emisora debajo de la Carátula -->
+        <div class="radio-track-info-block">
+          <div class="radio-title-and-fav">
+            <h3 class="radio-track-title" id="radioLiveTitle">Sintonizando Emisora en Directo...</h3>
+            <button class="radio-fav-heart-btn" id="radioBigFavBtn" title="Marcar como Favorito">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+          </div>
+          <p class="radio-track-artist" id="radioLiveArtist">Radio de Chile</p>
+          <div class="radio-station-tagline">
+            <span class="live-dot"></span>
+            <span id="radioLiveStationName">Radio Rock & Pop</span>
+            <span id="radioLiveFreq" class="radio-freq-pill">94.1 FM</span>
+          </div>
+        </div>
+
+        <!-- Visualizador de Audio Estilo Ondas Musicales -->
+        <div class="radio-wave-visualizer-box">
+          <canvas id="radioBigVisualizerCanvas" class="radio-big-canvas"></canvas>
+        </div>
+
+        <!-- Controles Prominentes Estilo Spotify / Apple Music -->
+        <div class="radio-player-controls-row">
+          <button class="radio-step-btn" id="radioBigPrevBtn" title="Emisora Anterior">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="19 20 9 12 19 4 19 20"></polygon>
+              <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
+            </svg>
+          </button>
+
+          <button class="radio-hero-play-btn" id="radioBigPlayBtn" title="Reproducir / Pausar (Espacio)">
+            <svg id="radioBigPlayIcon" width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="6 4 19 12 6 20 6 4"/>
+            </svg>
+          </button>
+
+          <button class="radio-step-btn" id="radioBigNextBtn" title="Siguiente Emisora">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 4 15 12 5 20 5 4"></polygon>
+              <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Selector Táctil / Carrusel de Emisoras Disponibles -->
+        <div class="radio-quick-selector-container">
+          <div class="radio-selector-header">
+            <span>SELECCIONAR EMISORA:</span>
+          </div>
+          <div class="radio-stations-carousel" id="radioQuickScrollTray">
+            <!-- Emisoras inyectadas dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Encabezado de Resultados -->
+    <div class="results-header" id="resultsHeader">
+      <div class="results-title">
+        <span id="resultsTitle">Canales de TV en Vivo</span>
+        <span class="results-badge" id="resultsCountBadge">37 señales</span>
+      </div>
+    </div>
+
+    <!-- Indicador de Carga Inicial -->
+    <div id="loadingState" style="text-align: center; padding: 60px 0;">
+      <div class="spinner" style="margin: 0 auto 16px auto;"></div>
+      <p style="color: var(--text-muted);">Sincronizando señales públicas de Chile...</p>
+    </div>
+
+    <!-- Grid de Estaciones y Canales -->
+    <section class="stations-grid" id="stationsGrid">
+      <!-- Renderizado reactivo desde app.js -->
+    </section>
+  </main>
+
+  <!-- ========================================================================
+       EXPERIENCIA ZAPPING TV (Sin Popup Modal • Interfaz Integrada Tipo Zapping)
+       ======================================================================== -->
+  <section class="zapping-tv-view is-hidden" id="tvZappingView">
+    <div class="zapping-layout">
+      <!-- Guía Lateral Izquierda de Canales -->
+      <aside class="zapping-sidebar" id="zappingSidebar">
+        <div class="zapping-sidebar-header">
+          <div class="zapping-brand">
+            <span class="zapping-logo-icon">⚡</span>
+            <div>
+              <h3>GUÍA ZAPPING</h3>
+              <span class="zapping-ch-count" id="zappingChCount">Canales en Vivo</span>
+            </div>
+          </div>
+          <button class="zapping-sidebar-toggle-btn" id="zappingSidebarToggleBtn" title="Ocultar Guía">◀</button>
+        </div>
+
+        <!-- Buscador Rápido de Canales en Guía -->
+        <div class="zapping-search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="zappingSearchInput" placeholder="Buscar canal o número...">
+        </div>
+
+        <!-- Chips de Categoría Zapping -->
+        <div class="zapping-category-chips" id="zappingCategoryChips">
+          <button class="zapping-chip active" data-genre="all">Todos</button>
+          <button class="zapping-chip" data-genre="General">Nacionales</button>
+          <button class="zapping-chip" data-genre="Noticias">Noticias</button>
+          <button class="zapping-chip" data-genre="Regional">Regionales</button>
+          <button class="zapping-chip" data-genre="Cultura">Cultura</button>
+          <button class="zapping-chip" data-genre="Música">Música</button>
+        </div>
+
+        <!-- Lista Vertical de Canales Zapping -->
+        <div class="zapping-channel-list" id="zappingChannelList" tabindex="0">
+          <!-- Renderizado dinámico desde player.js -->
+        </div>
+
+        <!-- Hint para Android TV y Control Remoto -->
+        <div class="zapping-remote-hint">
+          <span>🎮 Control: <strong>▲ ▼</strong> navegar • <strong>OK</strong> sintonizar</span>
+        </div>
+      </aside>
+
+      <!-- Área Principal del Reproductor -->
+      <div class="zapping-player-area" id="zappingPlayerArea">
+        <!-- HUD Superior Flotante del Canal Activo -->
+        <header class="zapping-top-hud">
+          <div class="zapping-hud-left">
+            <button class="zapping-hud-btn" id="zappingOpenGuideBtn" title="Mostrar Guía de Canales (← / Enter)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+              <span>Guía</span>
+            </button>
+            <div class="zapping-now-channel">
+              <span class="zapping-now-num" id="tvChannelNumber">CH 01</span>
+              <img id="tvStationLogo" class="zapping-now-logo" src="" alt="Logo Canal">
+              <div class="zapping-now-info">
+                <h2 id="tvStationTitle">Canal de Televisión</h2>
+                <p id="tvStationSubtitle">Chile • Señal en Directo</p>
+              </div>
+              <span class="zapping-live-badge"><span class="pulse-dot"></span> EN VIVO</span>
+            </div>
+          </div>
+
+          <div class="zapping-hud-right">
+            <!-- Selector de Fuente de Transmisión Alternativa (Accesible en Pantalla Completa y Modo Zapping) -->
+            <div class="quality-wrapper source-wrapper" id="tvSourceWrapper" title="Fuente de transmisión alternativa" style="display:none;">
+              <span class="source-icon">📡</span>
+              <select id="tvSourceSelect" class="quality-selector source-selector" title="Seleccionar fuente de reproducción">
+                <option value="0">Fuente 1 (Principal)</option>
+              </select>
+            </div>
+
+            <!-- Selector de Calidad Adaptativa -->
+            <div class="quality-wrapper" id="tvQualityWrapper" title="Calidad de transmisión">
+              <span class="quality-icon">⚙️</span>
+              <select id="tvQualitySelect" class="quality-selector">
+                <option value="-1">Auto (Adaptativa)</option>
+              </select>
+            </div>
+
+            <!-- Alternar Reproductor Web Oficial -->
+            <button class="zapping-hud-icon-btn" id="tvToggleWebBtn" title="Alternar Reproductor Web Oficial">
+              🌐
+            </button>
+
+            <!-- Marcar como Favorito -->
+            <button class="zapping-hud-icon-btn" id="tvFavoriteBtn" title="Marcar como Favorito">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+
+            <!-- Sitio Web Oficial -->
+            <a id="tvWebsiteBtn" class="zapping-hud-icon-btn" href="#" target="_blank" rel="noopener" title="Web Oficial">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+
+            <!-- Botón Salir de TV a Inicio -->
+            <button class="zapping-exit-btn" id="tvCloseBtn" title="Volver al Menú Principal (Esc)">
+              <span>✕ Salir de TV</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Contenedor del Video -->
+        <div class="zapping-video-container" id="zappingVideoContainer">
+          <video id="tvVideo" class="zapping-video" playsinline></video>
+          <iframe id="tvIframe" class="zapping-iframe is-hidden" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+
+          <!-- Spinner de Carga de Transmisión -->
+          <div class="video-loading-indicator" id="tvLoading" style="display:none;">
+            <div class="spinner"></div>
+            <span>Conectando con la señal en vivo...</span>
+          </div>
+
+          <!-- Overlay de Fallback / Reintento de Señal -->
+          <div class="video-fallback-overlay is-hidden" id="tvFallbackOverlay">
+            <div style="font-size: 2.5rem;">⚠️</div>
+            <h3 style="font-size: 1.2rem; color: #fff;">Dificultad para conectar con la señal</h3>
+            <p id="tvFallbackMsg" style="color: var(--text-secondary); max-width: 480px; font-size: 0.88rem;">
+              La señal pública puede tener restricciones de navegador o requerir conexión directa.
+            </p>
+            <div class="fallback-actions">
+              <button class="btn-primary" id="tvNextSourceBtn" style="display:none; background: linear-gradient(135deg, #00e5ff, #0077ff); color: #0d1322; font-weight: 700;">📡 Probar Siguiente Fuente</button>
+              <button class="btn-primary" id="tvRetryBtn">🔄 Reintentar Transmisión</button>
+              <button class="btn-secondary" id="tvUseProxyBtn">🛡️ Usar Proxy Local (CORS Fix)</button>
+              <button class="btn-primary" id="tvWebFallbackBtn" style="background: rgba(0, 212, 255, 0.2); border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">🌐 Reproductor Web Oficial</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Controles Inferior de TV -->
+        <footer class="zapping-bottom-controls">
+          <div class="zapping-controls-left">
+            <button class="zapp-ch-pill-btn prev" id="tvPrevChannelBtn" title="Canal Anterior (Flecha Arriba)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="19 20 9 12 19 4 19 20"></polygon>
+                <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
+              </svg>
+              <span>Canal Ant.</span>
+            </button>
+            <button class="zapp-main-play-btn" id="tvPlayBtn" title="Reproducir / Pausar (Espacio)">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </button>
+            <button class="zapp-ch-pill-btn next" id="tvNextChannelBtn" title="Siguiente Canal (Flecha Abajo)">
+              <span>Canal Sig.</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
+              </svg>
+            </button>
+            <div class="volume-container">
+              <button class="control-btn" id="tvMuteBtn" title="Silenciar (M)">🔊</button>
+              <input type="range" id="tvVolumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="0.85">
+            </div>
+            <span class="live-indicator">
+              <span class="live-dot"></span> SEÑAL OFICIAL DIRECTA
+            </span>
+          </div>
+
+          <div class="zapping-controls-right">
+            <span class="zapping-tv-hint solo-desktop">💡 Pantalla Completa: Presiona <strong>Enter</strong> o <strong>◀ Izq</strong> para ver canales</span>
+            <button class="control-btn" id="tvPipBtn" title="Picture in Picture">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <rect x="12" y="9" width="8" height="6" rx="1" ry="1"></rect>
+              </svg>
+            </button>
+            <button class="control-btn control-btn-fullscreen" id="tvFullscreenBtn" title="Pantalla Completa (F / Enter)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+              </svg>
+            </button>
+          </div>
+        </footer>
+
+        <!-- OVERLAY DE GUÍA EN PANTALLA COMPLETA (Activado con Menú Hamburguesa, Enter o Flecha Izquierda) -->
+        <div class="zapping-fullscreen-overlay" id="zappingFullscreenOverlay">
+          <div class="fs-overlay-header">
+            <div class="fs-overlay-title-row">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button class="fs-overlay-close-btn" id="fsOverlayBackBtn" title="Cerrar Guía">◀</button>
+                <span class="fs-overlay-badge">ZAPPING TV</span>
+                <span class="fs-overlay-title">GUÍA DE CANALES</span>
+              </div>
+              <button class="fs-overlay-close-btn" id="fsOverlayCloseBtn" title="Cerrar Guía (Esc / ▶)">✕</button>
+            </div>
+            <span class="fs-overlay-hint">Presiona <strong>▲ ▼</strong> y <strong>Enter</strong> para cambiar • <strong>▶</strong> para cerrar</span>
+            <div class="fs-overlay-search-box">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="fsOverlaySearchInput" placeholder="Buscar canal o número...">
+            </div>
+            <div class="zapping-category-chips fs-category-chips" id="zappingFsCategoryChips">
+              <button class="zapping-chip active" data-genre="all">Todos</button>
+              <button class="zapping-chip" data-genre="General">Nacionales</button>
+              <button class="zapping-chip" data-genre="Noticias">Noticias</button>
+              <button class="zapping-chip" data-genre="Regional">Regionales</button>
+              <button class="zapping-chip" data-genre="Cultura">Cultura</button>
+              <button class="zapping-chip" data-genre="Música">Música</button>
+            </div>
+          </div>
+          <div class="fs-overlay-channel-list" id="zappingFsChannelList" tabindex="0">
+            <!-- Clones interactivos para zapping en pantalla completa -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       BARRA DE RADIO PERSISTENTE (Reproductor de Audio con Now Playing)
+       ======================================================================== -->
+  <div class="radio-persistent-bar is-hidden" id="radioPersistentBar">
+    <!-- Izquierda: Info de Radio y Now Playing -->
+    <div class="radio-bar-station">
+      <img id="radioBarLogo" class="radio-bar-logo" src="" alt="Radio" style="display:none;">
+      <div class="radio-bar-info">
+        <div id="radioBarTitle" class="radio-bar-title">Sintonizando Radio...</div>
+        <div id="radioBarSubtitle" class="radio-bar-sub">Frecuencia • Ciudad</div>
+      </div>
+    </div>
+
+    <!-- Centro: Botón Play y Visualizador Espectro Canvas -->
+    <div class="radio-bar-center">
+      <button class="radio-play-btn" id="radioPlayBtn" title="Pausar / Reanudar (Espacio)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <polygon points="6 4 19 12 6 20 6 4"/>
+        </svg>
+      </button>
+
+      <!-- Visualizador de Audio Canvas en tiempo real -->
+      <div class="visualizer-container" title="Espectro de frecuencia de audio en tiempo real">
+        <canvas id="audioVisualizerCanvas" class="audio-visualizer-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Derecha: Volumen y Acciones -->
+    <div class="radio-bar-actions">
+      <div class="volume-container">
+        <button class="control-btn" id="radioMuteBtn" title="Silenciar (M)">🔊</button>
+        <input type="range" id="radioVolumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="0.85">
+      </div>
+      <button class="btn-icon" id="radioFavoriteBtn" title="Favorito">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </button>
+      <button class="radio-close-btn" id="radioCloseBtn" title="Detener Radio">✕</button>
+    </div>
+  </div>
+
+
+
+  <!-- Contenedor de Alertas Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Pie de Página -->
+  <footer class="app-footer">
+    <div class="app-container">
+      <div class="footer-content">
+        <p><strong>Antena Sur</strong> • Señales públicas y abiertas de televisión y radio de Chile con experiencia Zapping TV.</p>
+        <p>Atajos: <code>[Espacio]</code> Play/Pausa • <code>[▲/▼]</code> Zapping Canales • <code>[Enter]</code> Guía TV • <code>[M]</code> Silenciar • <code>[F]</code> Pantalla Completa</p>
+        <div class="footer-links">
+          <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener">Listas Públicas IPTV</a>
+          <span>•</span>
+          <a href="https://www.radio-browser.info" target="_blank" rel="noopener">Radio Browser Info</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script Principal de la Aplicación -->
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
