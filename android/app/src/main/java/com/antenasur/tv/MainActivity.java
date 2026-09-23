@@ -1,11 +1,8 @@
 package com.antenasur.tv;
 
 import android.annotation.SuppressLint;
-import androidx.appcompat.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -13,42 +10,42 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.webkit.WebViewAssetLoader;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String PREFS_NAME = "AntenaSurPrefs";
-    private static final String KEY_SERVER_URL = "server_url";
-    private static final String DEFAULT_CLOUD_URL = "https://antena-sur.onrender.com";
-    private static final String DEFAULT_LOCAL_URL = "http://192.168.1.33:8080";
-
     private WebView mWebView;
-    private SharedPreferences mPrefs;
-    private String mCurrentUrl;
-    private boolean mHasLoadedSuccessfully = false;
+    private WebViewAssetLoader mAssetLoader;
+    private long mLastBackPressTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Pantalla completa sin título ni barra de estado
+        // Pantalla completa inmersiva para Smart TV
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        mPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        mCurrentUrl = mPrefs.getString(KEY_SERVER_URL, DEFAULT_LOCAL_URL);
 
         setupImmersiveMode();
         setupWebView();
@@ -77,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
         mWebView.setBackgroundColor(Color.parseColor("#070B13"));
         setContentView(mWebView);
 
+        // Cargador de recursos locales autónomo (empaquetado dentro del APK)
+        mAssetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
+
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -89,12 +91,11 @@ public class MainActivity extends AppCompatActivity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
 
-        // Habilitar contenido mixto (HTTP/HTTPS) en streams HLS
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
-        // User-Agent de Smart TV para garantizar compatibilidad
+        // Identificador de Android TV para que la app web auto-inicie en modo televisión
         String customUA = "Mozilla/5.0 (Linux; Android 12; Android TV Build/STT1.220610.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 AntenaSurTV/1.0";
         settings.setUserAgentString(customUA);
 
@@ -102,124 +103,161 @@ public class MainActivity extends AppCompatActivity {
 
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                mHasLoadedSuccessfully = true;
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                // Proxy HLS inteligente nativo en Java para señales que exigen Referer (Canal 13, etc.)
+                if (uri.getPath() != null && uri.getPath().contains("/api/proxy")) {
+                    WebResourceResponse proxyResp = handleHlsProxy(request);
+                    if (proxyResp != null) return proxyResp;
+                }
+                return mAssetLoader.shouldInterceptRequest(uri);
             }
 
             @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                if (request.isForMainFrame()) {
-                    showConnectionErrorDialog();
-                }
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mWebView.requestFocus();
             }
         });
 
-        // Habilitar foco para el control remoto D-pad
+        // Asegurar foco para el control remoto
         mWebView.setFocusable(true);
         mWebView.setFocusableInTouchMode(true);
         mWebView.requestFocus();
 
-        loadUrl(mCurrentUrl);
+        // Cargar la aplicación localmente desde el APK de forma 100% autónoma
+        mWebView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
     }
 
-    private void loadUrl(String url) {
-        mCurrentUrl = url;
-        mWebView.loadUrl(url);
-    }
+    private WebResourceResponse handleHlsProxy(WebResourceRequest request) {
+        try {
+            Uri uri = request.getUrl();
+            String targetUrl = uri.getQueryParameter("url");
+            String ref = uri.getQueryParameter("ref");
+            if (targetUrl == null || targetUrl.isEmpty()) return null;
 
-    private void showConnectionErrorDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Antena Sur - Conexión TV");
-        builder.setMessage("No se pudo conectar al servidor en:\n" + mCurrentUrl + "\n\nVerifica que tu servidor esté activo o introduce la URL:");
-
-        final EditText input = new EditText(this);
-        input.setText(mCurrentUrl);
-        builder.setView(input);
-
-        builder.setPositiveButton("Reintentar", (dialog, which) -> {
-            String newUrl = input.getText().toString().trim();
-            if (!newUrl.isEmpty()) {
-                mPrefs.edit().putString(KEY_SERVER_URL, newUrl).apply();
-                loadUrl(newUrl);
+            if (ref == null || ref.isEmpty()) {
+                String low = targetUrl.toLowerCase();
+                if (low.contains("13") || low.contains("dpsgo.com")) ref = "https://www.13.cl/";
+                else if (low.contains("uchile")) ref = "https://tv.uchile.cl/";
+                else if (low.contains("chv") || low.contains("rudo.video")) ref = "https://www.chilevision.cl/";
+                else if (low.contains("mega")) ref = "https://www.mega.cl/";
+                else ref = "https://www.13.cl/";
             }
-        });
 
-        builder.setNegativeButton("Usar Nube", (dialog, which) -> {
-            mPrefs.edit().putString(KEY_SERVER_URL, DEFAULT_CLOUD_URL).apply();
-            loadUrl(DEFAULT_CLOUD_URL);
-        });
+            URL url = new URL(targetUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+            conn.setRequestProperty("Referer", ref);
+            conn.setRequestProperty("Accept", "*/*");
+            conn.setConnectTimeout(8000);
+            conn.setReadTimeout(10000);
 
-        builder.setNeutralButton("Usar Wi-Fi Local", (dialog, which) -> {
-            mPrefs.edit().putString(KEY_SERVER_URL, DEFAULT_LOCAL_URL).apply();
-            loadUrl(DEFAULT_LOCAL_URL);
-        });
-
-        builder.setCancelable(false);
-        builder.show();
-    }
-
-    private void showChangeUrlDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Configurar Servidor de Antena Sur");
-        builder.setMessage("Ingresa la dirección IP local o URL de Render:");
-
-        final EditText input = new EditText(this);
-        input.setText(mCurrentUrl);
-        builder.setView(input);
-
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
-            String newUrl = input.getText().toString().trim();
-            if (!newUrl.isEmpty()) {
-                mPrefs.edit().putString(KEY_SERVER_URL, newUrl).apply();
-                loadUrl(newUrl);
-                Toast.makeText(this, "Cargando: " + newUrl, Toast.LENGTH_SHORT).show();
+            String range = request.getRequestHeaders().get("Range");
+            if (range != null) {
+                conn.setRequestProperty("Range", range);
             }
-        });
 
-        builder.setNegativeButton("Cancelar", null);
-        builder.show();
+            int responseCode = conn.getResponseCode();
+            if (responseCode >= 300 && responseCode < 400) {
+                String loc = conn.getHeaderField("Location");
+                if (loc != null) {
+                    targetUrl = loc;
+                    url = new URL(loc);
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36");
+                    conn.setRequestProperty("Referer", ref);
+                    conn.setConnectTimeout(8000);
+                    conn.setReadTimeout(10000);
+                }
+            }
+
+            String contentType = conn.getContentType();
+            if (contentType == null) contentType = "application/octet-stream";
+
+            boolean isM3u8 = targetUrl.toLowerCase().contains(".m3u8") || contentType.toLowerCase().contains("mpegurl");
+
+            if (isM3u8) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String trimmed = line.trim();
+                    if (trimmed.startsWith("#") && trimmed.contains("URI=\"")) {
+                        line = line.replaceAll("URI=\"([^\"]+)\"", "URI=\"/api/proxy?url=" + Uri.encode(targetUrl) + "\"");
+                        sb.append(line).append("\n");
+                    } else if (!trimmed.isEmpty() && !trimmed.startsWith("#")) {
+                        URL resolved = new URL(url, trimmed);
+                        String proxySegment = "/api/proxy?url=" + Uri.encode(resolved.toString()) + "&ref=" + Uri.encode(ref);
+                        sb.append(proxySegment).append("\n");
+                    } else {
+                        sb.append(line).append("\n");
+                    }
+                }
+                reader.close();
+                byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+                Map<String, String> responseHeaders = new HashMap<>();
+                responseHeaders.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/vnd.apple.mpegurl", "UTF-8", 200, "OK", responseHeaders, new ByteArrayInputStream(bytes));
+            }
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Access-Control-Allow-Origin", "*");
+            return new WebResourceResponse(contentType, null, 200, "OK", headers, conn.getInputStream());
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        int keyCode = event.getKeyCode();
-
-        // Botón Menú del control remoto: abrir diálogo de servidor
-        if (keyCode == KeyEvent.KEYCODE_MENU && event.getAction() == KeyEvent.ACTION_UP) {
-            showChangeUrlDialog();
-            return true;
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            int keyCode = event.getKeyCode();
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp', code: 'ArrowUp', keyCode: 38, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown', code: 'ArrowDown', keyCode: 40, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', code: 'ArrowRight', keyCode: 39, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_CENTER:
+                case KeyEvent.KEYCODE_ENTER:
+                case KeyEvent.KEYCODE_NUMPAD_ENTER:
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_BACK:
+                    long now = System.currentTimeMillis();
+                    if (now - mLastBackPressTime < 2500) {
+                        finish();
+                        return true;
+                    }
+                    mLastBackPressTime = now;
+                    Toast.makeText(this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true}));", null);
+                    return true;
+                case KeyEvent.KEYCODE_CHANNEL_UP:
+                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
+                    return true;
+                case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
+                    return true;
+                case KeyEvent.KEYCODE_0: case KeyEvent.KEYCODE_1: case KeyEvent.KEYCODE_2:
+                case KeyEvent.KEYCODE_3: case KeyEvent.KEYCODE_4: case KeyEvent.KEYCODE_5:
+                case KeyEvent.KEYCODE_6: case KeyEvent.KEYCODE_7: case KeyEvent.KEYCODE_8:
+                case KeyEvent.KEYCODE_9:
+                    int digit = keyCode - KeyEvent.KEYCODE_0;
+                    mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + digit + "', code: 'Digit" + digit + "', keyCode: " + (48 + digit) + ", bubbles: true}));", null);
+                    return true;
+            }
         }
-
-        // Tecla Atrás (Back)
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-            // Enviar tecla Escape al reproductor para cerrar guía si está abierta
-            mWebView.evaluateJavascript(
-                    "(function() { " +
-                    "  const ev = new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true }); " +
-                    "  document.dispatchEvent(ev); " +
-                    "})()", null);
-            return true;
-        }
-
-        // Tecla Reproducir / Pausar del control
-        if ((keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE || keyCode == KeyEvent.KEYCODE_HEADSETHOOK)
-                && event.getAction() == KeyEvent.ACTION_DOWN) {
-            mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.togglePlayPause();", null);
-            return true;
-        }
-
-        // Canal Arriba / Abajo del control de TV (Channel Up / Down)
-        if (keyCode == KeyEvent.KEYCODE_CHANNEL_UP && event.getAction() == KeyEvent.ACTION_DOWN) {
-            mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
-            return true;
-        }
-        if (keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN && event.getAction() == KeyEvent.ACTION_DOWN) {
-            mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
-            return true;
-        }
-
         return super.dispatchKeyEvent(event);
     }
 
