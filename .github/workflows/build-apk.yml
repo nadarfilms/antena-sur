@@ -22,13 +22,15 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Configurar Gradle
+    - name: Configurar Gradle 8.5
       uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.5'
 
     - name: Compilar APK Android TV
       run: |
         cd android
-        gradle assembleDebug --stacktrace
+        gradle assembleDebug --no-daemon --stacktrace
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
     - name: Subir APK como Artefacto
