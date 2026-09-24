@@ -4,44 +4,40 @@
    ========================================================================== */
 
 :root {
-  --bg-primary: #0a0e17;
-  --bg-secondary: #121826;
-  --bg-card: rgba(22, 30, 49, 0.75);
-  --bg-card-hover: rgba(30, 41, 67, 0.95);
-  --bg-glass: rgba(18, 24, 38, 0.82);
-  --bg-glass-card: rgba(255, 255, 255, 0.04);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-glow: rgba(0, 212, 255, 0.3);
+  --bg-primary: #07090d;
+  --bg-secondary: #0b0e14;
+  --bg-card: #11141c;
+  --bg-card-hover: #161b24;
+  --bg-glass: #0b0e14;
+  --bg-glass-card: #11141c;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-glow: #ff9f0a;
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #8b949e;
+  --text-muted: #57606a;
   
+  --bm-amber: #ff9f0a;
+  --bm-red: #ff453a;
+  --bm-green: #30d158;
+  --bm-cyan: #00d4ff;
+  --bm-border: #1e2430;
+  --bm-panel: #11141c;
+
   --accent-cyan: #00d4ff;
-  --accent-blue: #2563eb;
-  --accent-purple: #8b5cf6;
-  --accent-rose: #f43f5e;
-  --accent-emerald: #10b981;
-  --accent-amber: #f59e0b;
+  --accent-blue: #0a84ff;
+  --accent-amber: #ff9f0a;
+  --accent-rose: #ff453a;
   
-  --gradient-brand: linear-gradient(135deg, #00d4ff 0%, #3b82f6 50%, #8b5cf6 100%);
-  --gradient-tv: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-  --gradient-radio: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
-  
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.25);
-  
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
   --radius-full: 9999px;
   
-  --transition-fast: 0.18s ease;
-  --transition-normal: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -59,10 +55,9 @@ body {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding-bottom: 90px; /* Espacio para el mini reproductor de radio */
 }
 
-/* Background Atmosphere */
+/* Background Atmosphere - Estilo Blackmagic Cinema Matte */
 .bg-atmosphere {
   position: fixed;
   top: 0;
@@ -71,27 +66,23 @@ body {
   height: 100vh;
   pointer-events: none;
   z-index: -1;
-  background: 
-    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 45%),
-    radial-gradient(circle at 50% 90%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
-    #0a0e17;
+  background: #07090d;
 }
 
 /* Scrollbar Personalizado */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: #07090d;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.16);
+  background: #222733;
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 212, 255, 0.4);
+  background: var(--bm-amber);
 }
 
 /* Contenedor Principal */
@@ -102,82 +93,144 @@ body {
   padding: 0 24px;
 }
 
-/* Barra de Navegación Superior */
-.top-navbar {
+/* Barra de Navegación Superior Blackmagic OS / Apple */
+.bm-header {
+  background: #0b0e14;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 0;
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #090e18;
-  border-bottom: 1px solid var(--border-color);
-  padding: 14px 0;
-  margin-bottom: 24px;
 }
 
-.nav-wrapper {
+.bm-nav-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  width: 100%;
 }
 
-.brand-logo {
+.bm-brand-logo {
   display: flex;
   align-items: center;
   gap: 12px;
-  text-decoration: none;
-  color: var(--text-primary);
-  cursor: pointer;
+  cursor: default;
+  user-select: none;
 }
 
-.logo-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--gradient-brand);
+.bm-record-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff453a;
+  box-shadow: 0 0 10px rgba(255, 69, 58, 0.6);
+}
+
+.bm-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #ffffff;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.bm-subtitle {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--bm-amber, #ff9f0a);
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+.bm-header-status {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(0, 212, 255, 0.35);
+  gap: 12px;
 }
 
-.logo-icon-wrapper svg {
-  width: 26px;
-  height: 26px;
-  fill: #fff;
-}
-
-.brand-text h1 {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(120deg, #ffffff 40%, #00d4ff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.brand-text p {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* Menú Principal de Secciones (Separación TV y Radios) */
-.main-sections-nav {
-  display: flex;
+.bm-status-pill {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 4px;
-  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  border-radius: 4px;
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  color: #30d158;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+}
+
+.bm-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #30d158;
+}
+
+.bm-live-dot.amber {
+  background: #ff9f0a;
+}
+
+.bm-live-dot.red {
+  background: #ff453a;
+}
+
+.bm-status-clock {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8b949e;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 3px 8px;
+  border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.section-nav-tab {
+/* Layout del Inicio Centrado para TV */
+.bm-home-container {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
-  border-radius: var(--radius-full);
+  justify-content: center;
+  min-height: calc(100vh - 90px);
+  padding: 24px;
+}
+
+.bm-home-hero {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.bm-hero-prompt {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #8b949e;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.bm-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .bm-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
   background: transparent;
   border: none;
   color: var(--text-secondary);

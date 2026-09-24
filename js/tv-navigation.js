@@ -50,48 +50,25 @@ export function initTvNavigation() {
 
     const heroTv = document.getElementById('heroCardTv');
     const heroRadio = document.getElementById('heroCardRadio');
-    const tabTv = document.getElementById('sectionTabTv');
-    const tabRadio = document.getElementById('sectionTabRadio');
-    const firstStationCard = document.querySelector('.stations-grid .station-card');
 
     if (!current) {
-      setFocus(heroTv || tabTv);
+      setFocus(heroTv || heroRadio);
       return;
     }
 
     // ========================================================================
-    // 1. NAVEGACIÓN DETERMINISTA EN BARRA SUPERIOR DE PESTAÑAS
-    // ========================================================================
-    if (current === tabTv || current.id === 'sectionTabTv') {
-      if (direction === 'ArrowRight') { setFocus(tabRadio); return; }
-      if (direction === 'ArrowDown') { setFocus(heroTv); return; }
-      return;
-    }
-    if (current === tabRadio || current.id === 'sectionTabRadio') {
-      if (direction === 'ArrowLeft') { setFocus(tabTv); return; }
-      if (direction === 'ArrowDown') { setFocus(heroRadio); return; }
-      return;
-    }
-
-    // ========================================================================
-    // 2. NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
+    // NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
     // ========================================================================
     if (current === heroTv || current.id === 'heroCardTv') {
-      if (direction === 'ArrowUp') { setFocus(tabTv); return; }
-      if (direction === 'ArrowRight') { setFocus(heroRadio); return; }
-      if (direction === 'ArrowDown') {
-        const firstCard = document.querySelector('.stations-grid .station-card');
-        if (firstCard) setFocus(firstCard);
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        setFocus(heroRadio);
         return;
       }
       return;
     }
     if (current === heroRadio || current.id === 'heroCardRadio') {
-      if (direction === 'ArrowUp') { setFocus(tabRadio); return; }
-      if (direction === 'ArrowLeft') { setFocus(heroTv); return; }
-      if (direction === 'ArrowDown') {
-        const firstCard = document.querySelector('.stations-grid .station-card');
-        if (firstCard) setFocus(firstCard);
+      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
+        setFocus(heroTv);
         return;
       }
       return;
@@ -226,8 +203,7 @@ export function initTvNavigation() {
   // Interfaz pública para Android WebView
   window.initTvFocus = function() {
     const heroTv = document.getElementById('heroCardTv');
-    const firstCard = document.querySelector('.stations-grid .station-card');
-    setFocus(heroTv || firstCard);
+    setFocus(heroTv);
   };
 
   window.onTvBack = function() {
@@ -235,6 +211,12 @@ export function initTvNavigation() {
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
     if (isTvPlayerOpen) {
       window.onTvNav('Back');
+      return true;
+    }
+
+    const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
+    if (isRadioFsOpen) {
+      player.closeFullscreenRadio();
       return true;
     }
 
@@ -261,6 +243,27 @@ export function initTvNavigation() {
   window.onTvNav = function(action) {
     const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
+
+    // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
+    const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
+    if (isRadioFsOpen) {
+      if (action === 'ArrowLeft' || action === 'ArrowUp') {
+        player.playPreviousRadio();
+        return;
+      }
+      if (action === 'ArrowRight' || action === 'ArrowDown') {
+        player.playNextRadio();
+        return;
+      }
+      if (action === 'Enter') {
+        player.toggleRadioPlayPause();
+        return;
+      }
+      if (action === 'Back') {
+        player.closeFullscreenRadio();
+        return;
+      }
+    }
 
     if (isTvPlayerOpen) {
       const isFullscreen = player.isFullscreenActive();

@@ -9170,8 +9170,37 @@ class PlayerEngine {
       radioBigPlayBtn: document.getElementById('radioBigPlayBtn'),
       radioBigPlayIcon: document.getElementById('radioBigPlayIcon'),
       radioBigNextBtn: document.getElementById('radioBigNextBtn'),
-      radioQuickScrollTray: document.getElementById('radioQuickScrollTray')
+      radioQuickScrollTray: document.getElementById('radioQuickScrollTray'),
+
+      // Reproductor de Pantalla Completa de Radios FM (Blackmagic OS / Spotify)
+      radioFullscreenView: document.getElementById('radioFullscreenView'),
+      radioFsBackBtn: document.getElementById('radioFsBackBtn'),
+      radioFsCurrentIndex: document.getElementById('radioFsCurrentIndex'),
+      radioFsTotalCount: document.getElementById('radioFsTotalCount'),
+      radioFsArtwork: document.getElementById('radioFsArtwork'),
+      radioFsSpectrumBars: document.getElementById('radioFsSpectrumBars'),
+      radioFsBitrateTag: document.getElementById('radioFsBitrateTag'),
+      radioFsFreqDial: document.getElementById('radioFsFreqDial'),
+      radioFsGenrePill: document.getElementById('radioFsGenrePill'),
+      radioFsStatusPill: document.getElementById('radioFsStatusPill'),
+      radioFsStationName: document.getElementById('radioFsStationName'),
+      radioFsTrackTitle: document.getElementById('radioFsTrackTitle'),
+      radioFsTrackArtist: document.getElementById('radioFsTrackArtist'),
+      radioFsCityVal: document.getElementById('radioFsCityVal'),
+      radioFsCoverageVal: document.getElementById('radioFsCoverageVal'),
+      radioFsWebsiteVal: document.getElementById('radioFsWebsiteVal'),
+      radioFsDescVal: document.getElementById('radioFsDescVal'),
+      radioFsPrevBtn: document.getElementById('radioFsPrevBtn'),
+      radioFsPlayBtn: document.getElementById('radioFsPlayBtn'),
+      radioFsPlayIcon: document.getElementById('radioFsPlayIcon'),
+      radioFsPlayText: document.getElementById('radioFsPlayText'),
+      radioFsNextBtn: document.getElementById('radioFsNextBtn'),
+      radioFsVolText: document.getElementById('radioFsVolText'),
+      radioFsTrayScroll: document.getElementById('radioFsTrayScroll')
     };
+
+    // Estado del reproductor de radios en pantalla completa
+    this.isRadioFullscreen = false;
 
     // Control de inactividad de 5s en pantalla completa (ocultar barras)
     this.fsControlsTimer = null;
@@ -9198,6 +9227,7 @@ class PlayerEngine {
     this.initRemoteKeyNavigation();
     this.initMediaSessionHandlers();
     this.initMobileRadioPlayer();
+    this.initFullscreenRadioEvents();
     this.initSystemInterruptionListeners();
     this.initHlsLibrary();
   }
@@ -9226,6 +9256,7 @@ class PlayerEngine {
     this.radioStations = allStations.filter(s => s.type === 'radio');
     this.renderTvGuide();
     this.renderRadioQuickScrollTray();
+    this.renderFullscreenRadioTray();
   }
 
   initZappingSidebarEvents() {
@@ -9978,12 +10009,24 @@ class PlayerEngine {
   }
 
   playTv(station, forceProxy = false) {
+    if (this.isRadioFullscreen) {
+      if (this.dom.radioFullscreenView) this.dom.radioFullscreenView.classList.add('is-hidden');
+      this.isRadioFullscreen = false;
+    }
     this.stopRadio();
     this.clearConnectionWatchdog();
 
     this.currentStation = station;
     this.currentType = 'tv';
     this.fav.addToHistory(station);
+
+    try {
+      localStorage.setItem('antena_sur_last_tv_id', station.id);
+    } catch (e) {}
+
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
+      window.__antenaSurApp.updateHeroLastStationBadges();
+    }
 
     // Resetear modo web
     this.isWebMode = false;
@@ -10360,6 +10403,14 @@ class PlayerEngine {
     this.currentStation = null;
     this.isPlaying = false;
     this.currentType = null;
+
+    const heroTv = document.getElementById('heroCardTv');
+    if (heroTv) {
+      try { heroTv.focus(); } catch (e) {}
+    }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
+      window.__antenaSurApp.updateHeroLastStationBadges();
+    }
 
     if (this.onStationChange && closedStation) {
       this.onStationChange(closedStation, 'stopped');
@@ -10875,6 +10926,228 @@ class PlayerEngine {
     });
   }
 
+  /* ========================================================================
+     REPRODUCTOR DE RADIOS EN PANTALLA COMPLETA (BLACKMAGIC OS / SPOTIFY)
+     ======================================================================== */
+
+  initFullscreenRadioEvents() {
+    if (this.dom.radioFsBackBtn) {
+      this.dom.radioFsBackBtn.addEventListener('click', () => {
+        this.closeFullscreenRadio();
+      });
+    }
+    if (this.dom.radioFsPrevBtn) {
+      this.dom.radioFsPrevBtn.addEventListener('click', () => {
+        this.playPreviousRadio();
+      });
+    }
+    if (this.dom.radioFsNextBtn) {
+      this.dom.radioFsNextBtn.addEventListener('click', () => {
+        this.playNextRadio();
+      });
+    }
+    if (this.dom.radioFsPlayBtn) {
+      this.dom.radioFsPlayBtn.addEventListener('click', () => {
+        this.toggleRadioPlayPause();
+      });
+    }
+  }
+
+  openFullscreenRadio(station) {
+    if (this.currentType === 'tv') {
+      this.closeTvPlayer();
+    }
+
+    this.isRadioFullscreen = true;
+    if (this.dom.radioFullscreenView) {
+      this.dom.radioFullscreenView.classList.remove('is-hidden');
+    }
+
+    let targetStation = station;
+    if (!targetStation) {
+      try {
+        const lastRadioId = localStorage.getItem('antena_sur_last_radio_id');
+        if (lastRadioId && this.radioStations && this.radioStations.length) {
+          targetStation = this.radioStations.find(s => s.id === lastRadioId);
+        }
+      } catch (e) {}
+    }
+    if (!targetStation && this.radioStations && this.radioStations.length) {
+      targetStation = this.radioStations[0];
+    }
+
+    if (targetStation) {
+      if (!this.currentStation || this.currentStation.id !== targetStation.id) {
+        this.playRadio(targetStation);
+      } else {
+        this.updateFullscreenRadioUI(targetStation);
+        if (this.audioElement.paused) {
+          this.resumeRadio();
+        }
+      }
+    }
+
+    this.renderFullscreenRadioTray();
+
+    if (this.dom.radioFsPlayBtn) {
+      try { this.dom.radioFsPlayBtn.focus(); } catch (e) {}
+    }
+  }
+
+  closeFullscreenRadio() {
+    this.isRadioFullscreen = false;
+    if (this.dom.radioFullscreenView) {
+      this.dom.radioFullscreenView.classList.add('is-hidden');
+    }
+    this.stopRadio();
+
+    const heroRadio = document.getElementById('heroCardRadio');
+    if (heroRadio) {
+      try { heroRadio.focus(); } catch (e) {}
+    }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
+      window.__antenaSurApp.updateHeroLastStationBadges();
+    }
+  }
+
+  toggleRadioPlayPause() {
+    if (this.audioElement.paused) {
+      this.resumeRadio();
+    } else {
+      this.pauseRadio();
+    }
+  }
+
+  renderFullscreenRadioTray() {
+    if (!this.dom.radioFsTrayScroll) return;
+    if (!this.radioStations || this.radioStations.length === 0) return;
+
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let html = '';
+    this.radioStations.forEach((st, idx) => {
+      const isActive = st.id === curId;
+      const num = String(idx + 1).padStart(2, '0');
+      const freq = st.frequency || 'FM';
+      html += `
+        <button class="radio-tray-card ${isActive ? 'active' : ''}" data-id="${st.id}" title="${st.name}">
+          <span class="tray-num">${num}</span>
+          <img class="tray-logo" src="${st.logo || './img/logos/cl-rad-rockandpop.png'}" alt="${st.name}" onerror="this.src='./img/logos/cl-rad-rockandpop.png'">
+          <div class="tray-info">
+            <span class="tray-name">${st.name}</span>
+            <span class="tray-freq">${freq}</span>
+          </div>
+        </button>
+      `;
+    });
+
+    this.dom.radioFsTrayScroll.innerHTML = html;
+
+    this.dom.radioFsTrayScroll.querySelectorAll('.radio-tray-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.getAttribute('data-id');
+        const st = this.radioStations.find(s => s.id === id);
+        if (st) {
+          this.playRadio(st);
+        }
+      });
+    });
+
+    const activeEl = this.dom.radioFsTrayScroll.querySelector('.radio-tray-card.active');
+    if (activeEl) {
+      try {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } catch (e) {}
+    }
+  }
+
+  updateFullscreenRadioUI(station) {
+    if (!station) return;
+
+    if (this.dom.radioFsArtwork) {
+      this.dom.radioFsArtwork.src = station.logo || './img/logos/cl-rad-rockandpop.png';
+      this.dom.radioFsArtwork.onerror = () => {
+        this.dom.radioFsArtwork.src = './img/logos/cl-rad-rockandpop.png';
+      };
+    }
+
+    if (this.dom.radioFsTotalCount && this.radioStations) {
+      this.dom.radioFsTotalCount.textContent = String(this.radioStations.length).padStart(2, '0');
+    }
+    if (this.dom.radioFsCurrentIndex && this.radioStations) {
+      const idx = this.radioStations.findIndex(s => s.id === station.id);
+      this.dom.radioFsCurrentIndex.textContent = String(idx >= 0 ? idx + 1 : 1).padStart(2, '0');
+    }
+
+    if (this.dom.radioFsFreqDial) {
+      this.dom.radioFsFreqDial.textContent = station.frequency || 'FM DIGITAL';
+    }
+    if (this.dom.radioFsGenrePill) {
+      this.dom.radioFsGenrePill.textContent = (station.genre || 'MÚSICA').toUpperCase();
+    }
+    if (this.dom.radioFsStatusPill) {
+      this.dom.radioFsStatusPill.textContent = 'SEÑAL EN DIRECTO';
+    }
+    if (this.dom.radioFsStationName) {
+      this.dom.radioFsStationName.textContent = station.name;
+    }
+
+    if (this.dom.radioFsTrackTitle) {
+      this.dom.radioFsTrackTitle.textContent = station.name;
+    }
+    if (this.dom.radioFsTrackArtist) {
+      this.dom.radioFsTrackArtist.textContent = `Emisión Oficial en Vivo • ${station.city || 'Chile'}`;
+    }
+
+    if (this.dom.radioFsCityVal) {
+      this.dom.radioFsCityVal.textContent = `${station.city || 'Santiago'} • ${station.region || 'Chile'}`;
+    }
+    if (this.dom.radioFsCoverageVal) {
+      this.dom.radioFsCoverageVal.textContent = station.isNational ? 'Nacional e Internacional' : 'Regional y Digital';
+    }
+    if (this.dom.radioFsWebsiteVal) {
+      if (station.website) {
+        this.dom.radioFsWebsiteVal.href = station.website;
+        this.dom.radioFsWebsiteVal.textContent = station.website.replace(/^https?:\/\//, '').replace(/\/$/, '');
+        this.dom.radioFsWebsiteVal.style.display = 'inline-block';
+      } else {
+        this.dom.radioFsWebsiteVal.textContent = 'Web no disponible';
+        this.dom.radioFsWebsiteVal.href = '#';
+      }
+    }
+    if (this.dom.radioFsDescVal) {
+      this.dom.radioFsDescVal.textContent = station.description || 'Emisora radial chilena con transmisión en vivo de alta definición.';
+    }
+
+    if (this.dom.radioFsVolText) {
+      this.dom.radioFsVolText.textContent = `${Math.round(this.volume * 100)}%`;
+    }
+
+    const isAudioPlaying = !this.audioElement.paused && this.isPlaying;
+    if (this.dom.radioFsPlayIcon) {
+      this.dom.radioFsPlayIcon.textContent = isAudioPlaying ? '⏸️' : '▶️';
+    }
+    if (this.dom.radioFsPlayText) {
+      this.dom.radioFsPlayText.textContent = isAudioPlaying ? 'PAUSAR' : 'REPRODUCIR';
+    }
+    if (this.dom.radioFsSpectrumBars) {
+      this.dom.radioFsSpectrumBars.classList.toggle('is-playing', isAudioPlaying);
+    }
+
+    // Sincronizar carrusel inferior
+    if (this.dom.radioFsTrayScroll) {
+      const cards = this.dom.radioFsTrayScroll.querySelectorAll('.radio-tray-card');
+      cards.forEach(card => {
+        const isMatch = card.getAttribute('data-id') === station.id;
+        card.classList.toggle('active', isMatch);
+        if (isMatch) {
+          try {
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } catch (e) {}
+        }
+      });
+    }
+  }
+
   updateMobileRadioUI(station) {
     if (!station) return;
 
@@ -10979,6 +11252,9 @@ class PlayerEngine {
       this.lastPlaybackTime = this.audioElement.currentTime;
       this.lastTimeAdvancedAt = Date.now();
       this.updateRadioPlayIcon(true);
+      if (this.dom.radioFsPlayIcon) this.dom.radioFsPlayIcon.textContent = '⏸️';
+      if (this.dom.radioFsPlayText) this.dom.radioFsPlayText.textContent = 'PAUSAR';
+      if (this.dom.radioFsSpectrumBars) this.dom.radioFsSpectrumBars.classList.add('is-playing');
       this.startVisualizer();
       if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'playing';
@@ -10991,6 +11267,10 @@ class PlayerEngine {
     });
 
     this.audioElement.addEventListener('pause', () => {
+      if (this.dom.radioFsPlayIcon) this.dom.radioFsPlayIcon.textContent = '▶️';
+      if (this.dom.radioFsPlayText) this.dom.radioFsPlayText.textContent = 'REPRODUCIR';
+      if (this.dom.radioFsSpectrumBars) this.dom.radioFsSpectrumBars.classList.remove('is-playing');
+
       if (this.isUserPaused) {
         this.isPlaying = false;
         this.updateRadioPlayIcon(false);
@@ -11081,8 +11361,17 @@ class PlayerEngine {
     this.currentType = 'radio';
     this.fav.addToHistory(station);
 
-    // Actualizar interfaz del reproductor móvil estilo Spotify / Apple Music
+    try {
+      localStorage.setItem('antena_sur_last_radio_id', station.id);
+    } catch (e) {}
+
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
+      window.__antenaSurApp.updateHeroLastStationBadges();
+    }
+
+    // Actualizar interfaz del reproductor móvil estilo Spotify / Apple Music y pantalla completa
     this.updateMobileRadioUI(station);
+    this.updateFullscreenRadioUI(station);
 
     if (this.dom.radioBar) this.dom.radioBar.classList.remove('is-hidden');
     if (this.dom.radioTitle) this.dom.radioTitle.textContent = station.name;
@@ -11278,6 +11567,10 @@ class PlayerEngine {
     this.audioElement.removeAttribute('src');
     this.audioElement.load();
     this.stopVisualizer();
+
+    if (this.dom.radioFsPlayIcon) this.dom.radioFsPlayIcon.textContent = '▶️';
+    if (this.dom.radioFsPlayText) this.dom.radioFsPlayText.textContent = 'REPRODUCIR';
+    if (this.dom.radioFsSpectrumBars) this.dom.radioFsSpectrumBars.classList.remove('is-playing');
 
     if (this.dom.radioBar) {
       this.dom.radioBar.classList.add('is-hidden');
@@ -11721,6 +12014,17 @@ class PlayerEngine {
           { src: data.cover || station.logo || './img/logos/cl-rad-rockandpop.png', sizes: '512x512', type: 'image/png' }
         ]
       });
+
+      // 4. Reproductor de pantalla completa (Blackmagic OS / Spotify)
+      if (this.dom.radioFsTrackTitle) {
+        this.dom.radioFsTrackTitle.textContent = title || station.name;
+      }
+      if (this.dom.radioFsTrackArtist) {
+        this.dom.radioFsTrackArtist.textContent = `${artist} • Música en Directo`;
+      }
+      if (data.cover && this.dom.radioFsArtwork) {
+        this.dom.radioFsArtwork.src = data.cover;
+      }
     } else {
       if (this.dom.radioSubtitle) {
         this.dom.radioSubtitle.innerHTML = `
@@ -11743,6 +12047,17 @@ class PlayerEngine {
       }
       if (this.dom.radioBigArtwork && station.logo && this.dom.radioBigArtwork.src !== station.logo) {
         this.dom.radioBigArtwork.src = station.logo;
+      }
+
+      // Restaurar interfaz de pantalla completa
+      if (this.dom.radioFsTrackTitle) {
+        this.dom.radioFsTrackTitle.textContent = station.name;
+      }
+      if (this.dom.radioFsTrackArtist) {
+        this.dom.radioFsTrackArtist.textContent = `Emisión Oficial en Vivo • ${freq}${station.city}, ${station.countryName || 'Chile'}`;
+      }
+      if (this.dom.radioFsArtwork && station.logo && this.dom.radioFsArtwork.src !== station.logo) {
+        this.dom.radioFsArtwork.src = station.logo;
       }
     }
   }
@@ -12186,48 +12501,25 @@ function initTvNavigation() {
 
     const heroTv = document.getElementById('heroCardTv');
     const heroRadio = document.getElementById('heroCardRadio');
-    const tabTv = document.getElementById('sectionTabTv');
-    const tabRadio = document.getElementById('sectionTabRadio');
-    const firstStationCard = document.querySelector('.stations-grid .station-card');
 
     if (!current) {
-      setFocus(heroTv || tabTv);
+      setFocus(heroTv || heroRadio);
       return;
     }
 
     // ========================================================================
-    // 1. NAVEGACIÓN DETERMINISTA EN BARRA SUPERIOR DE PESTAÑAS
-    // ========================================================================
-    if (current === tabTv || current.id === 'sectionTabTv') {
-      if (direction === 'ArrowRight') { setFocus(tabRadio); return; }
-      if (direction === 'ArrowDown') { setFocus(heroTv); return; }
-      return;
-    }
-    if (current === tabRadio || current.id === 'sectionTabRadio') {
-      if (direction === 'ArrowLeft') { setFocus(tabTv); return; }
-      if (direction === 'ArrowDown') { setFocus(heroRadio); return; }
-      return;
-    }
-
-    // ========================================================================
-    // 2. NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
+    // NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
     // ========================================================================
     if (current === heroTv || current.id === 'heroCardTv') {
-      if (direction === 'ArrowUp') { setFocus(tabTv); return; }
-      if (direction === 'ArrowRight') { setFocus(heroRadio); return; }
-      if (direction === 'ArrowDown') {
-        const firstCard = document.querySelector('.stations-grid .station-card');
-        if (firstCard) setFocus(firstCard);
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        setFocus(heroRadio);
         return;
       }
       return;
     }
     if (current === heroRadio || current.id === 'heroCardRadio') {
-      if (direction === 'ArrowUp') { setFocus(tabRadio); return; }
-      if (direction === 'ArrowLeft') { setFocus(heroTv); return; }
-      if (direction === 'ArrowDown') {
-        const firstCard = document.querySelector('.stations-grid .station-card');
-        if (firstCard) setFocus(firstCard);
+      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
+        setFocus(heroTv);
         return;
       }
       return;
@@ -12362,8 +12654,7 @@ function initTvNavigation() {
   // Interfaz pública para Android WebView
   window.initTvFocus = function() {
     const heroTv = document.getElementById('heroCardTv');
-    const firstCard = document.querySelector('.stations-grid .station-card');
-    setFocus(heroTv || firstCard);
+    setFocus(heroTv);
   };
 
   window.onTvBack = function() {
@@ -12371,6 +12662,12 @@ function initTvNavigation() {
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
     if (isTvPlayerOpen) {
       window.onTvNav('Back');
+      return true;
+    }
+
+    const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
+    if (isRadioFsOpen) {
+      player.closeFullscreenRadio();
       return true;
     }
 
@@ -12397,6 +12694,27 @@ function initTvNavigation() {
   window.onTvNav = function(action) {
     const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
+
+    // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
+    const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
+    if (isRadioFsOpen) {
+      if (action === 'ArrowLeft' || action === 'ArrowUp') {
+        player.playPreviousRadio();
+        return;
+      }
+      if (action === 'ArrowRight' || action === 'ArrowDown') {
+        player.playNextRadio();
+        return;
+      }
+      if (action === 'Enter') {
+        player.toggleRadioPlayPause();
+        return;
+      }
+      if (action === 'Back') {
+        player.closeFullscreenRadio();
+        return;
+      }
+    }
 
     if (isTvPlayerOpen) {
       const isFullscreen = player.isFullscreenActive();
@@ -12628,15 +12946,17 @@ class App {
       initTvNavigation();
     }
 
-    // 6. Actualizar contadores dinámicos de la barra superior
+    // 6. Actualizar contadores dinámicos y badges de última sintonía
     const tvCount = this.dataManager.getAllStations().filter(s => s.type === 'tv').length;
     const radioCount = this.dataManager.getAllStations().filter(s => s.type === 'radio').length;
     const tvCounterEl = document.getElementById('tvCounter');
     const radioCounterEl = document.getElementById('radioCounter');
     if (tvCounterEl) tvCounterEl.textContent = tvCount || 321;
     if (radioCounterEl) radioCounterEl.textContent = radioCount || 23;
+    this.updateHeroLastStationBadges();
+    this.initDigitalClock();
 
-    // 7. Renderizar grid inicial de tarjetas
+    // 7. Renderizar grid inicial de tarjetas (si aplica)
     const initialList = this.filters.getFilteredStations();
     this.renderStations(initialList);
 
@@ -12650,6 +12970,52 @@ class App {
     }
   }
 
+  updateHeroLastStationBadges() {
+    try {
+      const lastTvId = localStorage.getItem('antena_sur_last_tv_id');
+      const heroTvLastStation = document.getElementById('heroTvLastStation');
+      if (heroTvLastStation) {
+        if (lastTvId) {
+          const st = this.dataManager.getStationById(lastTvId);
+          if (st) {
+            heroTvLastStation.textContent = `Último canal visto: ${st.name} • Sintonizar en directo`;
+          }
+        } else {
+          heroTvLastStation.textContent = '321 señales nacionales y regionales • Sintonización en directo';
+        }
+      }
+
+      const lastRadioId = localStorage.getItem('antena_sur_last_radio_id');
+      const heroRadioLastStation = document.getElementById('heroRadioLastStation');
+      if (heroRadioLastStation) {
+        if (lastRadioId) {
+          const st = this.dataManager.getStationById(lastRadioId);
+          if (st) {
+            const freq = st.frequency ? `[${st.frequency}] ` : '';
+            heroRadioLastStation.textContent = `Última radio escuchada: ${st.name} ${freq}• Reproducir`;
+          }
+        } else {
+          heroRadioLastStation.textContent = '23 emisoras en vivo • Carátulas, frecuencias y sonido en directo';
+        }
+      }
+    } catch (e) {
+      console.warn('Error actualizando badges de inicio:', e);
+    }
+  }
+
+  initDigitalClock() {
+    const clockEl = document.getElementById('bmHeaderClock');
+    if (!clockEl) return;
+    const updateTime = () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      clockEl.textContent = `${h}:${m}`;
+    };
+    updateTime();
+    setInterval(updateTime, 10000);
+  }
+
   initMainSectionTabs() {
     const tabs = document.querySelectorAll('.section-nav-tab');
     tabs.forEach(tab => {
@@ -12659,34 +13025,44 @@ class App {
       });
     });
 
-    // Gran Botón 1: Canales de TV -> Entrar directamente a Zapping TV
+    // Gran Botón 1: Canales de TV -> Entrar directamente a Guía Zapping (recuerda último canal)
     const heroCardTv = document.getElementById('heroCardTv');
     if (heroCardTv) {
       heroCardTv.addEventListener('click', () => {
         const tvStations = this.dataManager.getAllStations().filter(s => s.type === 'tv');
-        const defaultStation = tvStations.find(s => s.id === 'cl-tv-canal13') || tvStations.find(s => s.id === 'cl-tv-tvn') || tvStations[0];
-        if (defaultStation) {
-          this.player.playTv(defaultStation);
+        let targetStation = null;
+        try {
+          const lastTvId = localStorage.getItem('antena_sur_last_tv_id');
+          if (lastTvId) {
+            targetStation = tvStations.find(s => s.id === lastTvId);
+          }
+        } catch (e) {}
+        if (!targetStation) {
+          targetStation = tvStations.find(s => s.id === 'cl-tv-canal13') || tvStations.find(s => s.id === 'cl-tv-tvn') || tvStations[0];
+        }
+        if (targetStation) {
+          this.player.playTv(targetStation);
         }
       });
     }
 
-    // Gran Botón 2: Radios de Chile -> Reproductor móvil Spotify / Apple Music
+    // Gran Botón 2: Radios FM -> Reproductor de Pantalla Completa (recuerda última radio)
     const heroCardRadio = document.getElementById('heroCardRadio');
     if (heroCardRadio) {
       heroCardRadio.addEventListener('click', () => {
-        this.filters.setType('radio');
-        const radioSection = document.getElementById('radioSectionContainer');
-        if (radioSection) {
-          radioSection.classList.remove('is-hidden');
-          radioSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        if (!this.player.currentStation || this.player.currentStation.type !== 'radio') {
-          const radioStations = this.dataManager.getAllStations().filter(s => s.type === 'radio');
-          const defaultRadio = radioStations.find(s => s.id === 'cl-rad-rockandpop') || radioStations[0];
-          if (defaultRadio) {
-            this.player.playRadio(defaultRadio);
+        const radioStations = this.dataManager.getAllStations().filter(s => s.type === 'radio');
+        let targetRadio = null;
+        try {
+          const lastRadioId = localStorage.getItem('antena_sur_last_radio_id');
+          if (lastRadioId) {
+            targetRadio = radioStations.find(s => s.id === lastRadioId);
           }
+        } catch (e) {}
+        if (!targetRadio) {
+          targetRadio = radioStations.find(s => s.id === 'cl-rad-rockandpop') || radioStations[0];
+        }
+        if (targetRadio) {
+          this.player.openFullscreenRadio(targetRadio);
         }
       });
     }

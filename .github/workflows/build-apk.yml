@@ -35,8 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.8.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,15 +53,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.0.8.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.0.7
+    - name: Publicar Release v1.0.8
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.0.7"
-        name: "Antena Sur Android TV v1.0.7"
-        body: "Versión 1.0.7 con Guía Zapping refinada: navegación de canales con cursor sin sintonización inmediata (confirmación con Enter/OK), barra lateral compacta (260px) con tipografía optimizada, pantalla completa con doble clic o clic sobre canal activo, y selectores técnicos de fuente y calidad reubicados en la barra inferior."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.8.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.0.8"
+        name: "Antena Sur Android TV v1.0.8"
+        body: "Versión 1.0.8: Pantalla de inicio minimalista con 2 botones de acceso directo (Canales de TV y Radios FM), reproductor de radio en pantalla completa estilo Spotify con ecualizador de espectro y ficha técnica detallada (carátulas, diales, ciudad, cobertura, web oficial), navegación 1 a 1 de emisoras, persistencia del último canal o radio sintonizada al salir o reiniciar la aplicación, y estética cinematográfica Blackmagic OS."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}

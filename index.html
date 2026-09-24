@@ -49,184 +49,71 @@
   <div class="bg-atmosphere"></div>
 
   <!-- Barra de Navegación Superior -->
-  <header class="top-navbar">
+  <!-- Barra de Navegación Superior Estilo Blackmagic OS / Apple -->
+  <header class="top-navbar bm-header">
     <div class="app-container">
-      <div class="nav-wrapper">
+      <div class="nav-wrapper bm-nav-wrapper">
         <!-- Logo y Marca -->
-        <div class="brand-logo" onclick="window.location.reload();" title="Recargar Antena Sur">
-          <div class="logo-icon-wrapper">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
-            </svg>
-          </div>
+        <div class="brand-logo bm-brand-logo" title="Antena Sur TV">
+          <div class="bm-record-dot"></div>
           <div class="brand-text">
-            <h1>Antena Sur</h1>
-            <p>TV & Radios de Chile en Vivo 🇨🇱</p>
+            <h1 class="bm-title">ANTENA SUR</h1>
+            <p class="bm-subtitle">SISTEMA BROADCAST CHILE • SEÑAL EN DIRECTO</p>
           </div>
         </div>
 
-        <!-- Menú Principal de Secciones (Solo TV y Radios) -->
-        <nav class="main-sections-nav" id="mainSectionsNav">
-          <button class="section-nav-tab active" data-section="tv" id="sectionTabTv" tabindex="0">
-            <span class="tab-icon">📺</span>
-            <span class="tab-label">Canales de TV</span>
-            <span class="tab-counter" id="tvCounter">321</span>
-          </button>
-          <button class="section-nav-tab" data-section="radio" id="sectionTabRadio" tabindex="0">
-            <span class="tab-icon">📻</span>
-            <span class="tab-label">Radios de Chile</span>
-            <span class="tab-counter" id="radioCounter">23</span>
-          </button>
-        </nav>
+        <!-- Indicador de Estado y Reloj Digital -->
+        <div class="bm-header-status">
+          <span class="bm-status-pill"><span class="bm-live-dot"></span> EN VIVO</span>
+          <span class="bm-status-clock" id="bmHeaderClock">--:--</span>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Contenido Principal del Catálogo -->
-  <main class="app-container" id="mainCatalogContainer">
-    <!-- SECCIÓN DE INICIO: 2 GRANDES BOTONES (CANALES DE TV Y RADIOS) -->
-    <section class="home-hero-section" id="homeHeroSection">
-      <div class="home-hero-grid">
-        <!-- Gran Botón 1: Canales de TV (Acceso Directo a Televisión en Vivo) -->
-        <button class="hero-action-card hero-card-tv" id="heroCardTv" tabindex="0" title="Entrar directamente a Canales de TV en Directo">
-          <div class="hero-card-glow"></div>
-          <div class="hero-card-content">
-            <div class="hero-card-icon-wrapper">
-              <span class="hero-card-emoji">📺</span>
-            </div>
-            <div class="hero-card-text">
-              <span class="hero-card-badge"><span class="pulse-dot"></span> EN DIRECTO</span>
+  <!-- Pantalla de Inicio: Solo 2 Botones Principales (Canales de TV y Radios FM) -->
+  <main class="app-container bm-home-container" id="mainCatalogContainer">
+    <section class="home-hero-section bm-home-hero" id="homeHeroSection">
+      <div class="bm-hero-prompt">SELECCIONA MODO DE REPRODUCCIÓN</div>
+      <div class="home-hero-grid bm-hero-grid">
+        <!-- Botón 1: Canales de TV (Acceso Directo a Guía Zapping) -->
+        <button class="hero-action-card bm-card bm-card-tv" id="heroCardTv" tabindex="0" title="Entrar a Canales de TV en Directo">
+          <div class="bm-card-header">
+            <span class="bm-card-badge tv"><span class="bm-live-dot"></span> 321 SEÑALES</span>
+            <span class="bm-card-tag">TV DIRECTA</span>
+          </div>
+          <div class="bm-card-body">
+            <div class="bm-card-icon">📺</div>
+            <div class="bm-card-text">
               <h2>Canales de TV</h2>
-              <p>321 señales nacionales y regionales • Sintonización en directo</p>
+              <p id="heroTvLastStation">321 señales nacionales y regionales • Sintonización en directo</p>
             </div>
           </div>
-          <div class="hero-card-action">
-            <span class="hero-action-label">Ver Televisión</span>
-            <div class="hero-card-arrow">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </div>
+          <div class="bm-card-footer">
+            <span class="bm-btn-label">INGRESAR A TELEVISIÓN</span>
+            <span class="bm-btn-arrow">▶</span>
           </div>
         </button>
 
-        <!-- Gran Botón 2: Radios de Chile -->
-        <button class="hero-action-card hero-card-radio" id="heroCardRadio" tabindex="0" title="Escuchar Radios de Chile en Vivo">
-          <div class="hero-card-glow"></div>
-          <div class="hero-card-content">
-            <div class="hero-card-icon-wrapper">
-              <span class="hero-card-emoji">📻</span>
-            </div>
-            <div class="hero-card-text">
-              <span class="hero-card-badge"><span class="pulse-dot"></span> EN VIVO</span>
-              <h2>Radios de Chile</h2>
-              <p>23 emisoras en vivo • Carátulas en grande, banda y tema sonando en directo</p>
+        <!-- Botón 2: Radios FM (Acceso Directo a Reproductor de Pantalla Completa) -->
+        <button class="hero-action-card bm-card bm-card-radio" id="heroCardRadio" tabindex="0" title="Entrar a Radios FM en Pantalla Completa">
+          <div class="bm-card-header">
+            <span class="bm-card-badge radio"><span class="bm-live-dot amber"></span> 23 EMISORAS</span>
+            <span class="bm-card-tag">FM & DIGITAL</span>
+          </div>
+          <div class="bm-card-body">
+            <div class="bm-card-icon">📻</div>
+            <div class="bm-card-text">
+              <h2>Radios FM</h2>
+              <p id="heroRadioLastStation">23 emisoras en vivo • Carátulas, frecuencias y sonido en directo</p>
             </div>
           </div>
-          <div class="hero-card-action">
-            <span class="hero-action-label">Escuchar Radios</span>
-            <div class="hero-card-arrow">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </div>
+          <div class="bm-card-footer">
+            <span class="bm-btn-label">INGRESAR A RADIOS</span>
+            <span class="bm-btn-arrow">▶</span>
           </div>
         </button>
       </div>
-    </section>
-
-    <!-- REPRODUCTOR DE RADIO MÓVIL ESTILO SPOTIFY / APPLE MUSIC -->
-    <section class="radio-mobile-player-section is-hidden" id="radioSectionContainer">
-      <div class="radio-ambient-backdrop" id="radioAmbientBackdrop"></div>
-
-      <div class="radio-player-mobile-card">
-        <!-- Header superior del reproductor móvil -->
-        <div class="radio-mobile-top-bar">
-          <span class="radio-player-pill"><span class="pulse-dot"></span> EMISIÓN EN VIVO 🇨🇱</span>
-          <span class="radio-player-count-badge" id="radioActiveCountBadge">23 Emisoras</span>
-        </div>
-
-        <!-- Gran Carátula Cuadrada con Efecto de Elevación y Sombra Profunda -->
-        <div class="radio-big-artwork-wrapper">
-          <img id="radioBigArtwork" class="radio-big-artwork-img" src="./img/logos/cl-rad-rockandpop.png" alt="Radio Portada">
-          <div class="radio-artwork-ambient-glow" id="radioArtworkGlow"></div>
-        </div>
-
-        <!-- Información de Pista / Banda y Emisora debajo de la Carátula -->
-        <div class="radio-track-info-block">
-          <div class="radio-title-and-fav">
-            <h3 class="radio-track-title" id="radioLiveTitle">Sintonizando Emisora en Directo...</h3>
-            <button class="radio-fav-heart-btn" id="radioBigFavBtn" title="Marcar como Favorito">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            </button>
-          </div>
-          <p class="radio-track-artist" id="radioLiveArtist">Radio de Chile</p>
-          <div class="radio-station-tagline">
-            <span class="live-dot"></span>
-            <span id="radioLiveStationName">Radio Rock & Pop</span>
-            <span id="radioLiveFreq" class="radio-freq-pill">94.1 FM</span>
-          </div>
-        </div>
-
-        <!-- Visualizador de Audio Estilo Ondas Musicales -->
-        <div class="radio-wave-visualizer-box">
-          <canvas id="radioBigVisualizerCanvas" class="radio-big-canvas"></canvas>
-        </div>
-
-        <!-- Controles Prominentes Estilo Spotify / Apple Music -->
-        <div class="radio-player-controls-row">
-          <button class="radio-step-btn" id="radioBigPrevBtn" title="Emisora Anterior">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="19 20 9 12 19 4 19 20"></polygon>
-              <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2.5"></line>
-            </svg>
-          </button>
-
-          <button class="radio-hero-play-btn" id="radioBigPlayBtn" title="Reproducir / Pausar (Espacio)">
-            <svg id="radioBigPlayIcon" width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="6 4 19 12 6 20 6 4"/>
-            </svg>
-          </button>
-
-          <button class="radio-step-btn" id="radioBigNextBtn" title="Siguiente Emisora">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5 4 15 12 5 20 5 4"></polygon>
-              <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2.5"></line>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Selector Táctil / Carrusel de Emisoras Disponibles -->
-        <div class="radio-quick-selector-container">
-          <div class="radio-selector-header">
-            <span>SELECCIONAR EMISORA:</span>
-          </div>
-          <div class="radio-stations-carousel" id="radioQuickScrollTray">
-            <!-- Emisoras inyectadas dinámicamente -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Encabezado de Resultados -->
-    <div class="results-header" id="resultsHeader">
-      <div class="results-title">
-        <span id="resultsTitle">Canales de TV en Vivo</span>
-        <span class="results-badge" id="resultsCountBadge">321 señales</span>
-      </div>
-    </div>
-
-    <!-- Indicador de Carga Inicial -->
-    <div id="loadingState" style="text-align: center; padding: 60px 0; display: none;">
-      <div class="spinner" style="margin: 0 auto 16px auto;"></div>
-      <p style="color: var(--text-muted);">Sincronizando señales públicas de Chile...</p>
-    </div>
-
-    <!-- Grid de Estaciones y Canales -->
-    <section class="stations-grid" id="stationsGrid">
-      <!-- Renderizado reactivo desde app.js -->
     </section>
   </main>
 
@@ -421,6 +308,130 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ========================================================================
+       REPRODUCTOR DE RADIOS PANTALLA COMPLETA (ESTILO SPOTIFY / BLACKMAGIC OS)
+       ======================================================================== -->
+  <section class="radio-fullscreen-view is-hidden" id="radioFullscreenView">
+    <!-- Barra Superior Técnica (HUD Radio) -->
+    <header class="radio-fs-header">
+      <div class="radio-fs-header-left">
+        <button class="radio-fs-back-btn" id="radioFsBackBtn" title="Volver al Menú Principal (Atrás / Escape)">
+          <span class="bm-back-arrow">◀</span>
+          <span>MENÚ PRINCIPAL</span>
+        </button>
+      </div>
+
+      <div class="radio-fs-header-center">
+        <span class="radio-fs-live-badge">
+          <span class="bm-live-dot red pulse"></span> EMISIÓN DE RADIO FM EN DIRECTO
+        </span>
+      </div>
+
+      <div class="radio-fs-header-right">
+        <span class="radio-fs-counter">
+          <span id="radioFsCurrentIndex">01</span> / <span id="radioFsTotalCount">23</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Escenario Principal del Reproductor (Layout 16:9 de TV) -->
+    <div class="radio-fs-stage">
+      <!-- Columna Izquierda: Gran Carátula de la Radio + Visualizador de Audio -->
+      <div class="radio-fs-visual-col">
+        <div class="radio-fs-artwork-container">
+          <img id="radioFsArtwork" class="radio-fs-artwork-img" src="./img/logos/cl-rad-rockandpop.png" alt="Radio Logo">
+        </div>
+        <!-- Visualizador de Barras de Espectro de Audio -->
+        <div class="radio-fs-spectrum-box">
+          <div class="radio-fs-spectrum-bars" id="radioFsSpectrumBars">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+          <span class="radio-fs-bitrate-tag" id="radioFsBitrateTag">AUDIO DIGITAL • 128 KBPS</span>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Información Completa y Detallada de la Radio -->
+      <div class="radio-fs-info-col">
+        <!-- Fila de Frecuencia / Dial y Categoría -->
+        <div class="radio-fs-pills-row">
+          <span class="radio-fs-freq-dial" id="radioFsFreqDial">94.1 FM</span>
+          <span class="radio-fs-genre-pill" id="radioFsGenrePill">MÚSICA / ROCK</span>
+          <span class="radio-fs-status-pill" id="radioFsStatusPill">SEÑAL ESTABLE</span>
+        </div>
+
+        <!-- Nombre Grande de la Emisora -->
+        <h1 class="radio-fs-station-name" id="radioFsStationName">Radio Rock & Pop</h1>
+
+        <!-- Información de Pista / Programa en Directo -->
+        <div class="radio-fs-now-playing-box">
+          <div class="radio-fs-np-header">
+            <span class="radio-fs-np-icon">♪</span>
+            <span class="radio-fs-np-label">TRANSMITIENDO AHORA EN VIVO:</span>
+          </div>
+          <div class="radio-fs-track-title" id="radioFsTrackTitle">Sintonizando emisión en directo...</div>
+          <div class="radio-fs-track-artist" id="radioFsTrackArtist">Emisión oficial abierta • Música continua</div>
+        </div>
+
+        <!-- Ficha Técnica con la Información detallada de la radio -->
+        <div class="radio-fs-specs-grid">
+          <div class="radio-spec-item">
+            <span class="radio-spec-label">CIUDAD / REGIÓN</span>
+            <span class="radio-spec-val" id="radioFsCityVal">Santiago • Región Metropolitana</span>
+          </div>
+          <div class="radio-spec-item">
+            <span class="radio-spec-label">COBERTURA</span>
+            <span class="radio-spec-val" id="radioFsCoverageVal">Nacional e Internacional</span>
+          </div>
+          <div class="radio-spec-item">
+            <span class="radio-spec-label">SITIO WEB OFICIAL</span>
+            <a class="radio-spec-val radio-spec-link" id="radioFsWebsiteVal" href="#" target="_blank">www.rockandpop.cl</a>
+          </div>
+          <div class="radio-spec-item">
+            <span class="radio-spec-label">DESCRIPCIÓN</span>
+            <span class="radio-spec-val" id="radioFsDescVal">Los mejores clásicos del rock y pop de todos los tiempos.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra Inferior de Controles y Carrusel de Emisoras -->
+    <footer class="radio-fs-footer">
+      <!-- Fila de Controles de Reproducción -->
+      <div class="radio-fs-controls-bar">
+        <button class="radio-fs-ctrl-btn prev" id="radioFsPrevBtn" title="Emisora Anterior (Flecha Izquierda / Arriba)">
+          <span class="btn-icon">⏮️</span>
+          <span>ANTERIOR</span>
+        </button>
+
+        <button class="radio-fs-ctrl-btn play" id="radioFsPlayBtn" title="Reproducir / Pausar (Enter / Espacio)">
+          <span class="btn-icon" id="radioFsPlayIcon">⏸️</span>
+          <span id="radioFsPlayText">PAUSAR</span>
+        </button>
+
+        <button class="radio-fs-ctrl-btn next" id="radioFsNextBtn" title="Siguiente Emisora (Flecha Derecha / Abajo)">
+          <span>SIGUIENTE</span>
+          <span class="btn-icon">⏭️</span>
+        </button>
+
+        <div class="radio-fs-vol-indicator">
+          <span class="vol-icon">🔊</span>
+          <span class="vol-text" id="radioFsVolText">85%</span>
+        </div>
+      </div>
+
+      <!-- Tira / Carrusel Rápido de Emisoras Disponibles (1 a 1) -->
+      <div class="radio-fs-tray-wrapper">
+        <div class="radio-fs-tray-title">TODAS LAS EMISORAS (Usa Flechas ◀ / ▶ en el control remoto para cambiar 1 a 1):</div>
+        <div class="radio-fs-tray-scroll" id="radioFsTrayScroll">
+          <!-- Inyectado dinámicamente con las 23 emisoras -->
+        </div>
+      </div>
+    </footer>
   </section>
 
   <!-- ========================================================================

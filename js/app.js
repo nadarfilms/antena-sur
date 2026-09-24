@@ -74,15 +74,17 @@ class App {
       initTvNavigation();
     }
 
-    // 6. Actualizar contadores dinámicos de la barra superior
+    // 6. Actualizar contadores dinámicos y badges de última sintonía
     const tvCount = this.dataManager.getAllStations().filter(s => s.type === 'tv').length;
     const radioCount = this.dataManager.getAllStations().filter(s => s.type === 'radio').length;
     const tvCounterEl = document.getElementById('tvCounter');
     const radioCounterEl = document.getElementById('radioCounter');
     if (tvCounterEl) tvCounterEl.textContent = tvCount || 321;
     if (radioCounterEl) radioCounterEl.textContent = radioCount || 23;
+    this.updateHeroLastStationBadges();
+    this.initDigitalClock();
 
-    // 7. Renderizar grid inicial de tarjetas
+    // 7. Renderizar grid inicial de tarjetas (si aplica)
     const initialList = this.filters.getFilteredStations();
     this.renderStations(initialList);
 
@@ -96,6 +98,52 @@ class App {
     }
   }
 
+  updateHeroLastStationBadges() {
+    try {
+      const lastTvId = localStorage.getItem('antena_sur_last_tv_id');
+      const heroTvLastStation = document.getElementById('heroTvLastStation');
+      if (heroTvLastStation) {
+        if (lastTvId) {
+          const st = this.dataManager.getStationById(lastTvId);
+          if (st) {
+            heroTvLastStation.textContent = `Último canal visto: ${st.name} • Sintonizar en directo`;
+          }
+        } else {
+          heroTvLastStation.textContent = '321 señales nacionales y regionales • Sintonización en directo';
+        }
+      }
+
+      const lastRadioId = localStorage.getItem('antena_sur_last_radio_id');
+      const heroRadioLastStation = document.getElementById('heroRadioLastStation');
+      if (heroRadioLastStation) {
+        if (lastRadioId) {
+          const st = this.dataManager.getStationById(lastRadioId);
+          if (st) {
+            const freq = st.frequency ? `[${st.frequency}] ` : '';
+            heroRadioLastStation.textContent = `Última radio escuchada: ${st.name} ${freq}• Reproducir`;
+          }
+        } else {
+          heroRadioLastStation.textContent = '23 emisoras en vivo • Carátulas, frecuencias y sonido en directo';
+        }
+      }
+    } catch (e) {
+      console.warn('Error actualizando badges de inicio:', e);
+    }
+  }
+
+  initDigitalClock() {
+    const clockEl = document.getElementById('bmHeaderClock');
+    if (!clockEl) return;
+    const updateTime = () => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      clockEl.textContent = `${h}:${m}`;
+    };
+    updateTime();
+    setInterval(updateTime, 10000);
+  }
+
   initMainSectionTabs() {
     const tabs = document.querySelectorAll('.section-nav-tab');
     tabs.forEach(tab => {
@@ -105,34 +153,44 @@ class App {
       });
     });
 
-    // Gran Botón 1: Canales de TV -> Entrar directamente a Zapping TV
+    // Gran Botón 1: Canales de TV -> Entrar directamente a Guía Zapping (recuerda último canal)
     const heroCardTv = document.getElementById('heroCardTv');
     if (heroCardTv) {
       heroCardTv.addEventListener('click', () => {
         const tvStations = this.dataManager.getAllStations().filter(s => s.type === 'tv');
-        const defaultStation = tvStations.find(s => s.id === 'cl-tv-canal13') || tvStations.find(s => s.id === 'cl-tv-tvn') || tvStations[0];
-        if (defaultStation) {
-          this.player.playTv(defaultStation);
+        let targetStation = null;
+        try {
+          const lastTvId = localStorage.getItem('antena_sur_last_tv_id');
+          if (lastTvId) {
+            targetStation = tvStations.find(s => s.id === lastTvId);
+          }
+        } catch (e) {}
+        if (!targetStation) {
+          targetStation = tvStations.find(s => s.id === 'cl-tv-canal13') || tvStations.find(s => s.id === 'cl-tv-tvn') || tvStations[0];
+        }
+        if (targetStation) {
+          this.player.playTv(targetStation);
         }
       });
     }
 
-    // Gran Botón 2: Radios de Chile -> Reproductor móvil Spotify / Apple Music
+    // Gran Botón 2: Radios FM -> Reproductor de Pantalla Completa (recuerda última radio)
     const heroCardRadio = document.getElementById('heroCardRadio');
     if (heroCardRadio) {
       heroCardRadio.addEventListener('click', () => {
-        this.filters.setType('radio');
-        const radioSection = document.getElementById('radioSectionContainer');
-        if (radioSection) {
-          radioSection.classList.remove('is-hidden');
-          radioSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        if (!this.player.currentStation || this.player.currentStation.type !== 'radio') {
-          const radioStations = this.dataManager.getAllStations().filter(s => s.type === 'radio');
-          const defaultRadio = radioStations.find(s => s.id === 'cl-rad-rockandpop') || radioStations[0];
-          if (defaultRadio) {
-            this.player.playRadio(defaultRadio);
+        const radioStations = this.dataManager.getAllStations().filter(s => s.type === 'radio');
+        let targetRadio = null;
+        try {
+          const lastRadioId = localStorage.getItem('antena_sur_last_radio_id');
+          if (lastRadioId) {
+            targetRadio = radioStations.find(s => s.id === lastRadioId);
           }
+        } catch (e) {}
+        if (!targetRadio) {
+          targetRadio = radioStations.find(s => s.id === 'cl-rad-rockandpop') || radioStations[0];
+        }
+        if (targetRadio) {
+          this.player.openFullscreenRadio(targetRadio);
         }
       });
     }
