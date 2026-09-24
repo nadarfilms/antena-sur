@@ -36,6 +36,36 @@ export class PlayerEngine {
 
     // Audio Element para Radios (sin crossOrigin para evitar bloqueos en Icecast)
     this.audioElement = new Audio();
+    this.audioElement.id = 'radioAudioPlayer';
+    this.audioElement.setAttribute('playsinline', '');
+    this.audioElement.setAttribute('webkit-playsinline', '');
+    this.audioElement.preload = 'none';
+
+    // Declarar duration Infinity para que WebKit/iOS trate el audio como emisión EN VIVO sin barra de tiempo
+    try {
+      Object.defineProperty(this.audioElement, 'duration', {
+        get: () => Infinity,
+        configurable: true
+      });
+    } catch (e) {}
+
+    // Configuración nativa de sesión de audio para iOS Safari 16.4+ (modo background playback)
+    if ('audioSession' in navigator) {
+      try {
+        navigator.audioSession.type = 'playback';
+      } catch (e) {}
+    }
+
+    // Variables de resiliencia y reconexión ante llamadas e interrupciones de señal 4G/5G
+    this.isUserPaused = false;
+    this.isInterrupted = false;
+    this.isReconnecting = false;
+    this.reconnectAttempts = 0;
+    this.reconnectTimer = null;
+    this.watchdogTimer = null;
+    this.stallTimer = null;
+    this.lastPlaybackTime = 0;
+    this.lastTimeAdvancedAt = Date.now();
 
     // Estado de volumen
     this.volume = parseFloat(localStorage.getItem('antena_sur_volume') || '0.85');
@@ -132,6 +162,17 @@ export class PlayerEngine {
     // Visualizador de Audio
     this.visualizerAnimationId = null;
 
+    // Anclar elemento de audio al DOM para evitar que iOS Safari lo suspenda por recolección de basura
+    try {
+      if (typeof document !== 'undefined' && document.body && !document.getElementById('radioAudioPlayer')) {
+        this.audioElement.style.position = 'fixed';
+        this.audioElement.style.bottom = '-9999px';
+        this.audioElement.style.opacity = '0';
+        this.audioElement.style.pointerEvents = 'none';
+        document.body.appendChild(this.audioElement);
+      }
+    } catch (e) {}
+
     this.initAudioEvents();
     this.initTvEvents();
     this.initZappingSidebarEvents();
@@ -139,6 +180,7 @@ export class PlayerEngine {
     this.initRemoteKeyNavigation();
     this.initMediaSessionHandlers();
     this.initMobileRadioPlayer();
+    this.initSystemInterruptionListeners();
     this.initHlsLibrary();
   }
 
@@ -1497,19 +1539,20 @@ export class PlayerEngine {
      ======================================================================== */
 
   initMediaSessionHandlers() {
+    this.refreshMediaSessionControls();
+  }
+
+  refreshMediaSessionControls() {
     if (!('mediaSession' in navigator)) return;
 
     try {
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (this.currentType === 'tv') this.dom.tvVideo?.play();
-        else this.resumeRadio();
-      });
+      // 1. ANULAR explícitamente los controles de avance/retroceso rápido de 10s/15s para evitar que iOS
+      // los dibuje en vez de los botones de cambio de emisora en CarPlay y pantalla de bloqueo.
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
+      navigator.mediaSession.setActionHandler('seekto', null);
 
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (this.currentType === 'tv') this.dom.tvVideo?.pause();
-        else this.pauseRadio();
-      });
-
+      // 2. REGISTRAR explícitamente los controles de emisora anterior (⏮) y siguiente (⏭)
       navigator.mediaSession.setActionHandler('previoustrack', () => {
         if (this.currentType === 'tv') this.zapPrevious();
         else this.playPreviousRadio();
@@ -1520,10 +1563,47 @@ export class PlayerEngine {
         else this.playNextRadio();
       });
 
-      navigator.mediaSession.setActionHandler('stop', () => {
-        if (this.currentType === 'tv') this.closeTvPlayer();
-        else this.stopRadio();
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (this.currentType === 'tv') {
+          this.dom.tvVideo?.play();
+        } else {
+          this.isUserPaused = false;
+          this.resumeRadio(true);
+        }
       });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (this.currentType === 'tv') {
+          this.dom.tvVideo?.pause();
+        } else {
+          this.isUserPaused = true;
+          this.pauseRadio(true);
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (this.currentType === 'tv') {
+          this.closeTvPlayer();
+        } else {
+          this.isUserPaused = true;
+          this.stopRadio();
+        }
+      });
+
+      // 3. Declarar transmisión EN VIVO (elimina la barra de scrubber/progreso en CarPlay y pantalla de bloqueo de iOS)
+      if ('setPositionState' in navigator.mediaSession) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: Infinity,
+            playbackRate: 1.0,
+            position: 0
+          });
+        } catch (err) {
+          try {
+            navigator.mediaSession.setPositionState();
+          } catch (e2) {}
+        }
+      }
     } catch (e) {
       console.warn('Error configurando MediaSession handlers:', e);
     }
@@ -1534,18 +1614,25 @@ export class PlayerEngine {
 
     try {
       const art = metadata.artwork || [
-        { src: './img/logos/cl-tv-tvn.svg', sizes: '96x96', type: 'image/svg+xml' },
-        { src: './img/logos/cl-tv-tvn.svg', sizes: '128x128', type: 'image/svg+xml' },
-        { src: './img/logos/cl-tv-tvn.svg', sizes: '256x256', type: 'image/svg+xml' },
-        { src: './img/logos/cl-tv-tvn.svg', sizes: '512x512', type: 'image/svg+xml' }
+        { src: './img/logos/cl-rad-rockandpop.png', sizes: '96x96', type: 'image/png' },
+        { src: './img/logos/cl-rad-rockandpop.png', sizes: '128x128', type: 'image/png' },
+        { src: './img/logos/cl-rad-rockandpop.png', sizes: '256x256', type: 'image/png' },
+        { src: './img/logos/cl-rad-rockandpop.png', sizes: '512x512', type: 'image/png' }
       ];
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title: metadata.title || 'Antena Sur',
         artist: metadata.artist || 'Chile en Vivo',
-        album: metadata.album || 'Antena Sur • Chile',
+        album: metadata.album || 'Antena Sur • Radios de Chile',
         artwork: art
       });
+
+      // Mantener el estado de reproducción activo en MediaSession para evitar evicción en CarPlay
+      if (this.isPlaying || (this.currentStation && !this.isUserPaused)) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+
+      this.refreshMediaSessionControls();
     } catch (e) {
       console.warn('Error actualizando MediaSession:', e);
     }
@@ -1720,30 +1807,67 @@ export class PlayerEngine {
 
     this.audioElement.addEventListener('playing', () => {
       this.isPlaying = true;
+      this.isInterrupted = false;
+      this.isReconnecting = false;
+      this.reconnectAttempts = 0;
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+      this.lastPlaybackTime = this.audioElement.currentTime;
+      this.lastTimeAdvancedAt = Date.now();
       this.updateRadioPlayIcon(true);
       this.startVisualizer();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+      this.refreshMediaSessionControls();
+      this.startAudioWatchdog();
       if (this.onStationChange && this.currentStation) {
         this.onStationChange(this.currentStation, 'playing');
       }
     });
 
     this.audioElement.addEventListener('pause', () => {
-      this.isPlaying = false;
-      this.updateRadioPlayIcon(false);
-      this.stopVisualizer();
-      if (this.onStationChange && this.currentStation) {
-        this.onStationChange(this.currentStation, 'paused');
+      if (this.isUserPaused) {
+        this.isPlaying = false;
+        this.updateRadioPlayIcon(false);
+        this.stopVisualizer();
+        this.stopAudioWatchdog();
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'paused';
+        }
+        if (this.onStationChange && this.currentStation) {
+          this.onStationChange(this.currentStation, 'paused');
+        }
+      } else if (this.currentStation) {
+        // Pausa no voluntaria provocada por llamada telefónica entrante, Siri o cambio de foco de audio en iOS
+        console.log('⚠️ Audio pausado por interrupción externa (llamada o audio focus). Preservando sesión en CarPlay...');
+        this.isInterrupted = true;
+        // Dejar playbackState en 'playing' para evitar que CarPlay retire el widget del vehículo
+        if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = 'playing';
+        }
+        this.startAudioWatchdog();
+      }
+    });
+
+    this.audioElement.addEventListener('waiting', () => {
+      if (this.currentStation && !this.isUserPaused) {
+        this.scheduleStallRecovery(3500);
+      }
+    });
+
+    this.audioElement.addEventListener('stalled', () => {
+      if (this.currentStation && !this.isUserPaused) {
+        this.scheduleStallRecovery(3500);
       }
     });
 
     this.audioElement.addEventListener('error', (e) => {
       console.warn('Error en stream de radio:', e);
-      if (this.currentStation && this.currentStation.backupStreamUrl) {
-        const currentSrc = this.audioElement.src || (this.radioHls ? this.currentStation.streamUrl : '');
-        if (currentSrc !== this.currentStation.backupStreamUrl) {
-          console.log('Intentando backup de radio:', this.currentStation.backupStreamUrl);
-          this.playRadioSource(this.currentStation.backupStreamUrl);
-        }
+      if (this.currentStation && !this.isUserPaused) {
+        this.scheduleReconnect(1500);
       }
     });
   }
@@ -1753,6 +1877,14 @@ export class PlayerEngine {
       this.closeTvPlayer();
     }
 
+    this.isUserPaused = false;
+    this.isInterrupted = false;
+    this.isReconnecting = false;
+    this.reconnectAttempts = 0;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     this.currentStation = station;
     this.currentType = 'radio';
     this.fav.addToHistory(station);
@@ -1779,7 +1911,7 @@ export class PlayerEngine {
       this.updateFavoriteButtons(station.id, this.fav.isFavorite(station.id));
     }
 
-    // Configurar MediaSession inicial para CarPlay / Android Auto
+    // Configurar MediaSession inicial para CarPlay / Android Auto (botones Anterior/Siguiente)
     this.updateMediaSession({
       title: station.name,
       artist: `${station.city || 'Chile'} • ${station.frequency || 'En Vivo'}`,
@@ -1822,41 +1954,91 @@ export class PlayerEngine {
       this.radioHls.loadSource(url);
       this.radioHls.attachMedia(this.audioElement);
       this.radioHls.on(Hls.Events.MANIFEST_PARSED, () => {
-        this.audioElement.play().catch(e => console.warn('Radio Hls autoplay bloqueado:', e));
+        const p = this.audioElement.play();
+        if (p !== undefined) {
+          p.catch(e => {
+            console.warn('Radio Hls autoplay bloqueado o esperando foco:', e);
+            if (this.currentStation && !this.isUserPaused) {
+              this.scheduleReconnect(2500);
+            }
+          });
+        }
       });
       this.radioHls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
           console.warn('Radio Hls fatal error:', data.type);
-          if (this.currentStation && this.currentStation.backupStreamUrl && url !== this.currentStation.backupStreamUrl) {
-            this.playRadioSource(this.currentStation.backupStreamUrl);
+          if (this.currentStation && !this.isUserPaused) {
+            this.scheduleReconnect(2000);
           }
         }
       });
     } else {
       this.audioElement.src = url;
       this.audioElement.load();
-      this.audioElement.play().catch(e => {
-        console.warn('Autoplay de radio bloqueado o error:', e);
-        if (this.currentStation && this.currentStation.backupStreamUrl && url !== this.currentStation.backupStreamUrl) {
-          this.playRadioSource(this.currentStation.backupStreamUrl);
-        }
-      });
+      const p = this.audioElement.play();
+      if (p !== undefined) {
+        p.catch(e => {
+          console.warn('Autoplay de radio bloqueado o esperando conexión/llamada:', e);
+          if (this.currentStation && !this.isUserPaused) {
+            this.scheduleReconnect(2500);
+          }
+        });
+      }
     }
   }
 
-  pauseRadio() {
+  pauseRadio(isUserInitiated = true) {
+    if (isUserInitiated) {
+      this.isUserPaused = true;
+      this.stopAudioWatchdog();
+      if (this.reconnectTimer) {
+        clearTimeout(this.reconnectTimer);
+        this.reconnectTimer = null;
+      }
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+    }
     this.stopNowPlayingPolling();
     this.audioElement.pause();
   }
 
-  resumeRadio() {
-    this.audioElement.play().catch(e => console.warn('No se pudo reanudar radio:', e));
+  resumeRadio(isUserInitiated = true) {
+    if (isUserInitiated) {
+      this.isUserPaused = false;
+      this.isInterrupted = false;
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+    }
+    this.startAudioWatchdog();
+    const p = this.audioElement.play();
+    if (p !== undefined) {
+      p.catch(e => {
+        console.warn('No se pudo reanudar radio directamente, reconectando stream:', e);
+        this.reconnectRadioStream(true);
+      });
+    }
     if (this.currentStation) {
       this.startNowPlayingPolling(this.currentStation);
     }
   }
 
   stopRadio() {
+    this.isUserPaused = true;
+    this.isInterrupted = false;
+    this.stopAudioWatchdog();
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.stallTimer) {
+      clearTimeout(this.stallTimer);
+      this.stallTimer = null;
+    }
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+    }
     this.stopNowPlayingPolling();
     if (this.radioHls) {
       this.radioHls.destroy();
@@ -1881,6 +2063,170 @@ export class PlayerEngine {
     if (this.onStationChange && prev) {
       this.onStationChange(prev, 'stopped');
     }
+  }
+
+  /* ========================================================================
+     RESILIENCIA ANTE LLAMADAS, CAÍDAS DE SEÑAL 4G/5G Y WATCHDOG DE AUDIO
+     ======================================================================== */
+
+  initSystemInterruptionListeners() {
+    // 1. Detección de recuperación de conectividad 4G/5G tras salir de túnel o zona oscura
+    window.addEventListener('online', () => {
+      console.log('🌐 Conexión a Internet 4G/5G restaurada (evento online).');
+      if (this.currentStation && !this.isUserPaused) {
+        console.log('Reconectando radio automáticamente tras restaurar 4G/5G...');
+        this.reconnectAttempts = 0;
+        this.reconnectRadioStream(true);
+      }
+    });
+
+    // 2. Escuchar cambios de estado en la sesión nativa de audio (iOS Safari 16.4+)
+    if ('audioSession' in navigator) {
+      try {
+        navigator.audioSession.addEventListener('statechange', () => {
+          console.log(`AudioSession state: ${navigator.audioSession.state}`);
+          if (navigator.audioSession.state === 'active' && this.currentStation && !this.isUserPaused) {
+            console.log('Llamada o interrupción finalizada. Reanudando reproducción de radio...');
+            this.reconnectRadioStream(false);
+          }
+        });
+      } catch (e) {}
+    }
+
+    // 3. Al desbloquear el teléfono, regresar a Safari o restaurar pantalla de bloqueo / CarPlay
+    const onWakeOrFocus = () => {
+      if (this.currentStation && !this.isUserPaused) {
+        if (this.audioElement.paused || this.isInterrupted) {
+          console.log('Dispositivo activo o en foco. Verificando estado del reproductor...');
+          this.reconnectRadioStream(false);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        onWakeOrFocus();
+      }
+    });
+    window.addEventListener('pageshow', onWakeOrFocus);
+    window.addEventListener('focus', onWakeOrFocus);
+  }
+
+  startAudioWatchdog() {
+    this.stopAudioWatchdog();
+    if (this.isUserPaused || !this.currentStation) return;
+
+    this.lastPlaybackTime = this.audioElement.currentTime;
+    this.lastTimeAdvancedAt = Date.now();
+
+    this.watchdogTimer = setInterval(() => {
+      if (this.isUserPaused || !this.currentStation) {
+        this.stopAudioWatchdog();
+        return;
+      }
+
+      const curTime = this.audioElement.currentTime;
+      const isPaused = this.audioElement.paused;
+
+      // Caso 1: El audio se encuentra pausado inesperadamente (por ejemplo, tras cortar una llamada)
+      if (isPaused) {
+        console.log('Watchdog: Audio pausado tras interrupción externa. Intentando reanudar...');
+        this.reconnectRadioStream(false);
+        return;
+      }
+
+      // Caso 2: Stream congelado por pérdida de señal 4G/5G (el tiempo de reproducción no avanza)
+      if (curTime === this.lastPlaybackTime) {
+        const timeStuck = Date.now() - this.lastTimeAdvancedAt;
+        if (timeStuck > 4000) {
+          console.warn('Watchdog: Stream congelado detectado (>4s sin avance de audio por corte 4G/5G). Reconectando...');
+          this.reconnectRadioStream(true);
+        }
+      } else {
+        this.lastPlaybackTime = curTime;
+        this.lastTimeAdvancedAt = Date.now();
+      }
+    }, 2500);
+  }
+
+  stopAudioWatchdog() {
+    if (this.watchdogTimer) {
+      clearInterval(this.watchdogTimer);
+      this.watchdogTimer = null;
+    }
+  }
+
+  scheduleStallRecovery(delayMs = 3500) {
+    if (this.stallTimer) clearTimeout(this.stallTimer);
+    this.stallTimer = setTimeout(() => {
+      if (this.currentStation && !this.isUserPaused) {
+        const curTime = this.audioElement.currentTime;
+        if (curTime === this.lastPlaybackTime || this.audioElement.paused) {
+          console.warn('Recuperación de buffer estancado: Forzando reconexión...');
+          this.reconnectRadioStream(true);
+        }
+      }
+    }, delayMs);
+  }
+
+  scheduleReconnect(delayMs = 2000) {
+    if (this.isUserPaused || !this.currentStation) return;
+    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+
+    // Backoff gradual: 2s, 3s, 5s... máximo 8s
+    const backoff = Math.min(delayMs * Math.pow(1.3, this.reconnectAttempts), 8000);
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectRadioStream(true);
+    }, backoff);
+  }
+
+  reconnectRadioStream(forceReload = false) {
+    if (this.isUserPaused || !this.currentStation) return;
+    if (this.isReconnecting) return;
+
+    this.isReconnecting = true;
+    this.reconnectAttempts++;
+
+    const station = this.currentStation;
+    let url = station.streamUrl;
+
+    // Si ha fallado varios intentos consecutivos y hay URL de respaldo, alternar
+    if (this.reconnectAttempts > 2 && station.backupStreamUrl) {
+      url = (this.reconnectAttempts % 2 === 0) ? station.backupStreamUrl : station.streamUrl;
+    }
+
+    console.log(`[Auto-Reconnect] Emisora: ${station.name} | Intento: ${this.reconnectAttempts} | forceReload: ${forceReload}`);
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing';
+    }
+
+    if (forceReload || this.audioElement.error || this.audioElement.networkState === 3 || this.audioElement.readyState === 0) {
+      // Agregar timestamp como parámetro para evitar sockets TCP o caché caídos de iOS
+      const separator = url.includes('?') ? '&' : '?';
+      const liveUrl = `${url}${separator}_t=${Date.now()}`;
+      this.playRadioSource(liveUrl);
+    } else {
+      const playPromise = this.audioElement.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          this.isReconnecting = false;
+          this.isInterrupted = false;
+          this.reconnectAttempts = 0;
+          this.refreshMediaSessionControls();
+        }).catch(err => {
+          console.warn('[Auto-Reconnect] Reanudación directa rechazada, forzando recarga de fuente:', err);
+          this.isReconnecting = false;
+          const separator = url.includes('?') ? '&' : '?';
+          this.playRadioSource(`${url}${separator}_t=${Date.now()}`);
+        });
+        return;
+      }
+    }
+
+    setTimeout(() => {
+      this.isReconnecting = false;
+    }, 1200);
   }
 
   startNowPlayingPolling(station) {
