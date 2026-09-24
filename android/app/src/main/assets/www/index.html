@@ -49,68 +49,68 @@
   <div class="bg-atmosphere"></div>
 
   <!-- Barra de Navegación Superior -->
-  <!-- Barra de Navegación Superior Estilo Blackmagic OS / Apple -->
+  <!-- Barra de Navegación Superior Estilo Blackmagic Camera OS -->
   <header class="top-navbar bm-header">
     <div class="app-container">
       <div class="nav-wrapper bm-nav-wrapper">
         <!-- Logo y Marca -->
         <div class="brand-logo bm-brand-logo" title="Antena Sur TV">
-          <div class="bm-record-dot"></div>
+          <div class="bm-cam-indicator">
+            <span class="bm-cam-box">BMD</span>
+            <span class="bm-record-dot"></span>
+          </div>
           <div class="brand-text">
             <h1 class="bm-title">ANTENA SUR</h1>
-            <p class="bm-subtitle">SISTEMA BROADCAST CHILE • SEÑAL EN DIRECTO</p>
+            <p class="bm-subtitle">BROADCAST OS // CHILE</p>
           </div>
         </div>
 
         <!-- Indicador de Estado y Reloj Digital -->
         <div class="bm-header-status">
-          <span class="bm-status-pill"><span class="bm-live-dot"></span> EN VIVO</span>
-          <span class="bm-status-clock" id="bmHeaderClock">--:--</span>
+          <span class="bm-status-pill"><span class="bm-live-dot"></span> LIVE ON AIR</span>
+          <span class="bm-status-clock" id="bmHeaderClock">00:00</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Pantalla de Inicio: Solo 2 Botones Principales (Canales de TV y Radios FM) -->
+  <!-- Pantalla de Inicio: Menú Blackmagic Camera OS (Solo 2 Botones de Alta Precisión) -->
   <main class="app-container bm-home-container" id="mainCatalogContainer">
     <section class="home-hero-section bm-home-hero" id="homeHeroSection">
-      <div class="bm-hero-prompt">SELECCIONA MODO DE REPRODUCCIÓN</div>
+      <div class="bm-menu-header-bar">
+        <span class="bm-menu-title">SELECT SOURCE // MODO DE REPRODUCCIÓN</span>
+        <span class="bm-menu-meta">CHILE BROADCAST SYSTEM • 2 MODES</span>
+      </div>
       <div class="home-hero-grid bm-hero-grid">
         <!-- Botón 1: Canales de TV (Acceso Directo a Guía Zapping) -->
         <button class="hero-action-card bm-card bm-card-tv" id="heroCardTv" tabindex="0" title="Entrar a Canales de TV en Directo">
-          <div class="bm-card-header">
-            <span class="bm-card-badge tv"><span class="bm-live-dot"></span> 321 SEÑALES</span>
-            <span class="bm-card-tag">TV DIRECTA</span>
+          <div class="bm-card-top-strip">
+            <span class="bm-tile-num">01</span>
+            <span class="bm-tile-badge">[TV DIRECTA]</span>
           </div>
           <div class="bm-card-body">
-            <div class="bm-card-icon">📺</div>
-            <div class="bm-card-text">
-              <h2>Canales de TV</h2>
-              <p id="heroTvLastStation">321 señales nacionales y regionales • Sintonización en directo</p>
-            </div>
+            <h2 class="bm-tile-title">CANALES DE TV</h2>
+            <p class="bm-tile-spec">321 SEÑALES EN VIVO • SISTEMA BROADCAST</p>
           </div>
           <div class="bm-card-footer">
-            <span class="bm-btn-label">INGRESAR A TELEVISIÓN</span>
-            <span class="bm-btn-arrow">▶</span>
+            <span class="bm-tile-status" id="heroTvLastStation">321 señales • Sintonización en directo</span>
+            <span class="bm-tile-action">ENTRAR ▶</span>
           </div>
         </button>
 
         <!-- Botón 2: Radios FM (Acceso Directo a Reproductor de Pantalla Completa) -->
         <button class="hero-action-card bm-card bm-card-radio" id="heroCardRadio" tabindex="0" title="Entrar a Radios FM en Pantalla Completa">
-          <div class="bm-card-header">
-            <span class="bm-card-badge radio"><span class="bm-live-dot amber"></span> 23 EMISORAS</span>
-            <span class="bm-card-tag">FM & DIGITAL</span>
+          <div class="bm-card-top-strip">
+            <span class="bm-tile-num">02</span>
+            <span class="bm-tile-badge">[FM DIGITAL]</span>
           </div>
           <div class="bm-card-body">
-            <div class="bm-card-icon">📻</div>
-            <div class="bm-card-text">
-              <h2>Radios FM</h2>
-              <p id="heroRadioLastStation">23 emisoras en vivo • Carátulas, frecuencias y sonido en directo</p>
-            </div>
+            <h2 class="bm-tile-title">RADIOS FM</h2>
+            <p class="bm-tile-spec">23 EMISORAS DE CHILE • AUDIO BROADCAST</p>
           </div>
           <div class="bm-card-footer">
-            <span class="bm-btn-label">INGRESAR A RADIOS</span>
-            <span class="bm-btn-arrow">▶</span>
+            <span class="bm-tile-status" id="heroRadioLastStation">23 emisoras en directo</span>
+            <span class="bm-tile-action">ENTRAR ▶</span>
           </div>
         </button>
       </div>
@@ -133,6 +133,7 @@
             </div>
           </div>
           <button class="zapping-sidebar-toggle-btn" id="zappingSidebarToggleBtn" title="Ocultar Guía">◀</button>
+          <button class="zapping-sidebar-close-btn" id="zappingSidebarCloseBtn" title="Volver al Menú Principal">✕ Salir</button>
         </div>
 
         <!-- Buscador Rápido de Canales en Guía -->
@@ -311,34 +312,44 @@
   </section>
 
   <!-- ========================================================================
-       REPRODUCTOR DE RADIOS PANTALLA COMPLETA (ESTILO SPOTIFY / BLACKMAGIC OS)
+       REPRODUCTOR DE RADIOS PANTALLA COMPLETA (BLACKMAGIC CAMERA OS // 2-3 COLORES)
        ======================================================================== -->
   <section class="radio-fullscreen-view is-hidden" id="radioFullscreenView">
-    <!-- Barra Superior Técnica (HUD Radio) -->
+    <!-- Barra Superior Técnica (HUD Radio Blackmagic OS) -->
     <header class="radio-fs-header">
       <div class="radio-fs-header-left">
         <button class="radio-fs-back-btn" id="radioFsBackBtn" title="Volver al Menú Principal (Atrás / Escape)">
           <span class="bm-back-arrow">◀</span>
-          <span>MENÚ PRINCIPAL</span>
+          <span>MENÚ [ATRÁS]</span>
         </button>
+        <span class="radio-fs-mode-tag">AUDIO BROADCAST // FM CHILE</span>
       </div>
 
       <div class="radio-fs-header-center">
         <span class="radio-fs-live-badge">
-          <span class="bm-live-dot red pulse"></span> EMISIÓN DE RADIO FM EN DIRECTO
+          <span class="bm-live-dot"></span> LIVE ON AIR
         </span>
+        <span class="radio-fs-freq-dial" id="radioFsFreqDial">94.1 FM</span>
       </div>
 
       <div class="radio-fs-header-right">
         <span class="radio-fs-counter">
-          <span id="radioFsCurrentIndex">01</span> / <span id="radioFsTotalCount">23</span>
+          STATION <span id="radioFsCurrentIndex">01</span> / <span id="radioFsTotalCount">23</span>
         </span>
       </div>
     </header>
 
-    <!-- Escenario Principal del Reproductor (Layout 16:9 de TV) -->
+    <!-- Tira Superior de Selección Rápida de Emisoras (1 a 1) -->
+    <div class="radio-fs-top-strip">
+      <div class="radio-fs-strip-label">EMISORAS [◀ / ▶ CAMBIAR]:</div>
+      <div class="radio-fs-tray-scroll" id="radioFsTrayScroll">
+        <!-- Inyectado dinámicamente con las 23 emisoras en estilo cámara Blackmagic -->
+      </div>
+    </div>
+
+    <!-- Escenario Principal del Reproductor (Layout Responsivo TV 16:9 y Móvil) -->
     <div class="radio-fs-stage">
-      <!-- Columna Izquierda: Gran Carátula de la Radio + Visualizador de Audio -->
+      <!-- Columna Izquierda: Monitor de Carátula + Espectro -->
       <div class="radio-fs-visual-col">
         <div class="radio-fs-artwork-container">
           <img id="radioFsArtwork" class="radio-fs-artwork-img" src="./img/logos/cl-rad-rockandpop.png" alt="Radio Logo">
@@ -355,22 +366,18 @@
         </div>
       </div>
 
-      <!-- Columna Derecha: Información Completa y Detallada de la Radio -->
+      <!-- Columna Derecha: Información Técnica de la Radio -->
       <div class="radio-fs-info-col">
-        <!-- Fila de Frecuencia / Dial y Categoría -->
         <div class="radio-fs-pills-row">
-          <span class="radio-fs-freq-dial" id="radioFsFreqDial">94.1 FM</span>
           <span class="radio-fs-genre-pill" id="radioFsGenrePill">MÚSICA / ROCK</span>
-          <span class="radio-fs-status-pill" id="radioFsStatusPill">SEÑAL ESTABLE</span>
+          <span class="radio-fs-status-pill" id="radioFsStatusPill">SEÑAL EN DIRECTO</span>
         </div>
 
-        <!-- Nombre Grande de la Emisora -->
         <h1 class="radio-fs-station-name" id="radioFsStationName">Radio Rock & Pop</h1>
 
         <!-- Información de Pista / Programa en Directo -->
         <div class="radio-fs-now-playing-box">
           <div class="radio-fs-np-header">
-            <span class="radio-fs-np-icon">♪</span>
             <span class="radio-fs-np-label">TRANSMITIENDO AHORA EN VIVO:</span>
           </div>
           <div class="radio-fs-track-title" id="radioFsTrackTitle">Sintonizando emisión en directo...</div>
@@ -398,40 +405,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Barra Inferior de Controles y Carrusel de Emisoras -->
-    <footer class="radio-fs-footer">
-      <!-- Fila de Controles de Reproducción -->
-      <div class="radio-fs-controls-bar">
-        <button class="radio-fs-ctrl-btn prev" id="radioFsPrevBtn" title="Emisora Anterior (Flecha Izquierda / Arriba)">
-          <span class="btn-icon">⏮️</span>
-          <span>ANTERIOR</span>
-        </button>
-
-        <button class="radio-fs-ctrl-btn play" id="radioFsPlayBtn" title="Reproducir / Pausar (Enter / Espacio)">
-          <span class="btn-icon" id="radioFsPlayIcon">⏸️</span>
-          <span id="radioFsPlayText">PAUSAR</span>
-        </button>
-
-        <button class="radio-fs-ctrl-btn next" id="radioFsNextBtn" title="Siguiente Emisora (Flecha Derecha / Abajo)">
-          <span>SIGUIENTE</span>
-          <span class="btn-icon">⏭️</span>
-        </button>
-
-        <div class="radio-fs-vol-indicator">
-          <span class="vol-icon">🔊</span>
-          <span class="vol-text" id="radioFsVolText">85%</span>
-        </div>
-      </div>
-
-      <!-- Tira / Carrusel Rápido de Emisoras Disponibles (1 a 1) -->
-      <div class="radio-fs-tray-wrapper">
-        <div class="radio-fs-tray-title">TODAS LAS EMISORAS (Usa Flechas ◀ / ▶ en el control remoto para cambiar 1 a 1):</div>
-        <div class="radio-fs-tray-scroll" id="radioFsTrayScroll">
-          <!-- Inyectado dinámicamente con las 23 emisoras -->
-        </div>
-      </div>
-    </footer>
   </section>
 
   <!-- ========================================================================

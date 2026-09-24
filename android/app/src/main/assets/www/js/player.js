@@ -254,20 +254,105 @@ export class PlayerEngine {
       });
     }
 
-    // Botón hamburguesa en HUD superior para abrir/cerrar la guía (funciona tanto en pantalla completa como en modo normal)
+    // Botón para salir/cerrar guía en sidebar
+    const sidebarCloseBtn = document.getElementById('zappingSidebarCloseBtn');
+    if (sidebarCloseBtn) {
+      sidebarCloseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.isFullscreenActive()) {
+          this.toggleFullscreenSidebar(false);
+        } else {
+          this.closeTvPlayer();
+        }
+      });
+    }
+
+    // Botón hamburguesa en HUD superior para abrir/cerrar la guía
     if (this.dom.zappingOpenGuideBtn) {
       this.dom.zappingOpenGuideBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (this.isFullscreenActive()) {
-          if (this.isGuideOverlayVisible) {
-            this.hideFullscreenGuide();
-          } else {
-            this.showFullscreenGuide();
-          }
+          this.toggleFullscreenSidebar();
         } else {
           this.toggleSidebar();
         }
+      });
+    }
+
+    // Delegación de clics y doble clics en la Guía Lateral (Rendimiento 60 FPS sin lag)
+    if (this.dom.zappingChannelList) {
+      this.dom.zappingChannelList.addEventListener('click', (e) => {
+        const item = e.target.closest('.zapping-ch-item');
+        if (!item) return;
+        const id = item.getAttribute('data-id');
+        const idx = parseInt(item.getAttribute('data-index'), 10);
+        if (!isNaN(idx)) this.sidebarFocusIndex = idx;
+
+        this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item.is-dpad-focused').forEach(el => el.classList.remove('is-dpad-focused'));
+        item.classList.add('is-dpad-focused');
+
+        const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
+        if (isCurrentlyActive) {
+          if (this.isFullscreenActive()) {
+            this.toggleFullscreenSidebar(false);
+          } else {
+            this.enterFullscreenCrossBrowser();
+          }
+        } else {
+          const st = this.tvStations.find(s => s.id === id);
+          if (st) {
+            this.playTv(st);
+            if (this.isFullscreenActive()) {
+              this.toggleFullscreenSidebar(false);
+            }
+          }
+        }
+      });
+
+      this.dom.zappingChannelList.addEventListener('dblclick', (e) => {
+        const item = e.target.closest('.zapping-ch-item');
+        if (!item) return;
+        e.preventDefault();
+        const id = item.getAttribute('data-id');
+        const st = this.tvStations.find(s => s.id === id);
+        if (st && (!this.currentStation || this.currentStation.id !== id)) {
+          this.playTv(st);
+        }
+        if (!this.isFullscreenActive()) {
+          this.enterFullscreenCrossBrowser();
+        } else {
+          this.toggleFullscreenSidebar(false);
+        }
+      });
+    }
+
+    // Delegación central en Guía Overlay de Pantalla Completa
+    if (this.dom.zappingFsChannelList) {
+      this.dom.zappingFsChannelList.addEventListener('click', (e) => {
+        const item = e.target.closest('.zapping-ch-item');
+        if (!item) return;
+        const id = item.getAttribute('data-id');
+        const st = this.tvStations.find(s => s.id === id);
+        if (st && (!this.currentStation || this.currentStation.id !== id)) {
+          this.playTv(st);
+        }
+        this.hideFullscreenGuide();
+        this.toggleFullscreenSidebar(false);
+      });
+
+      this.dom.zappingFsChannelList.addEventListener('dblclick', (e) => {
+        const item = e.target.closest('.zapping-ch-item');
+        if (!item) return;
+        e.preventDefault();
+        const id = item.getAttribute('data-id');
+        const st = this.tvStations.find(s => s.id === id);
+        if (st && (!this.currentStation || this.currentStation.id !== id)) {
+          this.playTv(st);
+        }
+        this.hideFullscreenGuide();
+        this.toggleFullscreenSidebar(false);
       });
     }
 
@@ -278,6 +363,7 @@ export class PlayerEngine {
         e.preventDefault();
         e.stopPropagation();
         this.hideFullscreenGuide();
+        this.toggleFullscreenSidebar(false);
       });
     }
 
@@ -288,6 +374,7 @@ export class PlayerEngine {
         e.preventDefault();
         e.stopPropagation();
         this.hideFullscreenGuide();
+        this.toggleFullscreenSidebar(false);
       });
     }
 
@@ -377,6 +464,49 @@ export class PlayerEngine {
     }
   }
 
+  toggleFullscreenSidebar(forceShow = null) {
+    if (!this.dom.zappingSidebar) return;
+    const isCurrentlyOpen = this.dom.zappingSidebar.classList.contains('is-open-fs');
+    const shouldOpen = forceShow !== null ? forceShow : !isCurrentlyOpen;
+
+    if (shouldOpen) {
+      this.dom.zappingSidebar.classList.add('is-open-fs');
+      this.dom.zappingSidebar.classList.remove('is-collapsed');
+      this.focusCurrentSidebarItem();
+    } else {
+      this.dom.zappingSidebar.classList.remove('is-open-fs');
+      if (this.isFullscreenActive()) {
+        this.dom.zappingSidebar.classList.add('is-collapsed');
+      }
+    }
+  }
+
+  isFsSidebarOpen() {
+    return Boolean(this.dom.zappingSidebar && this.dom.zappingSidebar.classList.contains('is-open-fs'));
+  }
+
+  syncActiveChannelHighlight(stationId) {
+    if (!stationId) return;
+    const containers = [this.dom.zappingChannelList, this.dom.zappingFsChannelList].filter(Boolean);
+    containers.forEach(container => {
+      const prev = container.querySelector('.zapping-ch-item.is-playing');
+      if (prev && prev.getAttribute('data-id') !== stationId) {
+        prev.classList.remove('is-playing', 'is-active');
+      }
+      const next = container.querySelector(`.zapping-ch-item[data-id="${stationId}"]`);
+      if (next) {
+        next.classList.add('is-playing', 'is-active');
+        const idx = parseInt(next.getAttribute('data-index'), 10);
+        if (!isNaN(idx) && container === this.dom.zappingChannelList) {
+          this.sidebarFocusIndex = idx;
+        }
+        try {
+          next.scrollIntoView({ block: 'nearest' });
+        } catch (e) {}
+      }
+    });
+  }
+
   renderTvGuide() {
     if (!this.dom.zappingChannelList) return;
 
@@ -420,7 +550,7 @@ export class PlayerEngine {
         ? `<span class="zapping-sources-pill" title="${station.sources.length} fuentes de reproducción disponibles">${station.sources.length} Fts</span>`
         : '';
       sidebarHtml += `
-        <button class="zapping-ch-item ${isPlaying ? 'is-playing is-active' : ''}" data-id="${station.id}" data-index="${idx}" tabindex="0">
+        <button class="zapping-ch-item ${isPlaying ? 'is-playing is-active is-dpad-focused' : ''}" data-id="${station.id}" data-index="${idx}" tabindex="0">
           <span class="zapping-ch-num">${chNum}</span>
           <img class="zapping-ch-logo" src="${station.logo || './img/logos/cl-tv-tvn.svg'}" alt="${station.name}" loading="lazy" onerror="this.src='./img/logos/cl-tv-tvn.svg'">
           <div class="zapping-ch-text">
@@ -434,73 +564,19 @@ export class PlayerEngine {
 
     this.dom.zappingChannelList.innerHTML = sidebarHtml || `<div style="padding: 20px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">No hay canales en este filtro</div>`;
 
-    // Asignar clics y doble clics a los ítems del sidebar
-    const sidebarItems = this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item');
-    sidebarItems.forEach(item => {
-      const id = item.getAttribute('data-id');
-      const idx = parseInt(item.getAttribute('data-index'), 10);
-
-      item.addEventListener('click', () => {
-        if (!isNaN(idx)) this.sidebarFocusIndex = idx;
-        sidebarItems.forEach(el => el.classList.remove('is-dpad-focused'));
-        item.classList.add('is-dpad-focused');
-
-        const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
-        if (isCurrentlyActive) {
-          // Si el canal ya está sintonizado / marcado, un clic entra a pantalla completa
-          this.enterFullscreenCrossBrowser();
-        } else {
-          const st = this.tvStations.find(s => s.id === id);
-          if (st) this.playTv(st);
-        }
-      });
-
-      item.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        const st = this.tvStations.find(s => s.id === id);
-        if (st && (!this.currentStation || this.currentStation.id !== id)) {
-          this.playTv(st);
-        }
-        this.enterFullscreenCrossBrowser();
-      });
-    });
-
-    // Renderizar lista en Overlay de Pantalla Completa
+    // Renderizar en Overlay de Pantalla Completa
     if (this.dom.zappingFsChannelList) {
       this.dom.zappingFsChannelList.innerHTML = sidebarHtml;
-      this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item').forEach(item => {
-        const id = item.getAttribute('data-id');
-        item.addEventListener('click', () => {
-          const st = this.tvStations.find(s => s.id === id);
-          if (st && (!this.currentStation || this.currentStation.id !== id)) {
-            this.playTv(st);
-          }
-          this.hideFullscreenGuide();
-        });
-        item.addEventListener('dblclick', (e) => {
-          e.preventDefault();
-          const st = this.tvStations.find(s => s.id === id);
-          if (st && (!this.currentStation || this.currentStation.id !== id)) {
-            this.playTv(st);
-          }
-          this.hideFullscreenGuide();
-        });
-      });
     }
 
-    // Foco y scroll al canal activo en el sidebar
-    const activeItem = this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-active');
+    // Scroll al canal activo en el sidebar
+    const activeItem = this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-playing');
     if (activeItem) {
       const idx = parseInt(activeItem.getAttribute('data-index'), 10);
       if (!isNaN(idx)) this.sidebarFocusIndex = idx;
-      sidebarItems.forEach(el => el.classList.remove('is-dpad-focused'));
-      activeItem.classList.add('is-dpad-focused');
       try {
         activeItem.scrollIntoView({ block: 'nearest' });
       } catch (e) {}
-    } else if (sidebarItems.length > 0) {
-      if (this.sidebarFocusIndex >= sidebarItems.length) this.sidebarFocusIndex = 0;
-      sidebarItems[this.sidebarFocusIndex].classList.add('is-dpad-focused');
     }
   }
 
@@ -686,12 +762,19 @@ export class PlayerEngine {
       const id = focusedItem.getAttribute('data-id');
       const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
       if (isCurrentlyActive) {
-        // Si el canal ya está sintonizado / marcado, pasa a pantalla completa
-        this.enterFullscreenCrossBrowser();
+        // Si el canal ya está sintonizado / marcado, pasa a pantalla completa o cierra overlay
+        if (this.isFullscreenActive()) {
+          this.toggleFullscreenSidebar(false);
+        } else {
+          this.enterFullscreenCrossBrowser();
+        }
       } else {
         const st = this.tvStations.find(s => s.id === id);
         if (st) {
           this.playTv(st);
+          if (this.isFullscreenActive()) {
+            this.toggleFullscreenSidebar(false);
+          }
         }
       }
     }
@@ -1067,7 +1150,7 @@ export class PlayerEngine {
 
     // Si el canal está configurado para reproducción web incrustada (ej. Meganoticias Ahora 24/7)
     if (station.useIframe) {
-      this.renderTvGuide();
+      this.syncActiveChannelHighlight(station.id);
       this.switchToWebPlayer();
       this.updateMediaSession({
         title: station.name,
@@ -1083,8 +1166,8 @@ export class PlayerEngine {
     // Configurar y mostrar selector interactivo de fuentes (accesible en pantalla completa y HUD)
     this.updateSourceSelector(station, 0);
 
-    // Actualizar canal activo en la guía lateral
-    this.renderTvGuide();
+    // Actualizar canal activo en la guía lateral (0 ms de sobrecarga)
+    this.syncActiveChannelHighlight(station.id);
 
     // Actualizar metadatos para Apple CarPlay, Android Auto y pantalla de bloqueo
     this.updateMediaSession({
@@ -1421,10 +1504,21 @@ export class PlayerEngine {
         if (this.dom.zappingPlayerArea) {
           this.dom.zappingPlayerArea.classList.toggle('is-fullscreen', isFull);
         }
+        if (this.dom.tvZappingView) {
+          this.dom.tvZappingView.classList.toggle('is-fullscreen-mode', isFull);
+        }
         this.updateFullscreenIcon();
         if (isFull) {
+          if (this.dom.zappingSidebar) {
+            this.dom.zappingSidebar.classList.add('is-collapsed');
+            this.dom.zappingSidebar.classList.remove('is-open-fs');
+          }
           this.resetFsControlsInactivityTimer();
         } else {
+          if (this.dom.zappingSidebar) {
+            this.dom.zappingSidebar.classList.remove('is-open-fs');
+            this.dom.zappingSidebar.classList.remove('is-collapsed');
+          }
           this.clearFsControlsInactivityTimer();
           this.showFsControls();
           this.hideFullscreenGuide();
@@ -1504,11 +1598,18 @@ export class PlayerEngine {
   }
 
   enterFullscreenCrossBrowser() {
-    // Al entrar en pantalla completa, el objetivo es el contenedor Zapping completo para que el overlay funcione sobre el video
+    // Al entrar en pantalla completa, el objetivo es el contenedor Zapping completo para que el video tome 100% de la pantalla
     const target = this.dom.zappingPlayerArea || this.dom.tvZappingView || document.documentElement;
 
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.add('is-fullscreen');
+    }
+    if (this.dom.tvZappingView) {
+      this.dom.tvZappingView.classList.add('is-fullscreen-mode');
+    }
+    if (this.dom.zappingSidebar) {
+      this.dom.zappingSidebar.classList.add('is-collapsed');
+      this.dom.zappingSidebar.classList.remove('is-open-fs');
     }
 
     if (target.requestFullscreen) {
@@ -1543,6 +1644,13 @@ export class PlayerEngine {
     this.hideFullscreenGuide();
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.remove('is-fullscreen');
+    }
+    if (this.dom.tvZappingView) {
+      this.dom.tvZappingView.classList.remove('is-fullscreen-mode');
+    }
+    if (this.dom.zappingSidebar) {
+      this.dom.zappingSidebar.classList.remove('is-open-fs');
+      this.dom.zappingSidebar.classList.remove('is-collapsed');
     }
     if (document.exitFullscreen) {
       document.exitFullscreen().catch(e => console.warn(e));
@@ -1604,13 +1712,15 @@ export class PlayerEngine {
           }
         }
 
-        const isSidebarVisible = this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed');
+        const isFullscreen = this.isFullscreenActive();
+        const isFsSidebarOpen = this.isFsSidebarOpen();
+        const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
         // 1. Flecha Izquierda (ArrowLeft) -> Abrir guía lateral
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
           if (isFullscreen) {
-            this.showFullscreenGuide();
+            this.toggleFullscreenSidebar(true);
           } else {
             this.toggleSidebar(true);
             this.focusCurrentSidebarItem();
@@ -1622,6 +1732,7 @@ export class PlayerEngine {
         if (e.key === 'ArrowRight') {
           e.preventDefault();
           if (isFullscreen) {
+            this.toggleFullscreenSidebar(false);
             this.hideFullscreenGuide();
           } else {
             this.toggleSidebar(false);
@@ -1634,7 +1745,7 @@ export class PlayerEngine {
           e.preventDefault();
           if (isFullscreen && this.isGuideOverlayVisible) {
             this.navigateOverlayGuide(-1);
-          } else if (!isFullscreen && isSidebarVisible) {
+          } else if (isSidebarVisible) {
             this.navigateSidebarList(-1);
           } else {
             this.zapPrevious();
@@ -1647,7 +1758,7 @@ export class PlayerEngine {
           e.preventDefault();
           if (isFullscreen && this.isGuideOverlayVisible) {
             this.navigateOverlayGuide(1);
-          } else if (!isFullscreen && isSidebarVisible) {
+          } else if (isSidebarVisible) {
             this.navigateSidebarList(1);
           } else {
             this.zapNext();
@@ -1659,10 +1770,12 @@ export class PlayerEngine {
         if (e.key === 'Enter') {
           e.preventDefault();
           if (isFullscreen) {
-            if (!this.isGuideOverlayVisible) {
-              this.showFullscreenGuide();
-            } else {
+            if (isFsSidebarOpen) {
+              this.selectFocusedSidebarChannel();
+            } else if (this.isGuideOverlayVisible) {
               this.selectFocusedOverlayChannel();
+            } else {
+              this.toggleFullscreenSidebar(true);
             }
           } else if (isSidebarVisible) {
             this.selectFocusedSidebarChannel();
@@ -1682,10 +1795,20 @@ export class PlayerEngine {
         // 7. Botón Atrás / Escape (Back / Escape)
         if (e.key === 'Escape' || e.key === 'BrowserBack' || e.keyCode === 8) {
           e.preventDefault();
-          if (isFullscreen && this.isGuideOverlayVisible) {
-            this.hideFullscreenGuide();
-          } else if (isFullscreen) {
-            this.exitFullscreenCrossBrowser();
+          if (isFullscreen) {
+            if (this.isFsSidebarOpen() || this.isGuideOverlayVisible) {
+              const now = Date.now();
+              if (this._lastBackPressTime && (now - this._lastBackPressTime < 1200)) {
+                this.exitFullscreenCrossBrowser();
+              } else {
+                this._lastBackPressTime = now;
+                this.toggleFullscreenSidebar(false);
+                this.hideFullscreenGuide();
+              }
+            } else {
+              this._lastBackPressTime = Date.now();
+              this.toggleFullscreenSidebar(true);
+            }
           } else {
             this.closeTvPlayer();
           }
@@ -1976,8 +2099,11 @@ export class PlayerEngine {
 
     this.renderFullscreenRadioTray();
 
-    if (this.dom.radioFsPlayBtn) {
-      try { this.dom.radioFsPlayBtn.focus(); } catch (e) {}
+    const activeCard = this.dom.radioFsTrayScroll ? this.dom.radioFsTrayScroll.querySelector('.radio-tray-card.active') : null;
+    if (activeCard) {
+      try { activeCard.focus(); } catch (e) {}
+    } else if (this.dom.radioFsBackBtn) {
+      try { this.dom.radioFsBackBtn.focus(); } catch (e) {}
     }
   }
 

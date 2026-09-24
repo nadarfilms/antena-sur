@@ -267,12 +267,13 @@ export function initTvNavigation() {
 
     if (isTvPlayerOpen) {
       const isFullscreen = player.isFullscreenActive();
-      const isSidebarVisible = player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed');
+      const isFsSidebarOpen = typeof player.isFsSidebarOpen === 'function' ? player.isFsSidebarOpen() : false;
+      const isSidebarVisible = isFsSidebarOpen || (player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed'));
 
       if (action === 'ArrowUp') {
         if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(-1);
-        } else if (!isFullscreen && isSidebarVisible) {
+        } else if (isSidebarVisible) {
           player.navigateSidebarList(-1);
         } else {
           player.zapPrevious();
@@ -282,7 +283,7 @@ export function initTvNavigation() {
       if (action === 'ArrowDown') {
         if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(1);
-        } else if (!isFullscreen && isSidebarVisible) {
+        } else if (isSidebarVisible) {
           player.navigateSidebarList(1);
         } else {
           player.zapNext();
@@ -291,7 +292,11 @@ export function initTvNavigation() {
       }
       if (action === 'ArrowLeft') {
         if (isFullscreen) {
-          player.showFullscreenGuide();
+          if (typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(true);
+          } else {
+            player.showFullscreenGuide();
+          }
         } else {
           player.toggleSidebar(true);
           player.focusCurrentSidebarItem();
@@ -300,6 +305,9 @@ export function initTvNavigation() {
       }
       if (action === 'ArrowRight') {
         if (isFullscreen) {
+          if (typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(false);
+          }
           player.hideFullscreenGuide();
         } else {
           player.toggleSidebar(false);
@@ -308,10 +316,16 @@ export function initTvNavigation() {
       }
       if (action === 'Enter') {
         if (isFullscreen) {
-          if (!player.isGuideOverlayVisible) {
-            player.showFullscreenGuide();
-          } else {
+          if (isFsSidebarOpen) {
+            player.selectFocusedSidebarChannel();
+          } else if (player.isGuideOverlayVisible) {
             player.selectFocusedOverlayChannel();
+          } else {
+            if (typeof player.toggleFullscreenSidebar === 'function') {
+              player.toggleFullscreenSidebar(true);
+            } else {
+              player.showFullscreenGuide();
+            }
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();
@@ -321,10 +335,28 @@ export function initTvNavigation() {
         return;
       }
       if (action === 'Back') {
-        if (isFullscreen && player.isGuideOverlayVisible) {
-          player.hideFullscreenGuide();
-        } else if (isFullscreen) {
-          player.exitFullscreenCrossBrowser();
+        if (isFullscreen) {
+          if (isFsSidebarOpen || player.isGuideOverlayVisible) {
+            const now = Date.now();
+            if (player._lastBackPressTime && (now - player._lastBackPressTime < 1200)) {
+              player.exitFullscreenCrossBrowser();
+            } else {
+              player._lastBackPressTime = now;
+              if (typeof player.toggleFullscreenSidebar === 'function') {
+                player.toggleFullscreenSidebar(false);
+              }
+              if (typeof player.hideFullscreenGuide === 'function') {
+                player.hideFullscreenGuide();
+              }
+            }
+          } else {
+            player._lastBackPressTime = Date.now();
+            if (typeof player.toggleFullscreenSidebar === 'function') {
+              player.toggleFullscreenSidebar(true);
+            } else if (typeof player.showFullscreenGuide === 'function') {
+              player.showFullscreenGuide();
+            }
+          }
         } else {
           player.closeTvPlayer();
         }

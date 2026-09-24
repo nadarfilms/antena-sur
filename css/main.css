@@ -1,43 +1,47 @@
 /* ==========================================================================
-   ANTENA SUR - TV & RADIOS DE CHILE Y SUDAMÉRICA
-   Estilos Principales, Variables y Layout
+   ANTENA SUR - BLACKMAGIC DESIGN CAMERA OS THEME
+   Paleta Estricta de 3 Colores: Negro Puro, Blanco Nítido y Cian Broadcast
    ========================================================================== */
 
 :root {
-  --bg-primary: #07090d;
-  --bg-secondary: #0b0e14;
-  --bg-card: #11141c;
-  --bg-card-hover: #161b24;
-  --bg-glass: #0b0e14;
-  --bg-glass-card: #11141c;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --border-glow: #ff9f0a;
+  /* 1. NEGRO CINEMATOGRÁFICO PURO */
+  --bg-primary: #000000;
+  --bg-surface: #0a0b0e;
+  --bg-card: #111317;
+  --bg-card-hover: #161920;
+  --bg-glass: #0a0b0e;
+  --bg-glass-card: #111317;
   
+  /* 2. BLANCO NÍTIDO Y TONOS MONOCROMÁTICOS TÉCNICOS */
   --text-primary: #ffffff;
-  --text-secondary: #8b949e;
-  --text-muted: #57606a;
-  
-  --bm-amber: #ff9f0a;
-  --bm-red: #ff453a;
-  --bm-green: #30d158;
-  --bm-cyan: #00d4ff;
-  --bm-border: #1e2430;
-  --bm-panel: #11141c;
+  --text-secondary: #8e95a2;
+  --text-muted: #565d69;
+  --border-color: #222630;
+  --bm-border: #222630;
+  --border-glow: #00d4ff;
 
+  /* 3. CIAN BROADCAST BLACKMAGIC (ÚNICO COLOR DE ACENTO) */
+  --bm-cyan: #00d4ff;
   --accent-cyan: #00d4ff;
-  --accent-blue: #0a84ff;
-  --accent-amber: #ff9f0a;
-  --accent-rose: #ff453a;
-  
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --bm-panel: #111317;
+
+  /* Mapeo estricto para eliminar colores ajenos */
+  --bm-amber: #00d4ff;
+  --bm-red: #00d4ff;
+  --bm-green: #00d4ff;
+  --accent-blue: #00d4ff;
+  --accent-amber: #00d4ff;
+  --accent-rose: #00d4ff;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
   --radius-full: 9999px;
-  
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --transition-fast: 0.12s ease;
+  --transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DIN Next', 'Roboto Condensed', 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -57,7 +61,7 @@ body {
   flex-direction: column;
 }
 
-/* Background Atmosphere - Estilo Blackmagic Cinema Matte */
+/* Background Atmosphere - Negro Puro de Cámara */
 .bg-atmosphere {
   position: fixed;
   top: 0;
@@ -66,23 +70,23 @@ body {
   height: 100vh;
   pointer-events: none;
   z-index: -1;
-  background: #07090d;
+  background: #000000;
 }
 
-/* Scrollbar Personalizado */
+/* Scrollbar Personalizado Industrial */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #07090d;
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: #222733;
-  border-radius: var(--radius-full);
+  background: #222630;
+  border-radius: var(--radius-sm);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--bm-amber);
+  background: var(--bm-cyan);
 }
 
 /* Contenedor Principal */
@@ -93,11 +97,11 @@ body {
   padding: 0 24px;
 }
 
-/* Barra de Navegación Superior Blackmagic OS / Apple */
+/* Barra de Navegación Superior Estilo Blackmagic Camera OS */
 .bm-header {
-  background: #0b0e14;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 14px 0;
+  background: #000000;
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -118,28 +122,48 @@ body {
   user-select: none;
 }
 
+.bm-cam-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bm-cam-box {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 900;
+  background: #111317;
+  color: var(--bm-cyan);
+  border: 1px solid var(--bm-cyan);
+  padding: 2px 5px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+
 .bm-record-dot {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #ff453a;
-  box-shadow: 0 0 10px rgba(255, 69, 58, 0.6);
+  background: var(--bm-cyan);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.7);
 }
 
 .bm-title {
   font-size: 1.15rem;
   font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   color: #ffffff;
   line-height: 1.1;
   margin: 0;
+  text-transform: uppercase;
 }
 
 .bm-subtitle {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--bm-amber, #ff9f0a);
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
   font-family: var(--font-mono);
   margin: 0;
 }
@@ -155,40 +179,33 @@ body {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 4px;
-  background: rgba(48, 209, 88, 0.12);
-  border: 1px solid rgba(48, 209, 88, 0.3);
-  color: #30d158;
+  border-radius: 2px;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  color: var(--bm-cyan);
   font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   font-family: var(--font-mono);
 }
 
 .bm-live-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #30d158;
-}
-
-.bm-live-dot.amber {
-  background: #ff9f0a;
-}
-
-.bm-live-dot.red {
-  background: #ff453a;
+  background: var(--bm-cyan);
 }
 
 .bm-status-clock {
   font-family: var(--font-mono);
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 700;
-  color: #8b949e;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  background: #111317;
+  padding: 3px 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  letter-spacing: 1px;
 }
 
 /* Layout del Inicio Centrado para TV */
@@ -197,31 +214,45 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: calc(100vh - 90px);
+  min-height: calc(100vh - 80px);
   padding: 24px;
 }
 
 .bm-home-hero {
   width: 100%;
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.bm-hero-prompt {
+.bm-menu-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-bottom: 24px;
+}
+
+.bm-menu-title {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 2px;
-  color: #8b949e;
+  color: var(--text-secondary);
   text-transform: uppercase;
-  margin-bottom: 24px;
-  text-align: center;
+}
+
+.bm-menu-meta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
 }
 
 .bm-hero-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  gap: 24px;
   width: 100%;
 }
 
@@ -230,14 +261,12 @@ body {
     grid-template-columns: 1fr;
     gap: 16px;
   }
+  .bm-menu-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--transition-fast);
 }
 
 .section-nav-tab:hover,

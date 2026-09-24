@@ -1,6 +1,5 @@
 /* ==========================================================================
-   SECCIÓN DE INICIO: 2 GRANDES BOTONES (CANALES DE TV Y RADIOS FM)
-   ESTILO BLACKMAGIC DESIGN OS / APPLE MINIMALISTA
+   SECCIÓN DE INICIO: MENÚ BLACKMAGIC CAMERA OS (2 BOTONES INDUSTRIALES)
    ========================================================================== */
 
 .home-hero-section {
@@ -10,145 +9,84 @@
 .home-hero-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 .hero-action-card.bm-card {
   position: relative;
-  background: #11141c;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 24px;
+  background: #111317;
+  border: 1px solid var(--border-color, #222630);
+  border-radius: 2px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   cursor: pointer;
   text-align: left;
   outline: none;
   min-height: 220px;
   user-select: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: all 0.12s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.hero-action-card.bm-card-tv {
-  border-left: 4px solid var(--bm-cyan, #00d4ff);
-}
-
-.hero-action-card.bm-card-radio {
-  border-left: 4px solid var(--bm-amber, #ff9f0a);
-}
-
-/* Foco de control remoto D-Pad y Mouse */
-.hero-action-card.bm-card:hover,
-.hero-action-card.bm-card:focus,
-.hero-action-card.bm-card:focus-visible,
-.hero-action-card.bm-card.is-tv-focused {
-  background: #171d28;
-  border-color: #ffffff;
-  outline: 3px solid #ffffff !important;
-  outline-offset: 2px;
-  z-index: 10;
-}
-
-.hero-action-card.bm-card-tv:hover,
-.hero-action-card.bm-card-tv:focus,
-.hero-action-card.bm-card-tv.is-tv-focused {
-  border-color: var(--bm-cyan, #00d4ff) !important;
-  outline: 3px solid var(--bm-cyan, #00d4ff) !important;
-  background: #141c28;
-}
-
-.hero-action-card.bm-card-radio:hover,
-.hero-action-card.bm-card-radio:focus,
-.hero-action-card.bm-card-radio.is-tv-focused {
-  border-color: var(--bm-amber, #ff9f0a) !important;
-  outline: 3px solid var(--bm-amber, #ff9f0a) !important;
-  background: #1c1914;
-}
-
-.bm-card-header {
+.bm-card-top-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 12px;
 }
 
-.bm-card-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-}
-
-.bm-card-badge.tv {
-  background: rgba(0, 212, 255, 0.12);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+.bm-tile-num {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 900;
   color: var(--bm-cyan, #00d4ff);
-}
-
-.bm-card-badge.radio {
-  background: rgba(255, 159, 10, 0.12);
-  border: 1px solid rgba(255, 159, 10, 0.3);
-  color: var(--bm-amber, #ff9f0a);
-}
-
-.bm-card-tag {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.65rem;
-  font-weight: 700;
   letter-spacing: 1px;
-  color: #6e7681;
+}
+
+.bm-tile-badge {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .bm-card-body {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.bm-card-icon {
-  font-size: 2.4rem;
-  width: 58px;
-  height: 58px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.bm-card-tv .bm-card-icon {
-  border-color: rgba(0, 212, 255, 0.2);
-}
-
-.bm-card-radio .bm-card-icon {
-  border-color: rgba(255, 159, 10, 0.2);
-}
-
-.bm-card-text {
-  flex: 1;
-}
-
-.bm-card-text h2 {
-  font-size: 1.45rem;
-  font-weight: 800;
+.bm-tile-title {
+  font-size: 1.85rem;
+  font-weight: 900;
+  letter-spacing: 2px;
   color: #ffffff;
-  margin: 0 0 6px 0;
-  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.1;
 }
 
-.bm-card-text p {
-  font-size: 0.82rem;
-  color: #8b949e;
-  line-height: 1.4;
+.bm-tile-spec {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   margin: 0;
 }
 
@@ -156,33 +94,52 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 14px;
+  width: 100%;
 }
 
-.bm-btn-label {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.74rem;
-  font-weight: 800;
+.bm-tile-status {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 75%;
+}
+
+.bm-tile-action {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #ffffff;
   letter-spacing: 1px;
-  color: #ffffff;
+  padding: 4px 8px;
+  background: #181b22;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
 }
 
-.bm-card-tv .bm-btn-label {
-  color: var(--bm-cyan, #00d4ff);
+/* Foco de Alta Precisión Estilo Blackmagic Camera OS */
+.hero-action-card.bm-card:hover,
+.hero-action-card.bm-card:focus,
+.hero-action-card.bm-card:focus-visible,
+.hero-action-card.bm-card.is-tv-focused {
+  background: #161a22;
+  border-color: var(--bm-cyan, #00d4ff) !important;
+  outline: 2px solid var(--bm-cyan, #00d4ff) !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
 }
 
-.bm-card-radio .bm-btn-label {
-  color: var(--bm-amber, #ff9f0a);
-}
-
-.bm-btn-arrow {
-  font-size: 0.85rem;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 4px 10px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.hero-action-card.bm-card:focus .bm-tile-action,
+.hero-action-card.bm-card.is-tv-focused .bm-tile-action {
+  background: var(--bm-cyan);
+  color: #000000;
+  border-color: var(--bm-cyan);
 }
 
 /* ==========================================================================
