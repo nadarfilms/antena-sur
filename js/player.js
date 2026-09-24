@@ -2351,7 +2351,7 @@ export class PlayerEngine {
       this.dom.radioFullscreenView.classList.remove('is-hidden');
     }
     if (this.dom.radioBar) {
-      this.dom.radioBar.classList.add('is-hidden');
+      this.dom.radioBar.classList.remove('is-hidden');
     }
 
     let targetStation = station;
@@ -2392,12 +2392,16 @@ export class PlayerEngine {
     }
   }
 
-  closeFullscreenRadio() {
+  closeFullscreenRadio(stopPlayback = false) {
     this.isRadioFullscreen = false;
     if (this.dom.radioFullscreenView) {
       this.dom.radioFullscreenView.classList.add('is-hidden');
     }
-    this.stopRadio();
+    if (stopPlayback) {
+      this.stopRadio();
+    } else if (this.currentStation && this.dom.radioBar) {
+      this.dom.radioBar.classList.remove('is-hidden');
+    }
 
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
       window.__antenaSurApp.updateHeaderActiveTab('home');
@@ -2792,7 +2796,7 @@ export class PlayerEngine {
     this.updateMobileRadioUI(station);
     this.updateFullscreenRadioUI(station);
 
-    if (this.dom.radioBar && !this.isRadioFullscreen) this.dom.radioBar.classList.remove('is-hidden');
+    if (this.dom.radioBar) this.dom.radioBar.classList.remove('is-hidden');
     if (this.dom.radioTitle) this.dom.radioTitle.textContent = station.name;
     if (this.dom.radioSubtitle) {
       const freq = station.frequency ? `[${station.frequency}] • ` : '';
@@ -2881,13 +2885,18 @@ export class PlayerEngine {
         this.audioElement.src = url;
       }
       this.audioElement.muted = false;
+      if (typeof this.volume === 'number') {
+        this.audioElement.volume = this.volume;
+      }
       const p = this.audioElement.play();
       if (p !== undefined) {
-        p.catch(e => {
-          console.warn('Autoplay de radio esperando conexión/foco:', e);
-          if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-            this.scheduleReconnect(2500);
-          }
+        p.then(() => {
+          this.isPlaying = true;
+          this.updateRadioPlayIcon(true);
+        }).catch(e => {
+          console.warn('Autoplay de radio esperando interacción:', e);
+          this.isPlaying = false;
+          this.updateRadioPlayIcon(false);
         });
       }
     }

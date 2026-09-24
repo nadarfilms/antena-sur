@@ -447,6 +447,22 @@
             <span class="radio-spec-val" id="radioFsCityVal">Santiago • Región Metropolitana</span>
           </div>
         </div>
+
+        <!-- Controles Principales de Reproducción Blackmagic (Play / Pausa / Siguiente / Anterior) -->
+        <div class="radio-fs-controls-row">
+          <button class="radio-fs-ctrl-btn" id="radioFsPrevBtn" title="Emisora Anterior">
+            <span class="ctrl-icon">⏮️</span>
+            <span class="ctrl-text">ANTERIOR</span>
+          </button>
+          <button class="radio-fs-ctrl-btn radio-fs-play-btn" id="radioFsPlayBtn" title="Reproducir / Pausar">
+            <span class="ctrl-icon" id="radioFsPlayIcon">▶️</span>
+            <span class="ctrl-text" id="radioFsPlayText">REPRODUCIR</span>
+          </button>
+          <button class="radio-fs-ctrl-btn" id="radioFsNextBtn" title="Emisora Siguiente">
+            <span class="ctrl-text">SIGUIENTE</span>
+            <span class="ctrl-icon">⏭️</span>
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -491,15 +507,13 @@
       </button>
       <button class="radio-close-btn" id="radioCloseBtn" title="Detener Radio">✕</button>
     </div>
+
+    <!-- Elemento de audio nativo embebido en el reproductor de radio -->
+    <audio id="radioAudioPlayer" preload="auto" playsinline webkit-playsinline></audio>
   </div>
-
-
 
   <!-- Contenedor de Alertas Toast -->
   <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Elemento de audio nativo para Radios (optimizado para Android TV y Celular) -->
-  <audio id="radioAudioPlayer" preload="auto" playsinline webkit-playsinline style="position:fixed;bottom:-9999px;opacity:0;pointer-events:none;"></audio>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
   <script src="./js/app.bundle.js"></script>

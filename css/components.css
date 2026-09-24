@@ -8,14 +8,19 @@
 
 .home-hero-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .home-hero-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -25,17 +30,20 @@
   border: 1px solid var(--border-color, #27344a);
   border-bottom: 4px solid var(--bg-card, #1c2436);
   border-radius: 6px;
-  padding: 34px 30px;
+  padding: 30px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 20px;
+  gap: 18px;
   cursor: pointer;
   text-align: left;
   outline: none;
-  min-height: 260px;
-  height: 100%;
+  min-height: 240px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
+  overflow: hidden;
   user-select: none;
   transition: all 0.15s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -43,10 +51,14 @@
 
 @media (max-width: 768px) {
   .hero-action-card.bm-card {
-    padding: 22px 20px;
-    min-height: 165px;
-    height: 165px;
-    gap: 12px;
+    padding: 18px 16px;
+    min-height: 155px;
+    height: auto;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
   }
 }
 
@@ -64,8 +76,12 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 12px;
+  overflow: hidden;
 }
 
 .bm-tile-num {
@@ -73,6 +89,7 @@
   font-weight: 800;
   color: var(--bm-cyan, #0095ff);
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 .bm-tile-badge {
@@ -81,12 +98,20 @@
   color: var(--text-secondary, #7f8f9f);
   letter-spacing: 1px;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bm-card-body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .bm-tile-title {
@@ -97,6 +122,9 @@
   text-transform: uppercase;
   margin: 0;
   line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bm-tile-spec {
@@ -106,6 +134,9 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bm-card-footer {
@@ -115,6 +146,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 12px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .bm-tile-status {
@@ -126,6 +161,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+}
+
+@media (max-width: 768px) {
+  .bm-tile-title {
+    font-size: 1.65rem;
+  }
+  .bm-tile-spec {
+    font-size: 0.72rem;
+  }
+  .bm-tile-status {
+    font-size: 0.75rem;
+  }
 }
 
 /* Foco de Alta Precisión Estilo Blackmagic Camera OS (Referencia Image 1 y 2) */

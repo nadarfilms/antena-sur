@@ -36,7 +36,7 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,15 +54,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.3
+    - name: Publicar Release v1.1.4
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.3"
-        name: "Antena Sur Android TV v1.1.3"
-        body: "Versión 1.1.3: Corrección completa de reproducción de radio en redes móviles (4G/5G) en celulares; Menú de inicio depurado a exactamente 2 botones industriales idénticos en tamaño e integrados con navegación responsiva; eliminación de pestañas superiores, flechas laterales, indicadores de puntos y disclaimers inferiores; preservación limpia de hora, título y subtítulo en la cabecera estilo Blackmagic Camera OS."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.4"
+        name: "Antena Sur Android TV v1.1.4"
+        body: "Versión 1.1.4: Reincorporación de la barra de reproducción inferior persistente con controles de audio en celulares; integración de botones de reproducción en pantalla completa; corrección de desbordamiento horizontal en botones de menú inicio para móviles; depuración de streams y eliminación de backups 403 Forbidden."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
+

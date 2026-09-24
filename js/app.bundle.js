@@ -8369,8 +8369,8 @@ window.STATIONS_DATA = {
       "genre": "Noticias",
       "isNational": false,
       "logo": "./img/logos/cl-rad-biobioconcepcion.svg",
-      "streamUrl": "https://unlimited3-cl.dps.live/biobioconcepcion/mp3/icecast.audio",
-      "backupStreamUrl": "https://unlimited3-cl.dps.live/biobioconcepcion/aac/icecast.audio",
+      "streamUrl": "https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio",
+      "backupStreamUrl": null,
       "website": "https://www.biobiochile.cl",
       "description": "Señal matriz penquista de Radio Bío Bío con la información directa del Gran Concepción y el sur.",
       "status": "online",
@@ -8407,8 +8407,8 @@ window.STATIONS_DATA = {
       "genre": "Noticias",
       "isNational": false,
       "logo": "./img/logos/cl-rad-biobiopuertomontt.svg",
-      "streamUrl": "https://unlimited3-cl.dps.live/biobiopuertomontt/mp3/icecast.audio",
-      "backupStreamUrl": "https://unlimited3-cl.dps.live/biobiopuertomontt/aac/icecast.audio",
+      "streamUrl": "https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio",
+      "backupStreamUrl": null,
       "website": "https://www.biobiochile.cl",
       "description": "Señal de Bío Bío para Puerto Montt, Llanquihue, Puerto Varas y Chiloé.",
       "status": "online",
@@ -8445,8 +8445,8 @@ window.STATIONS_DATA = {
       "frequency": "88.9 FM",
       "description": "Señal local de Radio Bío Bío para Valdivia y la Región de Los Ríos.",
       "logo": "./img/logos/cl-rad-biobiovaldivia.svg",
-      "streamUrl": "https://unlimited3-cl.dps.live/biobiovaldivia/mp3/icecast.audio",
-      "backupStreamUrl": "https://unlimited3-cl.dps.live/biobiovaldivia/aac/icecast.audio",
+      "streamUrl": "https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio",
+      "backupStreamUrl": null,
       "website": "https://www.biobiochile.cl",
       "status": "online",
       "featured": false,
@@ -8503,7 +8503,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-adn.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/ADN.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/ADNAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.adnradio.cl",
       "description": "Actualidad, Deportes y Noticias. Gran cobertura informativa y programas emblemáticos como Los Tenores.",
       "status": "online",
@@ -8522,7 +8522,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-futuro.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/FUTURO.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/FUTUROAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.futuro.cl",
       "description": "La radio del rock en Chile: Clásicos del rock, hard rock, blues, heavy metal y noticias de la escena musical.",
       "status": "online",
@@ -8560,7 +8560,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-rockandpop.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/ROCK_AND_POP.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/ROCK_AND_POPAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.rockandpop.cl",
       "description": "Música 24/7 con los mejores clásicos y tendencias del rock y pop global.",
       "status": "online",
@@ -8579,7 +8579,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-corazon.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/CORAZON.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/CORAZONAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.corazon.cl",
       "description": "La número 1 de Chile: Cumbia, música tropical, reggaetón, humor y compañía diaria.",
       "status": "online",
@@ -8617,7 +8617,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-pudahuel.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/PUDAHUEL.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/PUDAHUELAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.pudahuel.cl",
       "description": "La voz de Chile: Música romántica, baladas en español y la compañía más cercana del país.",
       "status": "online",
@@ -8674,7 +8674,7 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-rad-fmdos.png",
       "streamUrl": "https://playerservices.streamtheworld.com/api/livestream-redirect/FMDOS.mp3",
-      "backupStreamUrl": "https://26583.live.streamtheworld.com/FMDOSAAC.aac",
+      "backupStreamUrl": null,
       "website": "https://www.fmdos.cl",
       "description": "La radio de los dos: Lo mejor de las historias de amor y pop romántico en español e inglés.",
       "status": "online",
@@ -11364,7 +11364,7 @@ class PlayerEngine {
       this.dom.radioFullscreenView.classList.remove('is-hidden');
     }
     if (this.dom.radioBar) {
-      this.dom.radioBar.classList.add('is-hidden');
+      this.dom.radioBar.classList.remove('is-hidden');
     }
 
     let targetStation = station;
@@ -11405,12 +11405,16 @@ class PlayerEngine {
     }
   }
 
-  closeFullscreenRadio() {
+  closeFullscreenRadio(stopPlayback = false) {
     this.isRadioFullscreen = false;
     if (this.dom.radioFullscreenView) {
       this.dom.radioFullscreenView.classList.add('is-hidden');
     }
-    this.stopRadio();
+    if (stopPlayback) {
+      this.stopRadio();
+    } else if (this.currentStation && this.dom.radioBar) {
+      this.dom.radioBar.classList.remove('is-hidden');
+    }
 
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
       window.__antenaSurApp.updateHeaderActiveTab('home');
@@ -11805,7 +11809,7 @@ class PlayerEngine {
     this.updateMobileRadioUI(station);
     this.updateFullscreenRadioUI(station);
 
-    if (this.dom.radioBar && !this.isRadioFullscreen) this.dom.radioBar.classList.remove('is-hidden');
+    if (this.dom.radioBar) this.dom.radioBar.classList.remove('is-hidden');
     if (this.dom.radioTitle) this.dom.radioTitle.textContent = station.name;
     if (this.dom.radioSubtitle) {
       const freq = station.frequency ? `[${station.frequency}] • ` : '';
@@ -11894,13 +11898,18 @@ class PlayerEngine {
         this.audioElement.src = url;
       }
       this.audioElement.muted = false;
+      if (typeof this.volume === 'number') {
+        this.audioElement.volume = this.volume;
+      }
       const p = this.audioElement.play();
       if (p !== undefined) {
-        p.catch(e => {
-          console.warn('Autoplay de radio esperando conexión/foco:', e);
-          if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-            this.scheduleReconnect(2500);
-          }
+        p.then(() => {
+          this.isPlaying = true;
+          this.updateRadioPlayIcon(true);
+        }).catch(e => {
+          console.warn('Autoplay de radio esperando interacción:', e);
+          this.isPlaying = false;
+          this.updateRadioPlayIcon(false);
         });
       }
     }

@@ -103,10 +103,12 @@ body {
 .bm-header {
   background: var(--bg-surface, #121723);
   border-bottom: 1px solid var(--border-color, #273349);
-  padding: 10px 0;
+  padding: 12px 0;
+  padding-top: max(12px, env(safe-area-inset-top, 12px));
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
 }
 
 .bm-nav-wrapper {
@@ -251,6 +253,7 @@ body {
   min-height: calc(100vh - 76px);
   padding: 32px 24px;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -258,30 +261,33 @@ body {
   width: 100%;
   max-width: 1080px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
 }
 
 .bm-hero-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 28px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .bm-home-container {
-    min-height: calc(100vh - 65px);
-    padding: 20px 16px;
-    justify-content: center;
+    min-height: auto;
+    padding: 24px 16px 40px 16px;
+    justify-content: flex-start;
   }
   .bm-home-hero {
-    max-width: 520px;
+    max-width: 100%;
+    width: 100%;
   }
   .bm-hero-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -295,7 +301,7 @@ body {
     max-width: 860px;
   }
   .bm-hero-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
 }

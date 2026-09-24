@@ -1300,16 +1300,19 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
+  max-width: 100%;
   background: #0a0e17;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
-  z-index: 1200;
+  z-index: 9999;
   padding: 12px 24px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 14px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  box-sizing: border-box;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -2079,6 +2082,60 @@
   text-decoration: underline;
 }
 
+/* Controles Principales de Reproducción en Escenario */
+.radio-fs-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  width: 100%;
+}
+
+.radio-fs-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #171f2e;
+  border: 1px solid var(--border-color, #273349);
+  border-radius: 4px;
+  padding: 12px 18px;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex: 1;
+}
+
+.radio-fs-ctrl-btn:hover,
+.radio-fs-ctrl-btn:focus,
+.radio-fs-ctrl-btn:focus-visible,
+.radio-fs-ctrl-btn.is-tv-focused {
+  background: var(--bg-card-hover, #263249);
+  border-color: var(--bm-cyan, #0095ff);
+  outline: 2px solid var(--bm-cyan, #0095ff);
+  outline-offset: -1px;
+  box-shadow: 0 0 16px rgba(0, 149, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.radio-fs-ctrl-btn.radio-fs-play-btn {
+  background: var(--bm-cyan, #0095ff);
+  border-color: var(--bm-cyan, #0095ff);
+  color: #ffffff;
+  flex: 1.4;
+  font-size: 0.95rem;
+}
+
+.radio-fs-ctrl-btn.radio-fs-play-btn:hover,
+.radio-fs-ctrl-btn.radio-fs-play-btn:focus {
+  background: #1ab0ff;
+  box-shadow: 0 0 20px rgba(0, 149, 255, 0.5);
+}
+
 /* ==========================================================================
    ADAPTACIÓN RESPONSIVA (MÓVIL PORTRAIT, MÓVIL LANDSCAPE, TV 16:9)
    ========================================================================== */
@@ -2086,7 +2143,7 @@
 @media (max-width: 768px) {
   .radio-fullscreen-view {
     padding-top: max(14px, env(safe-area-inset-top, 24px));
-    padding-bottom: max(12px, env(safe-area-inset-bottom, 16px));
+    padding-bottom: 95px !important;
   }
   .radio-fs-header {
     padding: 10px 14px;
