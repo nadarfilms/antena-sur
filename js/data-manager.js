@@ -13,36 +13,34 @@ export class DataManager {
 
   async load() {
     try {
-      let data = (typeof window !== 'undefined' && window.STATIONS_DATA) ? window.STATIONS_DATA : null;
+      let data = null;
+      if (typeof window !== 'undefined' && window.STATIONS_DATA) {
+        data = window.STATIONS_DATA;
+      } else if (typeof globalThis !== 'undefined' && globalThis.STATIONS_DATA) {
+        data = globalThis.STATIONS_DATA;
+      }
+
       if (!data) {
-        const response = await fetch('./data/stations.json');
-        if (response.ok) {
-          data = await response.json();
+        try {
+          const response = await fetch('./data/stations.json');
+          if (response.ok) {
+            data = await response.json();
+          }
+        } catch (fetchErr) {
+          console.warn('Fetch fallback no disponible:', fetchErr);
         }
       }
 
-      if (!data && typeof window !== 'undefined' && window.STATIONS_DATA) {
-        data = window.STATIONS_DATA;
-      }
-
-      if (data) {
+      if (data && data.stations && data.stations.length > 0) {
         this.countries = data.countries || [];
         this.loadCustomStations();
         this.stations = [...(data.stations || []), ...this.customStations];
         this.isLoaded = true;
         return true;
       }
-      throw new Error('No se encontraron datos de estaciones');
+      return false;
     } catch (error) {
-      console.warn('Carga alternativa de estaciones:', error);
-      if (typeof window !== 'undefined' && window.STATIONS_DATA) {
-        const data = window.STATIONS_DATA;
-        this.countries = data.countries || [];
-        this.loadCustomStations();
-        this.stations = [...(data.stations || []), ...this.customStations];
-        this.isLoaded = true;
-        return true;
-      }
+      console.warn('Error en carga de estaciones:', error);
       return false;
     }
   }

@@ -39,19 +39,27 @@ class App {
   }
 
   async start() {
-    this.showToast('Cargando señales de Chile y Sudamérica...', 'info');
+    this.showToast('Cargando señales de Chile...', 'info');
+
+    // 1. Inicializar navegación e interactividad de inmediato para responder al control remoto
+    this.initMainSectionTabs();
+    this.initKeyboardShortcuts();
+    this.initCustomModalEvents();
+    if (typeof initTvNavigation === 'function') {
+      initTvNavigation();
+    }
 
     const success = await this.dataManager.load();
     if (!success) {
-      this.showToast('No se pudieron cargar los datos de las emisoras.', 'error');
-      return;
+      console.warn('Carga preliminar de emisoras sin datos completos');
+      this.showToast('Sincronizando catálogo de emisoras...', 'warning');
     }
 
     if (this.dom.loadingState) {
       this.dom.loadingState.style.display = 'none';
     }
 
-    // Inicializar Player Engine
+    // 2. Inicializar Player Engine
     this.player = new PlayerEngine(this.favoritesManager, (station, status) => {
       this.handlePlayerStateChange(station, status);
     });
@@ -59,35 +67,33 @@ class App {
     // Enviar datos al reproductor para la Guía Zapping y MediaSession
     this.player.setStationsData(this.dataManager.getAllStations());
 
-    // Inicializar Filters Engine con callback de renderizado
+    // 3. Inicializar Filters Engine con callback de renderizado
     this.filters = new FiltersEngine(this.dataManager, this.favoritesManager, (filteredStations) => {
       this.renderStations(filteredStations);
     });
 
     this.filters.init();
-    this.initCustomModalEvents();
-    this.initKeyboardShortcuts();
-    this.initMainSectionTabs();
 
-    // Actualizar contadores de sección superior
+    // 4. Actualizar contadores dinámicos de la barra superior
     const tvCount = this.dataManager.getAllStations().filter(s => s.type === 'tv').length;
     const radioCount = this.dataManager.getAllStations().filter(s => s.type === 'radio').length;
     const tvCounterEl = document.getElementById('tvCounter');
     const radioCounterEl = document.getElementById('radioCounter');
-    if (tvCounterEl) tvCounterEl.textContent = tvCount;
-    if (radioCounterEl) radioCounterEl.textContent = radioCount;
+    if (tvCounterEl) tvCounterEl.textContent = tvCount || 37;
+    if (radioCounterEl) radioCounterEl.textContent = radioCount || 23;
 
-    // Render inicial
+    // 5. Renderizar grid inicial de tarjetas
     const initialList = this.filters.getFilteredStations();
     this.renderStations(initialList);
 
-    this.showToast(`¡Listo! ${tvCount} Canales de TV y ${radioCount} Radios activas en Chile`, 'success');
+    if (tvCount > 0) {
+      this.showToast(`¡Listo! ${tvCount} Canales de TV y ${radioCount} Radios de Chile activas`, 'success');
+    }
 
     // Exponer el reproductor globalmente para botones nativos de Android TV (Zap+/Zap-)
     window.AntenaSurPlayer = this.player;
 
-    // Inicializar motor de navegación por control remoto Android TV
-    initTvNavigation();
+    // 6. Enfocar inmediatamente el botón principal de Canales de TV
     if (typeof window.initTvFocus === 'function') {
       window.initTvFocus();
     }

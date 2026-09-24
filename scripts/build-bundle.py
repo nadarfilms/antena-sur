@@ -8,6 +8,7 @@ JS_DIR = os.path.join(ROOT_DIR, 'js')
 ANDROID_WWW_DIR = os.path.join(ROOT_DIR, 'android', 'app', 'src', 'main', 'assets', 'www')
 
 files_order = [
+    'stations-data.js',
     'data-manager.js',
     'favorites.js',
     'player.js',
@@ -53,9 +54,25 @@ with open(bundle_dest, 'w', encoding='utf-8') as f:
 
 print(f"Generated root {bundle_dest} ({len(bundled_code)} bytes)")
 
-# Sync to Android assets www
+# Sync all web assets to Android assets www
+os.makedirs(ANDROID_WWW_DIR, exist_ok=True)
+
+# 1. Sync index.html
+shutil.copy2(os.path.join(ROOT_DIR, 'index.html'), os.path.join(ANDROID_WWW_DIR, 'index.html'))
+
+# 2. Sync css
+shutil.copytree(os.path.join(ROOT_DIR, 'css'), os.path.join(ANDROID_WWW_DIR, 'css'), dirs_exist_ok=True)
+
+# 3. Sync js
 android_js_dest = os.path.join(ANDROID_WWW_DIR, 'js')
 os.makedirs(android_js_dest, exist_ok=True)
-shutil.copy2(bundle_dest, os.path.join(android_js_dest, 'app.bundle.js'))
+for item in os.listdir(JS_DIR):
+    s = os.path.join(JS_DIR, item)
+    d = os.path.join(android_js_dest, item)
+    if os.path.isfile(s):
+        shutil.copy2(s, d)
 
-print(f"Synced to Android assets: {os.path.join(android_js_dest, 'app.bundle.js')}")
+# 4. Sync data
+shutil.copytree(os.path.join(ROOT_DIR, 'data'), os.path.join(ANDROID_WWW_DIR, 'data'), dirs_exist_ok=True)
+
+print(f"Fully synced all web assets to Android assets www!")

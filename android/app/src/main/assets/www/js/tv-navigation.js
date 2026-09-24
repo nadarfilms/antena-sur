@@ -1,6 +1,7 @@
 /**
  * ANTENA SUR - TV Navigation Engine
- * Navegación espacial 2D de alta precisión para Android TV, Google TV y Smart TVs
+ * Navegación espacial determinista 2D de alta precisión para Android TV, Google TV y Smart TVs
+ * Compatible con controles remotos USB Wireless con dongle 2.4GHz, mandos IR y teclados físicos
  */
 
 export function initTvNavigation() {
@@ -24,35 +25,148 @@ export function initTvNavigation() {
     try {
       element.focus({ preventScroll: true });
     } catch (e) {
-      element.focus();
+      try { element.focus(); } catch (e2) {}
     }
     try {
       element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     } catch (e) {
-      element.scrollIntoView();
+      try { element.scrollIntoView(); } catch (e2) {}
     }
     document.querySelectorAll('.is-tv-focused').forEach(el => el.classList.remove('is-tv-focused'));
     element.classList.add('is-tv-focused');
   }
 
   function navigateSpatial(direction) {
-    const focusable = getFocusableElements();
-    if (!focusable.length) return;
-
     let current = document.activeElement;
-    if (!current || !focusable.includes(current)) {
-      const tvFocused = document.querySelector('.is-tv-focused');
-      if (tvFocused && focusable.includes(tvFocused)) {
-        current = tvFocused;
+    const tvFocused = document.querySelector('.is-tv-focused');
+    if (!current || current === document.body || !document.contains(current)) {
+      current = tvFocused;
+    }
+
+    const heroTv = document.getElementById('heroCardTv');
+    const heroRadio = document.getElementById('heroCardRadio');
+    const tabTv = document.getElementById('sectionTabTv');
+    const tabRadio = document.getElementById('sectionTabRadio');
+    const firstStationCard = document.querySelector('.stations-grid .station-card');
+
+    if (!current) {
+      setFocus(heroTv || tabTv);
+      return;
+    }
+
+    // ========================================================================
+    // 1. NAVEGACIÓN DETERMINISTA EN BARRA SUPERIOR DE PESTAÑAS
+    // ========================================================================
+    if (current === tabTv || current.id === 'sectionTabTv') {
+      if (direction === 'ArrowRight') { setFocus(tabRadio); return; }
+      if (direction === 'ArrowDown') { setFocus(heroTv); return; }
+      return;
+    }
+    if (current === tabRadio || current.id === 'sectionTabRadio') {
+      if (direction === 'ArrowLeft') { setFocus(tabTv); return; }
+      if (direction === 'ArrowDown') { setFocus(heroRadio); return; }
+      return;
+    }
+
+    // ========================================================================
+    // 2. NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
+    // ========================================================================
+    if (current === heroTv || current.id === 'heroCardTv') {
+      if (direction === 'ArrowUp') { setFocus(tabTv); return; }
+      if (direction === 'ArrowRight') { setFocus(heroRadio); return; }
+      if (direction === 'ArrowDown') {
+        if (firstStationCard) setFocus(firstStationCard);
+        return;
+      }
+      return;
+    }
+    if (current === heroRadio || current.id === 'heroCardRadio') {
+      if (direction === 'ArrowUp') { setFocus(tabRadio); return; }
+      if (direction === 'ArrowLeft') { setFocus(heroTv); return; }
+      if (direction === 'ArrowDown') {
+        if (firstStationCard) setFocus(firstStationCard);
+        return;
+      }
+      return;
+    }
+
+    // ========================================================================
+    // 3. NAVEGACIÓN DETERMINISTA DENTRO DEL CATÁLOGO DE ESTACIONES (.station-card)
+    // ========================================================================
+    if (current.classList?.contains('station-card')) {
+      const allCards = Array.from(document.querySelectorAll('.stations-grid .station-card'));
+      const idx = allCards.indexOf(current);
+
+      if (idx !== -1) {
+        const curRect = current.getBoundingClientRect();
+        const firstRowTop = allCards[0]?.getBoundingClientRect().top;
+
+        // Subir desde la primera fila de tarjetas regresa al gran botón de TV
+        if (direction === 'ArrowUp') {
+          if (firstRowTop !== undefined && Math.abs(curRect.top - firstRowTop) < 35) {
+            setFocus(heroTv);
+            return;
+          }
+          // Subir a la fila anterior buscando la tarjeta verticalmente más cercana
+          let bestUp = null;
+          let minDiff = Infinity;
+          for (let i = 0; i < idx; i++) {
+            const r = allCards[i].getBoundingClientRect();
+            const dy = r.top - curRect.top;
+            if (dy < -20) {
+              const dx = Math.abs(r.left - curRect.left);
+              const score = Math.abs(dy) + dx * 2;
+              if (score < minDiff) {
+                minDiff = score;
+                bestUp = allCards[i];
+              }
+            }
+          }
+          if (bestUp) {
+            setFocus(bestUp);
+            return;
+          }
+        }
+
+        // Bajar a la siguiente fila de tarjetas
+        if (direction === 'ArrowDown') {
+          let bestDown = null;
+          let minDiff = Infinity;
+          for (let i = idx + 1; i < allCards.length; i++) {
+            const r = allCards[i].getBoundingClientRect();
+            const dy = r.top - curRect.top;
+            if (dy > 20) {
+              const dx = Math.abs(r.left - curRect.left);
+              const score = dy + dx * 2;
+              if (score < minDiff) {
+                minDiff = score;
+                bestDown = allCards[i];
+              }
+            }
+          }
+          if (bestDown) {
+            setFocus(bestDown);
+            return;
+          }
+        }
+
+        // Desplazamiento horizontal secuencial entre tarjetas
+        if (direction === 'ArrowLeft' && idx > 0) {
+          setFocus(allCards[idx - 1]);
+          return;
+        }
+        if (direction === 'ArrowRight' && idx < allCards.length - 1) {
+          setFocus(allCards[idx + 1]);
+          return;
+        }
       }
     }
 
-    // Si aún no hay nada enfocado, enfocar el botón principal de Canales de TV e iniciar desde allí
-    if (!current || !focusable.includes(current)) {
-      const heroTv = document.getElementById('heroCardTv');
-      current = (heroTv && focusable.includes(heroTv)) ? heroTv : focusable[0];
-      setFocus(current);
-    }
+    // ========================================================================
+    // 4. FALLBACK GENERAL: CÁLCULO DE PROXIMIDAD ESPACIAL 2D
+    // ========================================================================
+    const focusable = getFocusableElements();
+    if (!focusable.length) return;
 
     const cRect = current.getBoundingClientRect();
     const cCenter = {
@@ -80,7 +194,6 @@ export function initTvNavigation() {
       if (direction === 'ArrowRight') {
         if (dx > 10) {
           isValidDirection = true;
-          // Penalizar fuertemente la desviación vertical para mantenerse en la misma fila
           score = dx + Math.abs(dy) * 3;
         }
       } else if (direction === 'ArrowLeft') {
@@ -91,7 +204,6 @@ export function initTvNavigation() {
       } else if (direction === 'ArrowDown') {
         if (dy > 10) {
           isValidDirection = true;
-          // Penalizar desviación horizontal para caer en la tarjeta directamente debajo
           score = dy + Math.abs(dx) * 1.5;
         }
       } else if (direction === 'ArrowUp') {
@@ -115,7 +227,7 @@ export function initTvNavigation() {
   // Interfaz pública para Android WebView
   window.initTvFocus = function() {
     const heroTv = document.getElementById('heroCardTv');
-    const firstCard = document.querySelector('.station-card');
+    const firstCard = document.querySelector('.stations-grid .station-card');
     setFocus(heroTv || firstCard);
   };
 
@@ -216,9 +328,10 @@ export function initTvNavigation() {
 
     if (action === 'Enter') {
       let current = document.activeElement;
-      if (!current || current === document.body) {
+      if (!current || current === document.body || !document.contains(current)) {
         current = document.querySelector('.is-tv-focused');
       }
+
       if (current && typeof current.click === 'function') {
         current.click();
       } else {
@@ -257,7 +370,7 @@ export function initTvNavigation() {
     }
   });
 
-  // Atajos de teclado para mandos bluetooth y teclados estándar
+  // Atajos de teclado para mandos USB dongle, mandos bluetooth y teclados estándar
   window.addEventListener('keydown', (e) => {
     if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
       if (e.key === 'Escape') e.target.blur();
@@ -276,10 +389,10 @@ export function initTvNavigation() {
     }
   });
 
-  // Inicializar foco al primer elemento
+  // Enfocar inicialmente el botón de TV
   setTimeout(() => {
     window.initTvFocus();
-  }, 200);
+  }, 100);
 }
 
 // Auto-inicializar de inmediato al cargar el script

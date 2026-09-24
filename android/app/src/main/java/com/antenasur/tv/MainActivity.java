@@ -112,39 +112,47 @@ public class MainActivity extends AppCompatActivity {
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                Uri uri = request.getUrl();
-                // Proxy HLS inteligente nativo en Java para señales que exigen Referer (Canal 13, etc.)
-                if (uri.getPath() != null && uri.getPath().contains("/api/proxy")) {
-                    WebResourceResponse proxyResp = handleHlsProxy(request);
-                    if (proxyResp != null) return proxyResp;
-                }
-                WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
-                if (response != null) {
-                    Map<String, String> headers = response.getResponseHeaders();
-                    if (headers == null) {
-                        headers = new HashMap<>();
-                    } else {
-                        headers = new HashMap<>(headers);
+                try {
+                    Uri uri = request.getUrl();
+                    // Proxy HLS inteligente nativo en Java para señales que exigen Referer (Canal 13, etc.)
+                    if (uri.getPath() != null && uri.getPath().contains("/api/proxy")) {
+                        WebResourceResponse proxyResp = handleHlsProxy(request);
+                        if (proxyResp != null) return proxyResp;
                     }
-                    headers.put("Access-Control-Allow-Origin", "*");
-                    headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-                    response.setResponseHeaders(headers);
 
-                    String path = uri.getPath();
-                    if (path != null) {
-                        if (path.endsWith(".js") || path.endsWith(".mjs")) {
-                            response.setMimeType("application/javascript");
-                            response.setEncoding("UTF-8");
-                        } else if (path.endsWith(".json")) {
-                            response.setMimeType("application/json");
-                            response.setEncoding("UTF-8");
-                        } else if (path.endsWith(".css")) {
-                            response.setMimeType("text/css");
-                            response.setEncoding("UTF-8");
+                    WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
+                    if (response != null) {
+                        try {
+                            Map<String, String> headers = response.getResponseHeaders();
+                            if (headers == null) {
+                                headers = new HashMap<>();
+                            } else {
+                                headers = new HashMap<>(headers);
+                            }
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+                            response.setResponseHeaders(headers);
+                        } catch (Throwable ignored) {}
+
+                        String path = uri.getPath();
+                        if (path != null) {
+                            if (path.endsWith(".js") || path.endsWith(".mjs")) {
+                                response.setMimeType("application/javascript");
+                                response.setEncoding("UTF-8");
+                            } else if (path.endsWith(".json")) {
+                                response.setMimeType("application/json");
+                                response.setEncoding("UTF-8");
+                            } else if (path.endsWith(".css")) {
+                                response.setMimeType("text/css");
+                                response.setEncoding("UTF-8");
+                            }
                         }
                     }
+                    return response;
+                } catch (Throwable t) {
+                    android.util.Log.e("AntenaSurTV", "Error interceptando recurso local: " + t.getMessage());
+                    return super.shouldInterceptRequest(view, request);
                 }
-                return response;
             }
 
             @Override
@@ -152,6 +160,9 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 mWebView.requestFocus();
                 mWebView.evaluateJavascript("if (window.initTvFocus) window.initTvFocus();", null);
+                mWebView.postDelayed(() -> {
+                    mWebView.evaluateJavascript("if (window.initTvFocus) window.initTvFocus();", null);
+                }, 300);
             }
         });
 
@@ -259,21 +270,27 @@ public class MainActivity extends AppCompatActivity {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_UP:
             case KeyEvent.KEYCODE_PAGE_UP:
+            case KeyEvent.KEYCODE_NUMPAD_8:
                 navAction = "ArrowUp";
                 break;
             case KeyEvent.KEYCODE_DPAD_DOWN:
             case KeyEvent.KEYCODE_PAGE_DOWN:
+            case KeyEvent.KEYCODE_NUMPAD_2:
                 navAction = "ArrowDown";
                 break;
             case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_NUMPAD_4:
                 navAction = "ArrowLeft";
                 break;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
+            case KeyEvent.KEYCODE_NUMPAD_6:
+            case KeyEvent.KEYCODE_TAB:
                 navAction = "ArrowRight";
                 break;
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
             case KeyEvent.KEYCODE_NUMPAD_ENTER:
+            case KeyEvent.KEYCODE_NUMPAD_5:
             case KeyEvent.KEYCODE_BUTTON_A:
             case KeyEvent.KEYCODE_BUTTON_SELECT:
             case KeyEvent.KEYCODE_SPACE:
@@ -328,13 +345,11 @@ public class MainActivity extends AppCompatActivity {
         if (navAction != null) {
             if (action == KeyEvent.ACTION_DOWN) {
                 final String finalAction = navAction;
-                mWebView.post(() -> {
-                    mWebView.evaluateJavascript(
-                        "if (window.onTvNav) { window.onTvNav('" + finalAction + "'); } " +
-                        "else { window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + finalAction + "', code: '" + finalAction + "', bubbles: true})); }",
-                        null
-                    );
-                });
+                mWebView.evaluateJavascript(
+                    "if (window.onTvNav) { window.onTvNav('" + finalAction + "'); } " +
+                    "else { window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + finalAction + "', code: '" + finalAction + "', bubbles: true})); }",
+                    null
+                );
             }
             return true;
         }

@@ -204,6 +204,14 @@ body {
   box-shadow: 0 4px 14px rgba(0, 212, 255, 0.35);
 }
 
+.section-nav-tab.is-tv-focused {
+  color: #fff !important;
+  background: rgba(0, 229, 255, 0.22) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px #00e5ff, 0 0 20px rgba(0, 229, 255, 0.6) !important;
+  transform: scale(1.06) !important;
+}
+
 .section-nav-tab .tab-icon {
   font-size: 1rem;
 }
