@@ -47,11 +47,11 @@ export function initTvNavigation() {
       }
     }
 
-    // Si aún no hay nada enfocado, enfocar el botón principal de Canales de TV
+    // Si aún no hay nada enfocado, enfocar el botón principal de Canales de TV e iniciar desde allí
     if (!current || !focusable.includes(current)) {
       const heroTv = document.getElementById('heroCardTv');
-      setFocus(heroTv && focusable.includes(heroTv) ? heroTv : focusable[0]);
-      return;
+      current = (heroTv && focusable.includes(heroTv)) ? heroTv : focusable[0];
+      setFocus(current);
     }
 
     const cRect = current.getBoundingClientRect();
@@ -226,6 +226,19 @@ export function initTvNavigation() {
         if (heroTv) {
           setFocus(heroTv);
           heroTv.click();
+        }
+      }
+      return;
+    }
+
+    if (action === 'PlayPause') {
+      const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
+      if (player) {
+        if (player.currentType === 'tv') {
+          player.togglePlayPause();
+        } else if (player.currentType === 'radio') {
+          if (player.audioElement.paused) player.resumeRadio();
+          else player.pauseRadio();
         }
       }
       return;

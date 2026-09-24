@@ -101,7 +101,13 @@ public class MainActivity extends AppCompatActivity {
         String customUA = "Mozilla/5.0 (Linux; Android 12; Android TV Build/STT1.220610.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 AntenaSurTV/1.0";
         settings.setUserAgentString(customUA);
 
-        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(android.webkit.ConsoleMessage consoleMessage) {
+                android.util.Log.d("AntenaSurTV_JS", consoleMessage.message() + " [" + consoleMessage.sourceId() + ":" + consoleMessage.lineNumber() + "]");
+                return true;
+            }
+        });
 
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
@@ -112,7 +118,33 @@ public class MainActivity extends AppCompatActivity {
                     WebResourceResponse proxyResp = handleHlsProxy(request);
                     if (proxyResp != null) return proxyResp;
                 }
-                return mAssetLoader.shouldInterceptRequest(uri);
+                WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
+                if (response != null) {
+                    Map<String, String> headers = response.getResponseHeaders();
+                    if (headers == null) {
+                        headers = new HashMap<>();
+                    } else {
+                        headers = new HashMap<>(headers);
+                    }
+                    headers.put("Access-Control-Allow-Origin", "*");
+                    headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+                    response.setResponseHeaders(headers);
+
+                    String path = uri.getPath();
+                    if (path != null) {
+                        if (path.endsWith(".js") || path.endsWith(".mjs")) {
+                            response.setMimeType("application/javascript");
+                            response.setEncoding("UTF-8");
+                        } else if (path.endsWith(".json")) {
+                            response.setMimeType("application/json");
+                            response.setEncoding("UTF-8");
+                        } else if (path.endsWith(".css")) {
+                            response.setMimeType("text/css");
+                            response.setEncoding("UTF-8");
+                        }
+                    }
+                }
+                return response;
             }
 
             @Override
@@ -217,83 +249,96 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        if (keyCode == KeyEvent.KEYCODE_DPAD_UP ||
-            keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
-            keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
-            keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
-            keyCode == KeyEvent.KEYCODE_DPAD_CENTER ||
-            keyCode == KeyEvent.KEYCODE_ENTER ||
-            keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER ||
-            keyCode == KeyEvent.KEYCODE_BUTTON_A ||
-            keyCode == KeyEvent.KEYCODE_BUTTON_SELECT ||
-            keyCode == KeyEvent.KEYCODE_BACK ||
-            keyCode == KeyEvent.KEYCODE_BUTTON_B ||
-            keyCode == KeyEvent.KEYCODE_MEDIA_PLAY ||
-            keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE ||
-            keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE ||
-            keyCode == KeyEvent.KEYCODE_CHANNEL_UP ||
-            keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN ||
-            (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9)) {
+        int action = event.getAction();
 
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                switch (keyCode) {
-                    case KeyEvent.KEYCODE_DPAD_UP:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowUp');", null);
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_DOWN:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowDown');", null);
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_LEFT:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowLeft');", null);
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('ArrowRight');", null);
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_CENTER:
-                    case KeyEvent.KEYCODE_ENTER:
-                    case KeyEvent.KEYCODE_NUMPAD_ENTER:
-                    case KeyEvent.KEYCODE_BUTTON_A:
-                    case KeyEvent.KEYCODE_BUTTON_SELECT:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('Enter');", null);
-                        break;
-                    case KeyEvent.KEYCODE_MEDIA_PLAY:
-                    case KeyEvent.KEYCODE_MEDIA_PAUSE:
-                    case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                        mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('PlayPause');", null);
-                        break;
-                    case KeyEvent.KEYCODE_BACK:
-                    case KeyEvent.KEYCODE_BUTTON_B:
-                        mWebView.evaluateJavascript("window.onTvBack ? window.onTvBack() : false;", value -> {
-                            if ("true".equalsIgnoreCase(value)) {
-                                mLastBackPressTime = 0;
+        if (action != KeyEvent.ACTION_DOWN && action != KeyEvent.ACTION_UP) {
+            return super.dispatchKeyEvent(event);
+        }
+
+        String navAction = null;
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+            case KeyEvent.KEYCODE_PAGE_UP:
+                navAction = "ArrowUp";
+                break;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+            case KeyEvent.KEYCODE_PAGE_DOWN:
+                navAction = "ArrowDown";
+                break;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                navAction = "ArrowLeft";
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                navAction = "ArrowRight";
+                break;
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_NUMPAD_ENTER:
+            case KeyEvent.KEYCODE_BUTTON_A:
+            case KeyEvent.KEYCODE_BUTTON_SELECT:
+            case KeyEvent.KEYCODE_SPACE:
+                navAction = "Enter";
+                break;
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PAUSE:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                navAction = "PlayPause";
+                break;
+            case KeyEvent.KEYCODE_BACK:
+            case KeyEvent.KEYCODE_ESCAPE:
+            case KeyEvent.KEYCODE_BUTTON_B:
+            case KeyEvent.KEYCODE_DEL:
+                if (action == KeyEvent.ACTION_DOWN) {
+                    mWebView.evaluateJavascript("window.onTvBack ? window.onTvBack() : false;", value -> {
+                        if ("true".equalsIgnoreCase(value)) {
+                            mLastBackPressTime = 0;
+                        } else {
+                            long now = System.currentTimeMillis();
+                            if (now - mLastBackPressTime < 2500) {
+                                finish();
                             } else {
-                                long now = System.currentTimeMillis();
-                                if (now - mLastBackPressTime < 2500) {
-                                    finish();
-                                } else {
-                                    mLastBackPressTime = now;
-                                    Toast.makeText(MainActivity.this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
-                                }
+                                mLastBackPressTime = now;
+                                Toast.makeText(MainActivity.this, "Presiona Atrás otra vez para salir", Toast.LENGTH_SHORT).show();
                             }
-                        });
-                        break;
-                    case KeyEvent.KEYCODE_CHANNEL_UP:
-                        mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
-                        break;
-                    case KeyEvent.KEYCODE_CHANNEL_DOWN:
-                        mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
-                        break;
-                    case KeyEvent.KEYCODE_0: case KeyEvent.KEYCODE_1: case KeyEvent.KEYCODE_2:
-                    case KeyEvent.KEYCODE_3: case KeyEvent.KEYCODE_4: case KeyEvent.KEYCODE_5:
-                    case KeyEvent.KEYCODE_6: case KeyEvent.KEYCODE_7: case KeyEvent.KEYCODE_8:
-                    case KeyEvent.KEYCODE_9:
+                        }
+                    });
+                }
+                return true;
+            case KeyEvent.KEYCODE_CHANNEL_UP:
+                if (action == KeyEvent.ACTION_DOWN) {
+                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapPrevious();", null);
+                }
+                return true;
+            case KeyEvent.KEYCODE_CHANNEL_DOWN:
+                if (action == KeyEvent.ACTION_DOWN) {
+                    mWebView.evaluateJavascript("if (window.AntenaSurPlayer) window.AntenaSurPlayer.zapNext();", null);
+                }
+                return true;
+            default:
+                if (keyCode >= KeyEvent.KEYCODE_0 && keyCode <= KeyEvent.KEYCODE_9) {
+                    if (action == KeyEvent.ACTION_DOWN) {
                         int digit = keyCode - KeyEvent.KEYCODE_0;
                         mWebView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + digit + "', code: 'Digit" + digit + "', keyCode: " + (48 + digit) + ", bubbles: true}));", null);
-                        break;
+                    }
+                    return true;
                 }
+                break;
+        }
+
+        if (navAction != null) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                final String finalAction = navAction;
+                mWebView.post(() -> {
+                    mWebView.evaluateJavascript(
+                        "if (window.onTvNav) { window.onTvNav('" + finalAction + "'); } " +
+                        "else { window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + finalAction + "', code: '" + finalAction + "', bubbles: true})); }",
+                        null
+                    );
+                });
             }
             return true;
         }
+
         return super.dispatchKeyEvent(event);
     }
 

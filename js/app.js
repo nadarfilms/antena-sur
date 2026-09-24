@@ -88,6 +88,9 @@ class App {
 
     // Inicializar motor de navegación por control remoto Android TV
     initTvNavigation();
+    if (typeof window.initTvFocus === 'function') {
+      window.initTvFocus();
+    }
   }
 
   initMainSectionTabs() {
