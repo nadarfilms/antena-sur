@@ -11726,34 +11726,32 @@ class PlayerEngine {
         if (this.onStationChange && this.currentStation) {
           this.onStationChange(this.currentStation, 'paused');
         }
-      } else if (this.currentStation) {
-        // Pausa no voluntaria provocada por llamada telefónica entrante, Siri o cambio de foco de audio en iOS
-        console.log('⚠️ Audio pausado por interrupción externa (llamada o audio focus). Preservando sesión en CarPlay...');
-        this.isInterrupted = true;
+      } else {
+        // Pausa no voluntaria (red móvil cargando buffer, cambio de auricular o llamada)
+        console.log('⚠️ Audio pausado (buffer en red, llamada o cambio de dispositivo).');
         this.isPlaying = false;
         this.updateRadioPlayIcon(false);
         this.stopVisualizer();
-        this.stopAudioWatchdog(); // Detener watchdog para NO intentar llamadas destructivas a src durante la llamada
 
-        // Mantener playbackState en 'paused': CarPlay conserva la emisora y carátula en pantalla mostrando el botón Play
-        if ('mediaSession' in navigator) {
-          navigator.mediaSession.playbackState = 'paused';
+        // Solo si la API nativa de AudioSession confirma llamada en curso en iOS
+        if ('audioSession' in navigator && navigator.audioSession.state === 'interrupted') {
+          console.log('⚠️ [AudioSession] Interrupción de llamada telefónica confirmada.');
+          this.isInterrupted = true;
+          this.stopAudioWatchdog();
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+          }
+          this.startInterruptionRecoveryMonitor();
         }
-        // Iniciar monitor pasivo de recuperación para reanudar apenas corte la llamada
-        this.startInterruptionRecoveryMonitor();
       }
     });
 
     this.audioElement.addEventListener('waiting', () => {
-      if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        this.scheduleStallRecovery(4000);
-      }
+      console.log('⏳ Buffer de audio cargando datos en red 4G/5G...');
     });
 
     this.audioElement.addEventListener('stalled', () => {
-      if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        this.scheduleStallRecovery(4000);
-      }
+      console.log('📡 Red celular o WiFi esperando paquetes...');
     });
 
     this.audioElement.addEventListener('error', (e) => {
@@ -11764,7 +11762,7 @@ class PlayerEngine {
           this.playRadioSource(this.currentStation.backupStreamUrl);
           return;
         }
-        this.scheduleReconnect(1500);
+        this.scheduleReconnect(2000);
       }
     });
   }
@@ -11953,14 +11951,14 @@ class PlayerEngine {
     this.isNetworkStalled = false;
 
     if (this.audioElement.error || this.audioElement.readyState === 0 || this.audioElement.networkState === 3) {
-      this.reloadLiveStream(true);
+      this.reloadLiveStream(false);
     } else {
       this.startAudioWatchdog();
       const p = this.audioElement.play();
       if (p !== undefined) {
         p.catch(e => {
           console.warn('No se pudo reanudar radio directamente, recargando stream live:', e);
-          this.reloadLiveStream(true);
+          this.reloadLiveStream(false);
         });
       }
     }
@@ -12027,35 +12025,25 @@ class PlayerEngine {
      ======================================================================== */
 
   initSystemInterruptionListeners() {
-    // 1. Detección de pérdida y recuperación de señal celular 4G/5G (túneles o zonas oscuras)
+    // 1. Detección de pérdida y recuperación de señal celular 4G/5G
     window.addEventListener('offline', () => {
-      console.warn('📡 Señal 4G/5G perdida (evento offline - túnel o zona oscura).');
-      this.isNetworkStalled = true;
-      this.stopAudioWatchdog();
-      if (this.reconnectTimer) {
-        clearTimeout(this.reconnectTimer);
-        this.reconnectTimer = null;
-      }
-      if (this.stallTimer) {
-        clearTimeout(this.stallTimer);
-        this.stallTimer = null;
-      }
+      console.warn('📡 Evento de red offline (posible túnel o transición de torre celular).');
+      // No marcar permanentemente isNetworkStalled para no bloquear la reproducción móvil
     });
 
     window.addEventListener('online', () => {
-      console.log('🌐 Conexión 4G/5G restaurada (evento online).');
+      console.log('🌐 Conexión 4G/5G / WiFi activa (evento online).');
       this.isNetworkStalled = false;
       if (this.onlineRecoveryTimer) {
         clearTimeout(this.onlineRecoveryTimer);
       }
-      // Margen de 600ms para estabilización del socket y DNS en red móvil
       this.onlineRecoveryTimer = setTimeout(() => {
-        if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-          console.log('🔄 Reconectando radio automáticamente tras salir de túnel o restaurar 4G/5G...');
+        if (this.currentStation && !this.isUserPaused && !this.isInterrupted && this.audioElement.paused) {
+          console.log('🔄 Reanudando radio tras recuperar conexión...');
           this.reconnectAttempts = 0;
-          this.reloadLiveStream(true);
+          this.reloadLiveStream(false);
         }
-      }, 600);
+      }, 500);
     });
 
     // 2. Sesión nativa de audio de WebKit / iOS Safari 16.4+ (llamadas telefónicas y Siri)
@@ -12184,10 +12172,10 @@ class PlayerEngine {
         this.startAudioWatchdog();
       }).catch(err => {
         console.warn('[Interruption Recovery] Socket previo expirado durante la llamada. Recargando emisión en vivo:', err);
-        this.reloadLiveStream(true);
+        this.reloadLiveStream(false);
       });
     } else {
-      this.reloadLiveStream(true);
+      this.reloadLiveStream(false);
     }
   }
 
@@ -12201,56 +12189,45 @@ class PlayerEngine {
     this.watchdogTimer = setInterval(() => {
       // Verificación de seguridad
       if (this.isUserPaused || this.isInterrupted || !this.currentStation) {
-        if (this.isUserPaused || this.isInterrupted) {
-          this.stopAudioWatchdog();
-        }
+        this.stopAudioWatchdog();
         return;
       }
 
       const curTime = this.audioElement.currentTime;
       const isPaused = this.audioElement.paused;
 
-      // Caso 1: Audio pausado inesperadamente con señal de internet activa
-      if (isPaused) {
-        if ('audioSession' in navigator && navigator.audioSession.state === 'interrupted') {
-          console.log('Watchdog: AudioSession indica llamada activa. Pausando watchdog.');
-          this.isInterrupted = true;
-          this.stopAudioWatchdog();
-          this.startInterruptionRecoveryMonitor();
-          return;
-        }
+      // Caso 1: AudioSession indica llamada activa en iOS
+      if ('audioSession' in navigator && navigator.audioSession.state === 'interrupted') {
+        console.log('Watchdog: AudioSession indica llamada activa. Pausando watchdog.');
+        this.isInterrupted = true;
+        this.stopAudioWatchdog();
+        this.startInterruptionRecoveryMonitor();
+        return;
+      }
 
-        console.log('Watchdog: Audio pausado inesperadamente. Verificando...');
+      // Caso 2: Audio pausado sin acción del usuario
+      if (isPaused) {
+        console.log('Watchdog: Audio pausado involuntariamente. Verificando estado...');
         const p = this.audioElement.play();
         if (p !== undefined) {
           p.catch(err => {
             if (err.name === 'NotAllowedError') {
-              console.log('Watchdog: Interrupción del sistema detectada (llamada telefónica). Pausando watchdog.');
-              this.isInterrupted = true;
-              this.stopAudioWatchdog();
-              this.startInterruptionRecoveryMonitor();
+              console.log('Watchdog: Reanudación en segundo plano sujeta a interacción.');
             } else {
-              console.warn('Watchdog: Error de reproducción con audio pausado, recargando stream live:', err);
-              this.reloadLiveStream(true);
+              console.warn('Watchdog: Estado de audio pausado:', err);
             }
           });
         }
         return;
       }
 
-      // Caso 2: Stream congelado por microcortes 4G/5G (>5s sin avance de audio)
-      if (curTime === this.lastPlaybackTime) {
-        const timeStuck = Date.now() - this.lastTimeAdvancedAt;
-        if (timeStuck > 5000) {
-          console.warn('Watchdog: Stream congelado (>5s sin avance con internet). Reconectando emisión live...');
-          this.lastTimeAdvancedAt = Date.now();
-          this.reloadLiveStream(true);
-        }
-      } else {
+      // En redes móviles 4G/5G: si el buffer tarda en llegar, NUNCA destruimos el socket ni llamamos
+      // a reloadLiveStream. Permitimos que el buffer nativo del navegador continúe descargando los paquetes.
+      if (curTime !== this.lastPlaybackTime) {
         this.lastPlaybackTime = curTime;
         this.lastTimeAdvancedAt = Date.now();
       }
-    }, 3000);
+    }, 5000);
   }
 
   stopAudioWatchdog() {
@@ -12260,19 +12237,12 @@ class PlayerEngine {
     }
   }
 
-  scheduleStallRecovery(delayMs = 4000) {
-    if (this.stallTimer) clearTimeout(this.stallTimer);
-    if (this.isUserPaused || this.isInterrupted || !this.currentStation) return;
-
-    this.stallTimer = setTimeout(() => {
-      if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        const curTime = this.audioElement.currentTime;
-        if (curTime === this.lastPlaybackTime || this.audioElement.paused) {
-          console.warn('Recuperación de buffer estancado: Recargando stream en vivo...');
-          this.reloadLiveStream(true);
-        }
-      }
-    }, delayMs);
+  scheduleStallRecovery(delayMs = 8000) {
+    // Desactivado intencionalmente para redes 4G/5G móviles para evitar cortar buffers legítimos
+    if (this.stallTimer) {
+      clearTimeout(this.stallTimer);
+      this.stallTimer = null;
+    }
   }
 
   scheduleReconnect(delayMs = 2000) {
@@ -12282,12 +12252,12 @@ class PlayerEngine {
     const backoff = Math.min(delayMs * Math.pow(1.3, this.reconnectAttempts), 8000);
     this.reconnectTimer = setTimeout(() => {
       if (!this.isUserPaused && !this.isInterrupted && this.currentStation) {
-        this.reloadLiveStream(true);
+        this.reloadLiveStream(false);
       }
     }, backoff);
   }
 
-  reloadLiveStream(forceTimestamp = true) {
+  reloadLiveStream(forceTimestamp = false) {
     if (this.isUserPaused || !this.currentStation) return;
     if (this.isReloading) return;
     if (this.isInterrupted) {
@@ -12308,10 +12278,7 @@ class PlayerEngine {
 
     console.log(`[ReloadLiveStream] Emisora: ${station.name} | Intento: ${this.reconnectAttempts}`);
 
-    const sep = url.includes('?') ? '&' : '?';
-    const liveUrl = forceTimestamp ? `${url}${sep}_live=${Date.now()}` : url;
-
-    this.playRadioSource(liveUrl);
+    this.playRadioSource(url);
 
     // Asegurar que CarPlay mantenga la información actualizada y los controles en la pantalla del auto
     this.updateMediaSession({

@@ -36,7 +36,7 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.5.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,16 +54,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.5.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.4
+    - name: Publicar Release v1.1.5
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.4"
-        name: "Antena Sur Android TV v1.1.4"
-        body: "Versión 1.1.4: Reincorporación de la barra de reproducción inferior persistente con controles de audio en celulares; integración de botones de reproducción en pantalla completa; corrección de desbordamiento horizontal en botones de menú inicio para móviles; depuración de streams y eliminación de backups 403 Forbidden."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.5.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.5"
+        name: "Antena Sur Android TV v1.1.5"
+        body: "Versión 1.1.5: Corrección definitiva de reproducción de radio en redes celulares 4G/5G eliminando reconexiones destructivas de buffer y watchdogs agresivos; retirada completa de los 3 botones en el reproductor de radio a pantalla completa; flujo de audio nativo y responsivo."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
