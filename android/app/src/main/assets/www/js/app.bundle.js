@@ -10110,6 +10110,9 @@ class PlayerEngine {
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
       window.__antenaSurApp.updateHeroLastStationBadges();
     }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('tv');
+    }
 
     // Resetear modo web
     this.isWebMode = false;
@@ -10494,6 +10497,9 @@ class PlayerEngine {
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
       window.__antenaSurApp.updateHeroLastStationBadges();
     }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('home');
+    }
 
     if (this.onStationChange && closedStation) {
       this.onStationChange(closedStation, 'stopped');
@@ -10725,7 +10731,6 @@ class PlayerEngine {
           }
         }
 
-        const isFullscreen = this.isFullscreenActive();
         const isFsSidebarOpen = this.isFsSidebarOpen();
         const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
@@ -11112,6 +11117,10 @@ class PlayerEngine {
 
     this.renderFullscreenRadioTray();
 
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('radio');
+    }
+
     const activeCard = this.dom.radioFsTrayScroll ? this.dom.radioFsTrayScroll.querySelector('.radio-tray-card.active') : null;
     if (activeCard) {
       try { activeCard.focus(); } catch (e) {}
@@ -11126,6 +11135,10 @@ class PlayerEngine {
       this.dom.radioFullscreenView.classList.add('is-hidden');
     }
     this.stopRadio();
+
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('home');
+    }
 
     const heroRadio = document.getElementById('heroCardRadio');
     if (heroRadio) {
@@ -13224,6 +13237,33 @@ class App {
         }
       });
     }
+
+    // Pestañas Superiores de Menú de Cámara Blackmagic OS (Referencia Image 1)
+    const bmNavTabHome = document.getElementById('bmNavTabHome');
+    const bmNavTabTv = document.getElementById('bmNavTabTv');
+    const bmNavTabRadio = document.getElementById('bmNavTabRadio');
+
+    if (bmNavTabHome) {
+      bmNavTabHome.addEventListener('click', () => {
+        if (this.player) {
+          this.player.closeTvPlayer();
+          this.player.closeFullscreenRadio();
+        }
+        this.updateHeaderActiveTab('home');
+      });
+    }
+
+    if (bmNavTabTv && heroCardTv) {
+      bmNavTabTv.addEventListener('click', () => {
+        heroCardTv.click();
+      });
+    }
+
+    if (bmNavTabRadio && heroCardRadio) {
+      bmNavTabRadio.addEventListener('click', () => {
+        heroCardRadio.click();
+      });
+    }
   }
 
   /* ========================================================================
@@ -13650,6 +13690,19 @@ class App {
   getCountryFlag(countryCode) {
     const c = this.dataManager.getCountries().find(item => item.code === countryCode);
     return c ? c.flag : '🌐';
+  }
+
+  updateHeaderActiveTab(mode = 'home') {
+    const tabs = {
+      home: document.getElementById('bmNavTabHome'),
+      tv: document.getElementById('bmNavTabTv'),
+      radio: document.getElementById('bmNavTabRadio')
+    };
+    Object.keys(tabs).forEach(k => {
+      if (tabs[k]) {
+        tabs[k].classList.toggle('active', k === mode);
+      }
+    });
   }
 }
 

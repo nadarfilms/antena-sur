@@ -21,21 +21,22 @@
 
 .hero-action-card.bm-card {
   position: relative;
-  background: #111317;
-  border: 1px solid var(--border-color, #222630);
-  border-radius: 2px;
-  padding: 24px 28px;
+  background: var(--bg-card, #1c2436);
+  border: 1px solid var(--border-color, #27344a);
+  border-bottom: 4px solid var(--bg-card, #1c2436);
+  border-radius: 6px;
+  padding: 30px 28px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 24px;
+  gap: 20px;
   cursor: pointer;
   text-align: left;
   outline: none;
   min-height: 220px;
   user-select: none;
-  transition: all 0.12s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .bm-card-top-strip {
@@ -43,48 +44,45 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: 12px;
 }
 
 .bm-tile-num {
-  font-family: var(--font-mono);
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: var(--bm-cyan, #00d4ff);
-  letter-spacing: 1px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--bm-cyan, #0095ff);
+  letter-spacing: 0.5px;
 }
 
 .bm-tile-badge {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 1.5px;
+  color: var(--text-secondary, #7f8f9f);
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .bm-card-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .bm-tile-title {
-  font-size: 1.85rem;
-  font-weight: 900;
-  letter-spacing: 2px;
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   color: #ffffff;
   text-transform: uppercase;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .bm-tile-spec {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #8fa0b5;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin: 0;
@@ -94,52 +92,44 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
   width: 100%;
 }
 
 .bm-tile-status {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary, #7f8f9f);
+  letter-spacing: 0.3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 75%;
+  width: 100%;
 }
 
-.bm-tile-action {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 1px;
-  padding: 4px 8px;
-  background: #181b22;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-}
-
-/* Foco de Alta Precisión Estilo Blackmagic Camera OS */
+/* Foco de Alta Precisión Estilo Blackmagic Camera OS (Referencia Image 1 y 2) */
 .hero-action-card.bm-card:hover,
 .hero-action-card.bm-card:focus,
 .hero-action-card.bm-card:focus-visible,
 .hero-action-card.bm-card.is-tv-focused {
-  background: #161a22;
-  border-color: var(--bm-cyan, #00d4ff) !important;
-  outline: 2px solid var(--bm-cyan, #00d4ff) !important;
-  outline-offset: 1px;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
+  background: var(--bg-card-hover, #263249) !important;
+  border-color: #3b4c6a !important;
+  border-bottom: 4px solid var(--bm-cyan, #0095ff) !important;
+  outline: 2px solid var(--bm-cyan, #0095ff) !important;
+  outline-offset: -1px;
+  box-shadow: 0 10px 30px rgba(0, 149, 255, 0.25) !important;
+  transform: translateY(-2px);
 }
 
-.hero-action-card.bm-card:focus .bm-tile-action,
-.hero-action-card.bm-card.is-tv-focused .bm-tile-action {
-  background: var(--bm-cyan);
-  color: #000000;
-  border-color: var(--bm-cyan);
+.hero-action-card.bm-card:focus .bm-tile-title,
+.hero-action-card.bm-card.is-tv-focused .bm-tile-title {
+  color: #ffffff;
+}
+
+.hero-action-card.bm-card:focus .bm-tile-status,
+.hero-action-card.bm-card.is-tv-focused .bm-tile-status {
+  color: #c5d4e6;
 }
 
 /* ==========================================================================

@@ -267,13 +267,14 @@
 }
 
 .zapping-ch-num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: var(--accent-cyan, #00d4ff);
-  background: rgba(0, 229, 255, 0.1);
-  padding: 2px 4px;
-  border-radius: 4px;
+  font-family: var(--font-family);
+  font-feature-settings: "tnum" 1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--bm-cyan, #0095ff);
+  background: rgba(0, 149, 255, 0.12);
+  padding: 2px 5px;
+  border-radius: 3px;
   min-width: 24px;
   text-align: center;
   flex-shrink: 0;
@@ -418,14 +419,15 @@
 }
 
 .zapping-now-num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-family);
+  font-feature-settings: "tnum" 1;
   font-size: 0.85rem;
   font-weight: 800;
-  color: #070b13;
-  background: #00e5ff;
+  color: #ffffff;
+  background: var(--bm-cyan, #0095ff);
   padding: 3px 8px;
-  border-radius: 6px;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(0, 149, 255, 0.4);
 }
 
 .zapping-now-logo {
@@ -1436,7 +1438,7 @@
   color: #ffffff;
   padding: 5px 12px;
   border-radius: 2px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.72rem;
   font-weight: 800;
   cursor: pointer;
@@ -1453,7 +1455,7 @@
 }
 
 .radio-fs-mode-tag {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-secondary, #8e95a2);
@@ -1470,7 +1472,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 1px;
@@ -1482,7 +1484,7 @@
 }
 
 .radio-fs-freq-dial {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.95rem;
   font-weight: 900;
   color: #000000;
@@ -1493,7 +1495,7 @@
 }
 
 .radio-fs-counter {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.8rem;
   font-weight: 800;
   color: #ffffff;
@@ -1520,7 +1522,7 @@
 }
 
 .radio-fs-strip-label {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.65rem;
   font-weight: 800;
   color: var(--text-muted, #565d69);
@@ -1576,7 +1578,7 @@
 }
 
 .tray-num {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.68rem;
   font-weight: 800;
   color: var(--bm-cyan, #00d4ff);
@@ -1603,7 +1605,7 @@
 }
 
 .tray-freq {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.62rem;
   color: var(--text-secondary, #8e95a2);
 }
@@ -1701,7 +1703,7 @@
 }
 
 .radio-fs-bitrate-tag {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 1px;
@@ -1724,7 +1726,7 @@
 }
 
 .radio-fs-genre-pill {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.7rem;
   font-weight: 800;
   color: #ffffff;
@@ -1737,7 +1739,7 @@
 }
 
 .radio-fs-status-pill {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.68rem;
   font-weight: 800;
   color: var(--bm-cyan, #00d4ff);
@@ -1772,7 +1774,7 @@
 }
 
 .radio-fs-np-label {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 1px;
@@ -1814,7 +1816,7 @@
 }
 
 .radio-spec-label {
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-family);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 1px;

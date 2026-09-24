@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.9.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.0.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,15 +53,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.0.9.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.0.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.0.9
+    - name: Publicar Release v1.1.0
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.9.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.0.9"
-        name: "Antena Sur Android TV v1.0.9"
-        body: "Versión 1.0.9: Rediseño completo Blackmagic Camera OS (paleta estricta de 2-3 colores: negro puro, blanco nítido y cian de cámara), guía lateral oculta automáticamente en pantalla completa TV con invocación instantánea mediante el botón Atrás del control remoto, optimización crítica de 0 ms para ingresar a Canales de TV y zapping sin lag, selector superior de emisoras de radio FM (1 a 1 mediante flechas izquierda/derecha) sin barras inferiores ni controles redundantes, y diseño 100% responsivo adaptable a TV, TV Box y smartphones."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.0"
+        name: "Antena Sur Android TV v1.1.0"
+        body: "Versión 1.1.0: Corrección crítica del SyntaxError al inicio (variable redeclarada isFullscreen), rediseño estético fiel a Blackmagic Camera OS (Pocket Cinema Camera / Blackmagic Camera App) con tipografía sans-serif moderna ultra nítida, eliminación completa de botones 'Entrar' en tarjetas de TV y Radio (toda la tarjeta es el botón activo con indicador inferior azul cian Blackmagic), navegación por pestañas de cabecera sincronizada y chevron lateral."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}

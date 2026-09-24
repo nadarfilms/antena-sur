@@ -194,6 +194,33 @@ class App {
         }
       });
     }
+
+    // Pestañas Superiores de Menú de Cámara Blackmagic OS (Referencia Image 1)
+    const bmNavTabHome = document.getElementById('bmNavTabHome');
+    const bmNavTabTv = document.getElementById('bmNavTabTv');
+    const bmNavTabRadio = document.getElementById('bmNavTabRadio');
+
+    if (bmNavTabHome) {
+      bmNavTabHome.addEventListener('click', () => {
+        if (this.player) {
+          this.player.closeTvPlayer();
+          this.player.closeFullscreenRadio();
+        }
+        this.updateHeaderActiveTab('home');
+      });
+    }
+
+    if (bmNavTabTv && heroCardTv) {
+      bmNavTabTv.addEventListener('click', () => {
+        heroCardTv.click();
+      });
+    }
+
+    if (bmNavTabRadio && heroCardRadio) {
+      bmNavTabRadio.addEventListener('click', () => {
+        heroCardRadio.click();
+      });
+    }
   }
 
   /* ========================================================================
@@ -620,6 +647,19 @@ class App {
   getCountryFlag(countryCode) {
     const c = this.dataManager.getCountries().find(item => item.code === countryCode);
     return c ? c.flag : '🌐';
+  }
+
+  updateHeaderActiveTab(mode = 'home') {
+    const tabs = {
+      home: document.getElementById('bmNavTabHome'),
+      tv: document.getElementById('bmNavTabTv'),
+      radio: document.getElementById('bmNavTabRadio')
+    };
+    Object.keys(tabs).forEach(k => {
+      if (tabs[k]) {
+        tabs[k].classList.toggle('active', k === mode);
+      }
+    });
   }
 }
 

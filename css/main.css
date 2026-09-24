@@ -1,47 +1,49 @@
 /* ==========================================================================
    ANTENA SUR - BLACKMAGIC DESIGN CAMERA OS THEME
-   Paleta Estricta de 3 Colores: Negro Puro, Blanco Nítido y Cian Broadcast
+   Paleta Fiel al Menú Blackmagic Camera OS (Referencia Image 1 y 2)
    ========================================================================== */
 
 :root {
-  /* 1. NEGRO CINEMATOGRÁFICO PURO */
-  --bg-primary: #000000;
-  --bg-surface: #0a0b0e;
-  --bg-card: #111317;
-  --bg-card-hover: #161920;
-  --bg-glass: #0a0b0e;
-  --bg-glass-card: #111317;
+  /* 1. PALETA DE CÁMARA BLACKMAGIC DESIGN */
+  --bg-primary: #0e121a;
+  --bg-surface: #121723;
+  --bg-card: #1c2436;
+  --bg-card-hover: #263249;
+  --bg-glass: #121723;
+  --bg-glass-card: #1c2436;
   
-  /* 2. BLANCO NÍTIDO Y TONOS MONOCROMÁTICOS TÉCNICOS */
+  /* 2. TEXTOS Y CONTRASTES DE ALTA PRECISIÓN */
   --text-primary: #ffffff;
-  --text-secondary: #8e95a2;
-  --text-muted: #565d69;
-  --border-color: #222630;
-  --bm-border: #222630;
-  --border-glow: #00d4ff;
+  --text-secondary: #7f8f9f;
+  --text-muted: #536275;
+  --border-color: #273349;
+  --bm-border: #273349;
+  --border-glow: #0095ff;
 
-  /* 3. CIAN BROADCAST BLACKMAGIC (ÚNICO COLOR DE ACENTO) */
-  --bm-cyan: #00d4ff;
-  --accent-cyan: #00d4ff;
-  --bm-panel: #111317;
+  /* 3. AZUL ELÉCTRICO / CIAN BLACKMAGIC (LÍNEA DE SELECCIÓN ACTIVA) */
+  --bm-cyan: #0095ff;
+  --accent-cyan: #0095ff;
+  --bm-blue: #0095ff;
+  --bm-panel: #141b28;
 
-  /* Mapeo estricto para eliminar colores ajenos */
-  --bm-amber: #00d4ff;
-  --bm-red: #00d4ff;
-  --bm-green: #00d4ff;
-  --accent-blue: #00d4ff;
-  --accent-amber: #00d4ff;
-  --accent-rose: #00d4ff;
+  /* Mapeo monocromático estricto */
+  --bm-amber: #0095ff;
+  --bm-red: #0095ff;
+  --bm-green: #0095ff;
+  --accent-blue: #0095ff;
+  --accent-amber: #0095ff;
+  --accent-rose: #0095ff;
 
-  --radius-sm: 2px;
+  --radius-sm: 3px;
   --radius-md: 4px;
   --radius-lg: 6px;
   --radius-full: 9999px;
 
   --transition-fast: 0.12s ease;
   --transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'DIN Next', 'Roboto Condensed', 'Segoe UI', Helvetica, Arial, sans-serif;
+  /* Tipografía limpia de cámara Blackmagic: Sans-serif moderna, nunca monospace */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -99,9 +101,9 @@ body {
 
 /* Barra de Navegación Superior Estilo Blackmagic Camera OS */
 .bm-header {
-  background: #000000;
-  border-bottom: 1px solid var(--border-color);
-  padding: 12px 0;
+  background: var(--bg-surface, #121723);
+  border-bottom: 1px solid var(--border-color, #273349);
+  padding: 10px 0;
   position: sticky;
   top: 0;
   z-index: 100;
@@ -130,42 +132,75 @@ body {
 
 .bm-cam-box {
   display: inline-block;
-  font-family: var(--font-mono);
   font-size: 0.65rem;
-  font-weight: 900;
-  background: #111317;
-  color: var(--bm-cyan);
-  border: 1px solid var(--bm-cyan);
-  padding: 2px 5px;
-  border-radius: 2px;
-  letter-spacing: 1px;
+  font-weight: 800;
+  background: #1c2436;
+  color: var(--bm-cyan, #0095ff);
+  border: 1px solid var(--bm-cyan, #0095ff);
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
 }
 
 .bm-record-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--bm-cyan);
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.7);
+  background: var(--bm-cyan, #0095ff);
+  box-shadow: 0 0 8px rgba(0, 149, 255, 0.7);
 }
 
 .bm-title {
   font-size: 1.15rem;
-  font-weight: 900;
-  letter-spacing: 2.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
   color: #ffffff;
   line-height: 1.1;
   margin: 0;
-  text-transform: uppercase;
 }
 
 .bm-subtitle {
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--text-secondary);
-  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, #7f8f9f);
   margin: 0;
+}
+
+/* Pestañas de Menú de Cámara Blackmagic OS (Referencia Image 1) */
+.bm-header-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #171f2e;
+  border-radius: 4px;
+  padding: 3px;
+  border: 1px solid var(--border-color, #273349);
+}
+
+.bm-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #7f8f9f);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bm-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bm-tab-btn.active,
+.bm-tab-btn:focus-visible {
+  background: var(--bm-cyan, #0095ff) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(0, 149, 255, 0.4);
 }
 
 .bm-header-status {
@@ -179,33 +214,32 @@ body {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 2px;
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  color: var(--bm-cyan);
+  border-radius: 3px;
+  background: rgba(0, 149, 255, 0.1);
+  border: 1px solid rgba(0, 149, 255, 0.4);
+  color: var(--bm-cyan, #0095ff);
   font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .bm-live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--bm-cyan);
+  background: var(--bm-cyan, #0095ff);
 }
 
 .bm-status-clock {
-  font-family: var(--font-mono);
   font-size: 0.88rem;
   font-weight: 700;
   color: #ffffff;
-  background: #111317;
+  background: #171f2e;
   padding: 3px 10px;
-  border-radius: 2px;
-  border: 1px solid var(--border-color);
-  letter-spacing: 1px;
+  border-radius: 3px;
+  border: 1px solid var(--border-color, #273349);
+  letter-spacing: 0.5px;
+  font-feature-settings: "tnum" 1;
 }
 
 /* Layout del Inicio Centrado para TV */
@@ -220,7 +254,7 @@ body {
 
 .bm-home-hero {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1040px;
   margin: 0 auto;
 }
 
@@ -228,25 +262,66 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color, #273349);
+  padding-bottom: 10px;
   margin-bottom: 24px;
 }
 
 .bm-menu-title {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-secondary, #7f8f9f);
   text-transform: uppercase;
 }
 
 .bm-menu-meta {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  letter-spacing: 1px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #536275);
+  letter-spacing: 0.5px;
+}
+
+/* Fila de Navegación con Chevrons Laterales (Referencia Image 1) */
+.bm-menu-stage-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.bm-nav-chevron {
+  color: #3e4f68;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  opacity: 0.7;
+  padding: 8px;
+}
+
+/* Paginación de 3 Puntos Estilo Blackmagic OS (Referencia Image 1) */
+.bm-pagination-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.bm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #253349;
+  transition: all 0.2s ease;
+}
+
+.bm-dot.active {
+  background: var(--bm-cyan, #0095ff);
+  width: 22px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 149, 255, 0.6);
 }
 
 .bm-hero-grid {

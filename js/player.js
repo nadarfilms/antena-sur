@@ -1097,6 +1097,9 @@ export class PlayerEngine {
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
       window.__antenaSurApp.updateHeroLastStationBadges();
     }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('tv');
+    }
 
     // Resetear modo web
     this.isWebMode = false;
@@ -1481,6 +1484,9 @@ export class PlayerEngine {
     if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
       window.__antenaSurApp.updateHeroLastStationBadges();
     }
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('home');
+    }
 
     if (this.onStationChange && closedStation) {
       this.onStationChange(closedStation, 'stopped');
@@ -1712,7 +1718,6 @@ export class PlayerEngine {
           }
         }
 
-        const isFullscreen = this.isFullscreenActive();
         const isFsSidebarOpen = this.isFsSidebarOpen();
         const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
@@ -2099,6 +2104,10 @@ export class PlayerEngine {
 
     this.renderFullscreenRadioTray();
 
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('radio');
+    }
+
     const activeCard = this.dom.radioFsTrayScroll ? this.dom.radioFsTrayScroll.querySelector('.radio-tray-card.active') : null;
     if (activeCard) {
       try { activeCard.focus(); } catch (e) {}
@@ -2113,6 +2122,10 @@ export class PlayerEngine {
       this.dom.radioFullscreenView.classList.add('is-hidden');
     }
     this.stopRadio();
+
+    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+      window.__antenaSurApp.updateHeaderActiveTab('home');
+    }
 
     const heroRadio = document.getElementById('heroCardRadio');
     if (heroRadio) {
