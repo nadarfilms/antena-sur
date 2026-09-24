@@ -11,7 +11,7 @@ export class DataManager {
     this.isLoaded = false;
   }
 
-  async load() {
+  load() {
     try {
       let data = null;
       if (typeof window !== 'undefined' && window.STATIONS_DATA) {
@@ -20,23 +20,26 @@ export class DataManager {
         data = globalThis.STATIONS_DATA;
       }
 
-      if (!data) {
-        try {
-          const response = await fetch('./data/stations.json');
-          if (response.ok) {
-            data = await response.json();
-          }
-        } catch (fetchErr) {
-          console.warn('Fetch fallback no disponible:', fetchErr);
-        }
-      }
-
       if (data && data.stations && data.stations.length > 0) {
         this.countries = data.countries || [];
         this.loadCustomStations();
         this.stations = [...(data.stations || []), ...this.customStations];
         this.isLoaded = true;
         return true;
+      }
+
+      // Fallback secundario si no está precargado en memoria
+      if (typeof fetch === 'function') {
+        fetch('./data/stations.json')
+          .then(r => r.json())
+          .then(d => {
+            if (d && d.stations) {
+              this.countries = d.countries || [];
+              this.stations = [...d.stations, ...this.customStations];
+              this.isLoaded = true;
+            }
+          })
+          .catch(e => console.warn('Fetch fallback no disponible:', e));
       }
       return false;
     } catch (error) {

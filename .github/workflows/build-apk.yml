@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.4.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.5.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,15 +53,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.0.4.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.0.5.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.0.4
+    - name: Publicar Release v1.0.5
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.0.4"
-        name: "Antena Sur Android TV v1.0.4"
-        body: "Versión 1.0.4 optimizada para Android TV Box, Smart TV y mandos USB/Bluetooth. Corrección completa de compatibilidad con WebViews clásicos y navegación por D-Pad."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.5.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.0.5"
+        name: "Antena Sur Android TV v1.0.5"
+        body: "Versión 1.0.5 optimizada para Android TV Box, Smart TV y mandos USB/Bluetooth. Carga 100% síncrona en memoria, sin retardos, y compatibilidad total con mandos y ratones."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
