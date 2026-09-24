@@ -35,7 +35,8 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.1.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,15 +54,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.1.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.1
+    - name: Publicar Release v1.1.2
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.1"
-        name: "Antena Sur Android TV v1.1.1"
-        body: "Versión 1.1.1: Menú interior OSD de opciones técnicas navegable con control remoto (cambio de calidad y fuentes), apertura de menú de opciones con botón central OK en pantalla completa, apertura de guía lateral de canales sobre video en pantalla completa con flecha izquierda, salida de pantalla completa directa a guía de zapping con botón atrás, línea completa horizontal de emisoras deslizable por tacto/clic/mando, eliminación de descripción y gráfica redundante en radio, y botón de volver visible y accesible en celulares."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.2"
+        name: "Antena Sur Android TV v1.1.2"
+        body: "Versión 1.1.2: Soporte nativo de Now Playing (canción y cantante en vivo) para Android TV en APK autónomo; eliminación de cobertura y sitio web en reproductor de radios; ampliación del tamaño de carátula/artwork; corrección de visibilidad y acceso de botón Volver al Menú en celulares; y corrección de márgenes seguros inferiores para evitar corte de barra por overscan en televisores."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}

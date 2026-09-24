@@ -22,12 +22,16 @@ import androidx.webkit.WebViewAssetLoader;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -124,6 +128,12 @@ public class MainActivity extends AppCompatActivity {
                     if (uri.getPath() != null && uri.getPath().contains("/api/proxy")) {
                         WebResourceResponse proxyResp = handleHlsProxy(request);
                         if (proxyResp != null) return proxyResp;
+                    }
+
+                    // Intercepción nativa de Now Playing para Android TV (Artistas y Canciones en Vivo)
+                    if (uri.getPath() != null && uri.getPath().contains("/api/nowplaying")) {
+                        WebResourceResponse npResp = handleNowPlaying(request);
+                        if (npResp != null) return npResp;
                     }
 
                     WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
@@ -261,6 +271,224 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private static final Map<String, String> PRISA_MOUNTS = new HashMap<String, String>() {{
+        put("cl-rad-rockandpop", "ROCK_AND_POP");
+        put("cl-rad-corazon", "CORAZON");
+        put("cl-rad-los40", "LOS40_CHILE");
+        put("cl-rad-adn", "ADN");
+        put("cl-rad-futuro", "FUTURO");
+        put("cl-rad-concierto", "CONCIERTO");
+        put("cl-rad-pudahuel", "PUDAHUEL");
+        put("cl-rad-activa", "ACTIVA");
+        put("cl-rad-fmdos", "FMDOS");
+    }};
+
+    private WebResourceResponse handleNowPlaying(WebResourceRequest request) {
+        try {
+            Uri uri = request.getUrl();
+            String stationId = uri.getQueryParameter("id");
+            String streamUrl = uri.getQueryParameter("stream");
+            if (stationId == null) stationId = "";
+            if (streamUrl == null) streamUrl = "";
+
+            JSONObject json = new JSONObject();
+            json.put("stationId", stationId);
+            json.put("artist", "");
+            json.put("title", "");
+            json.put("album", "");
+            json.put("cover", "");
+            json.put("hasMusic", false);
+            json.put("raw", "");
+
+            // 1. Check Triton Digital mounts
+            String mount = PRISA_MOUNTS.get(stationId);
+            if (mount == null && !streamUrl.isEmpty()) {
+                for (Map.Entry<String, String> e : PRISA_MOUNTS.entrySet()) {
+                    if (streamUrl.toLowerCase().contains(e.getValue().toLowerCase())) {
+                        mount = e.getValue();
+                        break;
+                    }
+                }
+            }
+
+            if (mount != null && !mount.isEmpty()) {
+                fetchTritonNowPlaying(mount, json);
+            }
+
+            // 2. Check ICY metadata from direct stream if not yet obtained
+            if (!json.optBoolean("hasMusic") && !streamUrl.isEmpty() && !streamUrl.contains(".m3u8")) {
+                fetchIcyMetadata(streamUrl, json);
+            }
+
+            // 3. Fallback per station if empty so Android TV is never empty or stuck
+            if (!json.optBoolean("hasMusic") || json.optString("title").isEmpty()) {
+                populateStationFallback(stationId, json);
+            }
+
+            byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Access-Control-Allow-Origin", "*");
+            headers.put("Content-Type", "application/json; charset=utf-8");
+            headers.put("Cache-Control", "no-cache");
+            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(bytes));
+        } catch (Exception e) {
+            android.util.Log.e("AntenaSurTV", "Error handling now playing: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void fetchTritonNowPlaying(String mount, JSONObject json) {
+        try {
+            URL url = new URL("https://np.tritondigital.com/public/nowplaying?mountName=" + mount + "&numberToFetch=1");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "curl/8.7.1");
+            conn.setConnectTimeout(2500);
+            conn.setReadTimeout(2500);
+
+            if (conn.getResponseCode() == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String l;
+                while ((l = reader.readLine()) != null) sb.append(l);
+                reader.close();
+                String xml = sb.toString();
+
+                Matcher tm = Pattern.compile("name=\"cue_title\"><!\\[CDATA\\[(.*?)\\]\\]>").matcher(xml);
+                Matcher am = Pattern.compile("name=\"track_artist_name\"><!\\[CDATA\\[(.*?)\\]\\]>").matcher(xml);
+                Matcher covm = Pattern.compile("name=\"track_cover_url\"><!\\[CDATA\\[(.*?)\\]\\]>").matcher(xml);
+                Matcher albm = Pattern.compile("name=\"track_album_name\"><!\\[CDATA\\[(.*?)\\]\\]>").matcher(xml);
+
+                String title = tm.find() ? tm.group(1).trim() : "";
+                String artist = am.find() ? am.group(1).trim() : "";
+                String cover = covm.find() ? covm.group(1).trim() : "";
+                String album = albm.find() ? albm.group(1).trim() : "";
+
+                if (!title.isEmpty() && !artist.isEmpty() && !title.equalsIgnoreCase("unspecified") && !artist.equalsIgnoreCase("n/a")) {
+                    json.put("artist", artist);
+                    json.put("title", title);
+                    json.put("album", album);
+                    json.put("cover", cover);
+                    json.put("hasMusic", true);
+                    json.put("raw", artist + " - " + title);
+                }
+            }
+            conn.disconnect();
+        } catch (Throwable ignored) {}
+    }
+
+    private void fetchIcyMetadata(String streamUrl, JSONObject json) {
+        try {
+            URL url = new URL(streamUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            conn.setRequestProperty("Icy-MetaData", "1");
+            conn.setConnectTimeout(2500);
+            conn.setReadTimeout(2500);
+
+            int metaint = conn.getHeaderFieldInt("icy-metaint", 0);
+            if (metaint > 0) {
+                InputStream is = conn.getInputStream();
+                long skipped = 0;
+                while (skipped < metaint) {
+                    long s = is.skip(metaint - skipped);
+                    if (s <= 0) break;
+                    skipped += s;
+                }
+                int lengthByte = is.read();
+                if (lengthByte > 0) {
+                    int metaLength = lengthByte * 16;
+                    byte[] metaBytes = new byte[metaLength];
+                    int read = 0;
+                    while (read < metaLength) {
+                        int r = is.read(metaBytes, read, metaLength - read);
+                        if (r <= 0) break;
+                        read += r;
+                    }
+                    String raw = new String(metaBytes, 0, read, StandardCharsets.UTF_8);
+                    Matcher matcher = Pattern.compile("StreamTitle='([^']*)';").matcher(raw);
+                    if (matcher.find()) {
+                        String streamTitle = matcher.group(1).trim();
+                        if (!streamTitle.isEmpty()) {
+                            json.put("raw", streamTitle);
+                            if (streamTitle.contains(" - ")) {
+                                String[] parts = streamTitle.split(" - ", 2);
+                                json.put("artist", parts[0].trim());
+                                json.put("title", parts[1].trim());
+                            } else {
+                                json.put("title", streamTitle);
+                                json.put("artist", "En Directo");
+                            }
+                            json.put("hasMusic", true);
+                        }
+                    }
+                }
+                is.close();
+            }
+            conn.disconnect();
+        } catch (Throwable ignored) {}
+    }
+
+    private void populateStationFallback(String stationId, JSONObject json) {
+        try {
+            String artist = "Música Continua";
+            String title = "Grandes Éxitos en Vivo";
+            if (stationId.contains("rockandpop")) {
+                artist = "Rock & Pop Chile";
+                title = "Clásicos y Tendencias del Rock & Pop";
+            } else if (stationId.contains("futuro")) {
+                artist = "Radio Futuro";
+                title = "La Ley del Rock • Grandes Clásicos";
+            } else if (stationId.contains("corazon")) {
+                artist = "Radio Corazón";
+                title = "La Más Querida • Cumbia y Ritmo";
+            } else if (stationId.contains("los40")) {
+                artist = "LOS40 Chile";
+                title = "Todos los Éxitos del Momento";
+            } else if (stationId.contains("concierto")) {
+                artist = "Radio Concierto";
+                title = "Concierto Placer • Grandes Canciones";
+            } else if (stationId.contains("pudahuel")) {
+                artist = "Radio Pudahuel";
+                title = "La Voz de Chile • Baladas y Éxitos";
+            } else if (stationId.contains("activa")) {
+                artist = "Radio Activa";
+                title = "Solo Se Vive Una Vez • Hits Urbanos";
+            } else if (stationId.contains("fmdos")) {
+                artist = "FMDOS";
+                title = "La Radio de los Dos • Amor y Música";
+            } else if (stationId.contains("adn")) {
+                artist = "ADN Deportes y Noticias";
+                title = "Actualidad, Deportes y Señal en Vivo";
+            } else if (stationId.contains("biobio")) {
+                artist = "Radio Bío Bío";
+                title = "Información al Instante y Análisis";
+            } else if (stationId.contains("cooperativa")) {
+                artist = "Radio Cooperativa";
+                title = "El Diario de Cooperativa • Noticias";
+            } else if (stationId.contains("infinita")) {
+                artist = "Radio Infinita";
+                title = "Palabras con Poder • Selección Musical";
+            } else if (stationId.contains("play")) {
+                artist = "Play FM";
+                title = "Música Sofisticada y Pop Global";
+            } else if (stationId.contains("sonar")) {
+                artist = "Sonar FM";
+                title = "Rock, Cultura y Opinión";
+            } else if (stationId.contains("disney")) {
+                artist = "Radio Disney Chile";
+                title = "Lo que Quieres Escuchar • Pop & Hits";
+            } else if (stationId.contains("carolina")) {
+                artist = "Radio Carolina";
+                title = "La Más Prendida • Urban & Dance";
+            }
+            if (json.optString("artist").isEmpty()) json.put("artist", artist);
+            if (json.optString("title").isEmpty()) json.put("title", title);
+            json.put("hasMusic", true);
+        } catch (Throwable ignored) {}
     }
 
     @Override

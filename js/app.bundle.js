@@ -11369,6 +11369,9 @@ class PlayerEngine {
     if (this.dom.radioFullscreenView) {
       this.dom.radioFullscreenView.classList.remove('is-hidden');
     }
+    if (this.dom.radioBar) {
+      this.dom.radioBar.classList.add('is-hidden');
+    }
 
     let targetStation = station;
     if (!targetStation) {
@@ -11532,11 +11535,12 @@ class PlayerEngine {
       this.dom.radioFsStationName.textContent = station.name;
     }
 
+    const defaultMeta = this.getStationDefaultMetadata(station);
     if (this.dom.radioFsTrackTitle) {
-      this.dom.radioFsTrackTitle.textContent = station.name;
+      this.dom.radioFsTrackTitle.textContent = defaultMeta ? defaultMeta.title : station.name;
     }
     if (this.dom.radioFsTrackArtist) {
-      this.dom.radioFsTrackArtist.textContent = `Emisión Oficial en Vivo • ${station.city || 'Chile'}`;
+      this.dom.radioFsTrackArtist.textContent = defaultMeta ? `${defaultMeta.artist} • Música en Vivo` : `Emisión Oficial en Vivo • ${station.city || 'Chile'}`;
     }
 
     if (this.dom.radioFsCityVal) {
@@ -11814,7 +11818,7 @@ class PlayerEngine {
     this.updateMobileRadioUI(station);
     this.updateFullscreenRadioUI(station);
 
-    if (this.dom.radioBar) this.dom.radioBar.classList.remove('is-hidden');
+    if (this.dom.radioBar && !this.isRadioFullscreen) this.dom.radioBar.classList.remove('is-hidden');
     if (this.dom.radioTitle) this.dom.radioTitle.textContent = station.name;
     if (this.dom.radioSubtitle) {
       const freq = station.frequency ? `[${station.frequency}] • ` : '';
@@ -12374,6 +12378,12 @@ class PlayerEngine {
     this.stopNowPlayingPolling();
     if (!station || station.type !== 'radio') return;
 
+    // Actualización inmediata para que Android TV y celular muestren artista y programa sin demora
+    const initialMeta = this.getStationDefaultMetadata(station);
+    if (initialMeta) {
+      this.updateNowPlayingUI(station, initialMeta);
+    }
+
     const poll = async () => {
       if (!this.currentStation || this.currentStation.id !== station.id) return;
       try {
@@ -12381,7 +12391,7 @@ class PlayerEngine {
         const res = await fetch(`/api/nowplaying?id=${encodeURIComponent(station.id)}&stream=${streamParam}`);
         if (!res.ok) return;
         const data = await res.json();
-        if (this.currentStation && this.currentStation.id === station.id) {
+        if (this.currentStation && this.currentStation.id === station.id && data) {
           this.updateNowPlayingUI(station, data);
         }
       } catch (err) {
@@ -12390,7 +12400,7 @@ class PlayerEngine {
     };
 
     poll();
-    this.nowPlayingTimer = setInterval(poll, 9000);
+    this.nowPlayingTimer = setInterval(poll, 8000);
   }
 
   stopNowPlayingPolling() {
@@ -12490,17 +12500,85 @@ class PlayerEngine {
         this.dom.radioBigArtwork.src = station.logo;
       }
 
-      // Restaurar interfaz de pantalla completa
+      // Restaurar interfaz de pantalla completa con datos consistentes de la emisora
+      const def = this.getStationDefaultMetadata(station);
       if (this.dom.radioFsTrackTitle) {
-        this.dom.radioFsTrackTitle.textContent = station.name;
+        this.dom.radioFsTrackTitle.textContent = def ? def.title : station.name;
       }
       if (this.dom.radioFsTrackArtist) {
-        this.dom.radioFsTrackArtist.textContent = `Emisión Oficial en Vivo • ${freq}${station.city}, ${station.countryName || 'Chile'}`;
+        this.dom.radioFsTrackArtist.textContent = def ? `${def.artist} • En Vivo` : `Emisión Oficial en Vivo • ${freq}${station.city}, ${station.countryName || 'Chile'}`;
       }
       if (this.dom.radioFsArtwork && station.logo && this.dom.radioFsArtwork.src !== station.logo) {
         this.dom.radioFsArtwork.src = station.logo;
       }
     }
+  }
+
+  getStationDefaultMetadata(station) {
+    if (!station) return null;
+    const id = station.id || '';
+    let artist = station.name;
+    let title = 'Música en Vivo';
+
+    if (id.includes('rockandpop')) {
+      artist = 'Rock & Pop Chile';
+      title = 'Clásicos y Tendencias del Rock & Pop';
+    } else if (id.includes('futuro')) {
+      artist = 'Radio Futuro';
+      title = 'La Ley del Rock • Grandes Clásicos';
+    } else if (id.includes('corazon')) {
+      artist = 'Radio Corazón';
+      title = 'La Más Querida • Cumbia y Tropical';
+    } else if (id.includes('los40')) {
+      artist = 'LOS40 Chile';
+      title = 'Todos los Éxitos del Momento';
+    } else if (id.includes('concierto')) {
+      artist = 'Radio Concierto';
+      title = 'Concierto Placer • Grandes Canciones';
+    } else if (id.includes('pudahuel')) {
+      artist = 'Radio Pudahuel';
+      title = 'La Voz de Chile • Baladas y Éxitos';
+    } else if (id.includes('activa')) {
+      artist = 'Radio Activa';
+      title = 'Solo Se Vive Una Vez • Hits Urbanos';
+    } else if (id.includes('fmdos')) {
+      artist = 'FMDOS';
+      title = 'La Radio de los Dos • Amor y Música';
+    } else if (id.includes('adn')) {
+      artist = 'ADN Deportes y Noticias';
+      title = 'Actualidad, Deportes y Señal en Vivo';
+    } else if (id.includes('biobio')) {
+      artist = 'Radio Bío Bío';
+      title = 'Información al Instante y Análisis';
+    } else if (id.includes('cooperativa')) {
+      artist = 'Radio Cooperativa';
+      title = 'El Diario de Cooperativa • Noticias';
+    } else if (id.includes('infinita')) {
+      artist = 'Radio Infinita';
+      title = 'Palabras con Poder • Selección Musical';
+    } else if (id.includes('play')) {
+      artist = 'Play FM';
+      title = 'Música Sofisticada y Pop Global';
+    } else if (id.includes('sonar')) {
+      artist = 'Sonar FM';
+      title = 'Rock, Cultura y Opinión';
+    } else if (id.includes('disney')) {
+      artist = 'Radio Disney Chile';
+      title = 'Lo que Quieres Escuchar • Pop & Hits';
+    } else if (id.includes('carolina')) {
+      artist = 'Radio Carolina';
+      title = 'La Más Prendida • Urban & Dance';
+    } else {
+      artist = station.name;
+      title = (station.genre || 'Música') + ' • Señal en Vivo';
+    }
+
+    return {
+      artist: artist,
+      title: title,
+      hasMusic: true,
+      cover: station.logo || './img/logos/cl-rad-rockandpop.png'
+    };
   }
 
   /* ========================================================================
