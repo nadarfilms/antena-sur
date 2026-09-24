@@ -36,7 +36,7 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,15 +54,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.2
+    - name: Publicar Release v1.1.3
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.2"
-        name: "Antena Sur Android TV v1.1.2"
-        body: "Versión 1.1.2: Soporte nativo de Now Playing (canción y cantante en vivo) para Android TV en APK autónomo; eliminación de cobertura y sitio web en reproductor de radios; ampliación del tamaño de carátula/artwork; corrección de visibilidad y acceso de botón Volver al Menú en celulares; y corrección de márgenes seguros inferiores para evitar corte de barra por overscan en televisores."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.3"
+        name: "Antena Sur Android TV v1.1.3"
+        body: "Versión 1.1.3: Corrección completa de reproducción de radio en redes móviles (4G/5G) en celulares; Menú de inicio depurado a exactamente 2 botones industriales idénticos en tamaño e integrados con navegación responsiva; eliminación de pestañas superiores, flechas laterales, indicadores de puntos y disclaimers inferiores; preservación limpia de hora, título y subtítulo en la cabecera estilo Blackmagic Camera OS."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}

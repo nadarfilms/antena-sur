@@ -178,6 +178,11 @@ class App {
     const heroCardRadio = document.getElementById('heroCardRadio');
     if (heroCardRadio) {
       heroCardRadio.addEventListener('click', () => {
+        if (this.player && this.player.audioElement) {
+          try {
+            this.player.audioElement.muted = false;
+          } catch (e) {}
+        }
         const radioStations = this.dataManager.getAllStations().filter(s => s.type === 'radio');
         let targetRadio = null;
         try {
@@ -195,7 +200,7 @@ class App {
       });
     }
 
-    // Pestañas Superiores de Menú de Cámara Blackmagic OS (Referencia Image 1)
+    // Pestañas Superiores (opcionales si existen en el DOM)
     const bmNavTabHome = document.getElementById('bmNavTabHome');
     const bmNavTabTv = document.getElementById('bmNavTabTv');
     const bmNavTabRadio = document.getElementById('bmNavTabRadio');
@@ -209,17 +214,11 @@ class App {
         this.updateHeaderActiveTab('home');
       });
     }
-
     if (bmNavTabTv && heroCardTv) {
-      bmNavTabTv.addEventListener('click', () => {
-        heroCardTv.click();
-      });
+      bmNavTabTv.addEventListener('click', () => heroCardTv.click());
     }
-
     if (bmNavTabRadio && heroCardRadio) {
-      bmNavTabRadio.addEventListener('click', () => {
-        heroCardRadio.click();
-      });
+      bmNavTabRadio.addEventListener('click', () => heroCardRadio.click());
     }
   }
 

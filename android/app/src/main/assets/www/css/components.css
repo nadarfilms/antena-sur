@@ -25,7 +25,7 @@
   border: 1px solid var(--border-color, #27344a);
   border-bottom: 4px solid var(--bg-card, #1c2436);
   border-radius: 6px;
-  padding: 30px 28px;
+  padding: 34px 30px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -33,10 +33,30 @@
   cursor: pointer;
   text-align: left;
   outline: none;
-  min-height: 220px;
+  min-height: 260px;
+  height: 100%;
+  box-sizing: border-box;
   user-select: none;
   transition: all 0.15s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 768px) {
+  .hero-action-card.bm-card {
+    padding: 22px 20px;
+    min-height: 165px;
+    height: 165px;
+    gap: 12px;
+  }
+}
+
+@media (min-width: 480px) and (max-height: 540px) and (orientation: landscape) {
+  .hero-action-card.bm-card {
+    padding: 14px 18px;
+    min-height: 140px;
+    height: 140px;
+    gap: 8px;
+  }
 }
 
 .bm-card-top-strip {

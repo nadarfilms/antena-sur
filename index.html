@@ -49,7 +49,7 @@
   <div class="bg-atmosphere"></div>
 
   <!-- Barra de Navegación Superior -->
-  <!-- Barra de Navegación Superior Estilo Blackmagic Camera OS (Referencia Image 1 y 2) -->
+  <!-- Barra de Navegación Superior Estilo Blackmagic Camera OS -->
   <header class="top-navbar bm-header">
     <div class="app-container">
       <div class="nav-wrapper bm-nav-wrapper">
@@ -65,13 +65,6 @@
           </div>
         </div>
 
-        <!-- Pestañas de Menú de Cámara Blackmagic OS (Referencia Image 1) -->
-        <nav class="bm-header-tabs" aria-label="Menú Principal">
-          <button class="bm-tab-btn active" id="bmNavTabHome">INICIO</button>
-          <button class="bm-tab-btn" id="bmNavTabTv">CANALES TV</button>
-          <button class="bm-tab-btn" id="bmNavTabRadio">RADIOS FM</button>
-        </nav>
-
         <!-- Indicador de Estado y Reloj Digital -->
         <div class="bm-header-status">
           <span class="bm-status-pill"><span class="bm-live-dot"></span> LIVE ON AIR</span>
@@ -81,63 +74,39 @@
     </div>
   </header>
 
-  <!-- Pantalla de Inicio: Menú Blackmagic Camera OS (Solo 2 Cuadros Principales) -->
+  <!-- Pantalla de Inicio: Menú Principal con los 2 Modos Integrados -->
   <main class="app-container bm-home-container" id="mainCatalogContainer">
     <section class="home-hero-section bm-home-hero" id="homeHeroSection">
-      <!-- Encabezado de Sección Estilo Cámara Blackmagic -->
-      <div class="bm-menu-header-bar">
-        <span class="bm-menu-title">MODO DE REPRODUCCIÓN</span>
-        <span class="bm-menu-meta">2 MODOS DISPONIBLES</span>
-      </div>
+      <div class="home-hero-grid bm-hero-grid">
+        <!-- Botón 1: Canales de TV -->
+        <button class="hero-action-card bm-card bm-card-tv" id="heroCardTv" tabindex="0" title="Entrar a Canales de TV en Directo">
+          <div class="bm-card-top-strip">
+            <span class="bm-tile-num">01</span>
+            <span class="bm-tile-badge">SEÑAL DIRECTA</span>
+          </div>
+          <div class="bm-card-body">
+            <h2 class="bm-tile-title">CANALES DE TV</h2>
+            <p class="bm-tile-spec">321 SEÑALES EN VIVO • SISTEMA BROADCAST</p>
+          </div>
+          <div class="bm-card-footer">
+            <span class="bm-tile-status" id="heroTvLastStation">321 señales • Sintonización en directo</span>
+          </div>
+        </button>
 
-      <!-- Fila de Navegación con Chevrons Laterales (Referencia Image 1) -->
-      <div class="bm-menu-stage-row">
-        <div class="bm-nav-chevron bm-nav-chevron-left" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </div>
-
-        <div class="home-hero-grid bm-hero-grid">
-          <!-- Botón 1: Canales de TV (El cuadro completo es el botón interactivo, sin 'entrar') -->
-          <button class="hero-action-card bm-card bm-card-tv" id="heroCardTv" tabindex="0" title="Entrar a Canales de TV en Directo">
-            <div class="bm-card-top-strip">
-              <span class="bm-tile-num">01</span>
-              <span class="bm-tile-badge">SEÑAL DIRECTA</span>
-            </div>
-            <div class="bm-card-body">
-              <h2 class="bm-tile-title">CANALES DE TV</h2>
-              <p class="bm-tile-spec">321 SEÑALES EN VIVO • SISTEMA BROADCAST</p>
-            </div>
-            <div class="bm-card-footer">
-              <span class="bm-tile-status" id="heroTvLastStation">321 señales • Sintonización en directo</span>
-            </div>
-          </button>
-
-          <!-- Botón 2: Radios FM (El cuadro completo es el botón interactivo, sin 'entrar') -->
-          <button class="hero-action-card bm-card bm-card-radio" id="heroCardRadio" tabindex="0" title="Entrar a Radios FM en Pantalla Completa">
-            <div class="bm-card-top-strip">
-              <span class="bm-tile-num">02</span>
-              <span class="bm-tile-badge">AUDIO BROADCAST</span>
-            </div>
-            <div class="bm-card-body">
-              <h2 class="bm-tile-title">RADIOS FM</h2>
-              <p class="bm-tile-spec">23 EMISORAS DE CHILE • AUDIO DIGITAL</p>
-            </div>
-            <div class="bm-card-footer">
-              <span class="bm-tile-status" id="heroRadioLastStation">23 emisoras en directo</span>
-            </div>
-          </button>
-        </div>
-
-        <div class="bm-nav-chevron bm-nav-chevron-right" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </div>
-      </div>
-
-      <!-- Paginación de 3 Puntos Estilo Blackmagic OS (Referencia Image 1) -->
-      <div class="bm-pagination-dots" aria-hidden="true">
-        <span class="bm-dot active"></span>
-        <span class="bm-dot"></span>
-        <span class="bm-dot"></span>
+        <!-- Botón 2: Radios FM -->
+        <button class="hero-action-card bm-card bm-card-radio" id="heroCardRadio" tabindex="0" title="Entrar a Radios FM en Pantalla Completa">
+          <div class="bm-card-top-strip">
+            <span class="bm-tile-num">02</span>
+            <span class="bm-tile-badge">AUDIO BROADCAST</span>
+          </div>
+          <div class="bm-card-body">
+            <h2 class="bm-tile-title">RADIOS FM</h2>
+            <p class="bm-tile-spec">23 EMISORAS DE CHILE • AUDIO DIGITAL</p>
+          </div>
+          <div class="bm-card-footer">
+            <span class="bm-tile-status" id="heroRadioLastStation">23 emisoras en directo</span>
+          </div>
+        </button>
       </div>
     </section>
   </main>
@@ -529,20 +498,8 @@
   <!-- Contenedor de Alertas Toast -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Pie de Página -->
-  <footer class="app-footer">
-    <div class="app-container">
-      <div class="footer-content">
-        <p><strong>Antena Sur</strong> • Señales públicas y abiertas de televisión y radio de Chile con experiencia Zapping TV.</p>
-        <p>Atajos: <code>[Espacio]</code> Play/Pausa • <code>[▲/▼]</code> Zapping Canales • <code>[Enter]</code> Guía TV • <code>[M]</code> Silenciar • <code>[F]</code> Pantalla Completa</p>
-        <div class="footer-links">
-          <a href="https://github.com/iptv-org/iptv" target="_blank" rel="noopener">Listas Públicas IPTV</a>
-          <span>•</span>
-          <a href="https://www.radio-browser.info" target="_blank" rel="noopener">Radio Browser Info</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <!-- Elemento de audio nativo para Radios (optimizado para Android TV y Celular) -->
+  <audio id="radioAudioPlayer" preload="auto" playsinline webkit-playsinline style="position:fixed;bottom:-9999px;opacity:0;pointer-events:none;"></audio>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
   <script src="./js/app.bundle.js"></script>

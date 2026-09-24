@@ -35,20 +35,14 @@ export class PlayerEngine {
     this.currentZappingGenre = 'all';
     this.currentZappingQuery = '';
 
-    // Audio Element para Radios (sin crossOrigin para evitar bloqueos en Icecast)
-    this.audioElement = new Audio();
+    // Audio Element para Radios (optimizado para Android TV, iOS y Navegadores Móviles)
+    this.audioElement = (typeof document !== 'undefined' && document.getElementById('radioAudioPlayer'))
+      ? document.getElementById('radioAudioPlayer')
+      : new Audio();
     this.audioElement.id = 'radioAudioPlayer';
     this.audioElement.setAttribute('playsinline', '');
     this.audioElement.setAttribute('webkit-playsinline', '');
-    this.audioElement.preload = 'none';
-
-    // Declarar duration Infinity para que WebKit/iOS trate el audio como emisión EN VIVO sin barra de tiempo
-    try {
-      Object.defineProperty(this.audioElement, 'duration', {
-        get: () => Infinity,
-        configurable: true
-      });
-    } catch (e) {}
+    this.audioElement.preload = 'auto';
 
     // Configuración nativa de sesión de audio para iOS Safari 16.4+ (modo background playback)
     if ('audioSession' in navigator) {
@@ -2735,20 +2729,12 @@ export class PlayerEngine {
 
     this.audioElement.addEventListener('waiting', () => {
       if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        if (!navigator.onLine) {
-          this.isNetworkStalled = true;
-          return;
-        }
         this.scheduleStallRecovery(4000);
       }
     });
 
     this.audioElement.addEventListener('stalled', () => {
       if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        if (!navigator.onLine) {
-          this.isNetworkStalled = true;
-          return;
-        }
         this.scheduleStallRecovery(4000);
       }
     });
@@ -2756,8 +2742,9 @@ export class PlayerEngine {
     this.audioElement.addEventListener('error', (e) => {
       console.warn('Error en stream de radio:', e);
       if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        if (!navigator.onLine) {
-          this.isNetworkStalled = true;
+        if (this.currentStation.backupStreamUrl && this.audioElement.src !== this.currentStation.backupStreamUrl) {
+          console.log('Stream principal con error, conmutando a backupStreamUrl:', this.currentStation.backupStreamUrl);
+          this.playRadioSource(this.currentStation.backupStreamUrl);
           return;
         }
         this.scheduleReconnect(1500);
@@ -2854,11 +2841,6 @@ export class PlayerEngine {
       console.log('playRadioSource omitido: llamada telefónica en curso.');
       return;
     }
-    if (!navigator.onLine) {
-      console.log('playRadioSource omitido: dispositivo sin conexión 4G/5G.');
-      this.isNetworkStalled = true;
-      return;
-    }
 
     if (this.radioHls) {
       this.radioHls.destroy();
@@ -2880,7 +2862,7 @@ export class PlayerEngine {
         if (p !== undefined) {
           p.catch(e => {
             console.warn('Radio Hls autoplay bloqueado o esperando foco:', e);
-            if (this.currentStation && !this.isUserPaused && !this.isInterrupted && navigator.onLine) {
+            if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
               this.scheduleReconnect(2500);
             }
           });
@@ -2889,19 +2871,21 @@ export class PlayerEngine {
       this.radioHls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
           console.warn('Radio Hls fatal error:', data.type);
-          if (this.currentStation && !this.isUserPaused && !this.isInterrupted && navigator.onLine) {
+          if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
             this.scheduleReconnect(2000);
           }
         }
       });
     } else {
-      this.audioElement.src = url;
-      this.audioElement.load();
+      if (this.audioElement.src !== url) {
+        this.audioElement.src = url;
+      }
+      this.audioElement.muted = false;
       const p = this.audioElement.play();
       if (p !== undefined) {
         p.catch(e => {
           console.warn('Autoplay de radio esperando conexión/foco:', e);
-          if (this.currentStation && !this.isUserPaused && !this.isInterrupted && navigator.onLine) {
+          if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
             this.scheduleReconnect(2500);
           }
         });
@@ -2944,11 +2928,7 @@ export class PlayerEngine {
       }
     }
 
-    if (!navigator.onLine) {
-      console.log('resumeRadio: sin conexión 4G/5G, esperando recuperación...');
-      this.isNetworkStalled = true;
-      return;
-    }
+    this.isNetworkStalled = false;
 
     if (this.audioElement.error || this.audioElement.readyState === 0 || this.audioElement.networkState === 3) {
       this.reloadLiveStream(true);
@@ -3120,9 +3100,6 @@ export class PlayerEngine {
         return;
       }
 
-      // Si estamos offline, no intentar hasta que vuelva la señal
-      if (!navigator.onLine) return;
-
       console.log(`[Interruption Monitor] Comprobando si finalizó la llamada (intento ${attempts})...`);
 
       // Intentar reanudar suavemente SIN recrear src ni llamar a load()
@@ -3166,12 +3143,6 @@ export class PlayerEngine {
     if (this.isUserPaused || !this.currentStation) return;
     this.stopInterruptionRecoveryMonitor();
 
-    if (!navigator.onLine) {
-      console.log('Reanudación pospuesta: dispositivo sin conexión 4G/5G.');
-      this.isNetworkStalled = true;
-      return;
-    }
-
     console.log('[Interruption Recovery] Finalizó la llamada o interrupción. Reanudando audio...');
     this.isInterrupted = false;
 
@@ -3200,14 +3171,14 @@ export class PlayerEngine {
 
   startAudioWatchdog() {
     this.stopAudioWatchdog();
-    if (this.isUserPaused || this.isInterrupted || !this.currentStation || !navigator.onLine) return;
+    if (this.isUserPaused || this.isInterrupted || !this.currentStation) return;
 
     this.lastPlaybackTime = this.audioElement.currentTime;
     this.lastTimeAdvancedAt = Date.now();
 
     this.watchdogTimer = setInterval(() => {
       // Verificación de seguridad
-      if (this.isUserPaused || this.isInterrupted || !this.currentStation || !navigator.onLine) {
+      if (this.isUserPaused || this.isInterrupted || !this.currentStation) {
         if (this.isUserPaused || this.isInterrupted) {
           this.stopAudioWatchdog();
         }
@@ -3273,11 +3244,6 @@ export class PlayerEngine {
 
     this.stallTimer = setTimeout(() => {
       if (this.currentStation && !this.isUserPaused && !this.isInterrupted) {
-        if (!navigator.onLine) {
-          console.log('Recuperación de buffer pospuesta: offline.');
-          this.isNetworkStalled = true;
-          return;
-        }
         const curTime = this.audioElement.currentTime;
         if (curTime === this.lastPlaybackTime || this.audioElement.paused) {
           console.warn('Recuperación de buffer estancado: Recargando stream en vivo...');
@@ -3291,14 +3257,9 @@ export class PlayerEngine {
     if (this.isUserPaused || this.isInterrupted || !this.currentStation) return;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
 
-    if (!navigator.onLine) {
-      this.isNetworkStalled = true;
-      return;
-    }
-
     const backoff = Math.min(delayMs * Math.pow(1.3, this.reconnectAttempts), 8000);
     this.reconnectTimer = setTimeout(() => {
-      if (!this.isUserPaused && !this.isInterrupted && this.currentStation && navigator.onLine) {
+      if (!this.isUserPaused && !this.isInterrupted && this.currentStation) {
         this.reloadLiveStream(true);
       }
     }, backoff);
@@ -3309,11 +3270,6 @@ export class PlayerEngine {
     if (this.isReloading) return;
     if (this.isInterrupted) {
       console.log('Recarga de stream pospuesta: llamada en curso.');
-      return;
-    }
-    if (!navigator.onLine) {
-      console.log('Recarga de stream pospuesta: dispositivo offline.');
-      this.isNetworkStalled = true;
       return;
     }
 
