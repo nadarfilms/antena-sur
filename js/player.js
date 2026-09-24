@@ -463,7 +463,7 @@ export class PlayerEngine {
 
     // Sincronizar foco con el canal activo
     const currentId = this.currentStation ? this.currentStation.id : null;
-    const items = this.dom.zappingFsChannelList?.querySelectorAll('.zapping-ch-item');
+    const items = this.dom.zappingFsChannelList ? this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item') : null;
     if (items && items.length > 0) {
       items.forEach((it, idx) => {
         it.classList.remove('is-dpad-focused');
@@ -508,9 +508,12 @@ export class PlayerEngine {
     const items = this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item');
     let matchCount = 0;
     items.forEach(it => {
-      const title = it.querySelector('.zapping-ch-title')?.textContent.toLowerCase() || '';
-      const sub = it.querySelector('.zapping-ch-sub')?.textContent.toLowerCase() || '';
-      const num = it.querySelector('.zapping-ch-num')?.textContent.toLowerCase() || '';
+      const titleEl = it.querySelector('.zapping-ch-title');
+      const title = (titleEl && titleEl.textContent) ? titleEl.textContent.toLowerCase() : '';
+      const subEl = it.querySelector('.zapping-ch-sub');
+      const sub = (subEl && subEl.textContent) ? subEl.textContent.toLowerCase() : '';
+      const numEl = it.querySelector('.zapping-ch-num');
+      const num = (numEl && numEl.textContent) ? numEl.textContent.toLowerCase() : '';
       const match = !query || title.includes(query) || sub.includes(query) || num.includes(query);
       it.style.display = match ? 'flex' : 'none';
       if (match) matchCount++;
@@ -538,7 +541,9 @@ export class PlayerEngine {
     const items = this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item');
     if (!items || items.length === 0) return;
 
-    items[this.dpadFocusIndex]?.classList.remove('is-dpad-focused');
+    if (items[this.dpadFocusIndex] && items[this.dpadFocusIndex].classList) {
+      items[this.dpadFocusIndex].classList.remove('is-dpad-focused');
+    }
 
     this.dpadFocusIndex += direction;
     if (this.dpadFocusIndex < 0) this.dpadFocusIndex = items.length - 1;
@@ -725,7 +730,8 @@ export class PlayerEngine {
 
   zapPrevious() {
     if (!this.tvStations || this.tvStations.length === 0) return;
-    let idx = this.tvStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.tvStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx - 1 + this.tvStations.length) % this.tvStations.length;
     this.playTv(this.tvStations[idx]);
@@ -733,7 +739,8 @@ export class PlayerEngine {
 
   zapNext() {
     if (!this.tvStations || this.tvStations.length === 0) return;
-    let idx = this.tvStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.tvStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx + 1) % this.tvStations.length;
     this.playTv(this.tvStations[idx]);
@@ -1438,7 +1445,7 @@ export class PlayerEngine {
             this.showFullscreenGuide();
           } else {
             this.toggleSidebar(true);
-            const activeItem = this.dom.zappingChannelList?.querySelector('.zapping-ch-item.is-active');
+            const activeItem = this.dom.zappingChannelList ? this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-active') : null;
             if (activeItem) activeItem.focus();
           }
           return;
@@ -1569,7 +1576,7 @@ export class PlayerEngine {
 
       navigator.mediaSession.setActionHandler('play', () => {
         if (this.currentType === 'tv') {
-          this.dom.tvVideo?.play();
+          if (this.dom.tvVideo) this.dom.tvVideo.play();
         } else {
           this.isUserPaused = false;
           this.resumeRadio(true);
@@ -1578,7 +1585,7 @@ export class PlayerEngine {
 
       navigator.mediaSession.setActionHandler('pause', () => {
         if (this.currentType === 'tv') {
-          this.dom.tvVideo?.pause();
+          if (this.dom.tvVideo) this.dom.tvVideo.pause();
         } else {
           this.isUserPaused = true;
           this.pauseRadio(true);
@@ -1649,7 +1656,8 @@ export class PlayerEngine {
 
   playPreviousRadio() {
     if (!this.radioStations || this.radioStations.length === 0) return;
-    let idx = this.radioStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.radioStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx - 1 + this.radioStations.length) % this.radioStations.length;
     this.playRadio(this.radioStations[idx]);
@@ -1657,7 +1665,8 @@ export class PlayerEngine {
 
   playNextRadio() {
     if (!this.radioStations || this.radioStations.length === 0) return;
-    let idx = this.radioStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.radioStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx + 1) % this.radioStations.length;
     this.playRadio(this.radioStations[idx]);

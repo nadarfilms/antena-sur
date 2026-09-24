@@ -93,13 +93,13 @@ export function initTvNavigation() {
     // ========================================================================
     // 3. NAVEGACIÓN DETERMINISTA DENTRO DEL CATÁLOGO DE ESTACIONES (.station-card)
     // ========================================================================
-    if (current.classList?.contains('station-card')) {
+    if (current.classList && current.classList.contains('station-card')) {
       const allCards = Array.from(document.querySelectorAll('.stations-grid .station-card'));
       const idx = allCards.indexOf(current);
 
       if (idx !== -1) {
         const curRect = current.getBoundingClientRect();
-        const firstRowTop = allCards[0]?.getBoundingClientRect().top;
+        const firstRowTop = allCards[0] ? allCards[0].getBoundingClientRect().top : undefined;
 
         // Subir desde la primera fila de tarjetas regresa al gran botón de TV
         if (direction === 'ArrowUp') {
@@ -232,8 +232,8 @@ export function initTvNavigation() {
   };
 
   window.onTvBack = function() {
-    const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
-    const isTvPlayerOpen = player?.dom?.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden');
+    const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
+    const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
     if (isTvPlayerOpen) {
       window.onTvNav('Back');
       return true;
@@ -260,8 +260,8 @@ export function initTvNavigation() {
   };
 
   window.onTvNav = function(action) {
-    const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
-    const isTvPlayerOpen = player?.dom?.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden');
+    const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
+    const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
 
     if (isTvPlayerOpen) {
       if (action === 'ArrowUp') {
@@ -345,7 +345,7 @@ export function initTvNavigation() {
     }
 
     if (action === 'PlayPause') {
-      const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
+      const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
       if (player) {
         if (player.currentType === 'tv') {
           player.togglePlayPause();
@@ -364,7 +364,7 @@ export function initTvNavigation() {
 
   // Mantener foco visible al interactuar
   document.addEventListener('focusin', (e) => {
-    if (e.target && (e.target.classList?.contains('hero-action-card') || e.target.classList?.contains('station-card') || e.target.classList?.contains('section-nav-tab'))) {
+    if (e && e.target && e.target.classList && (e.target.classList.contains('hero-action-card') || e.target.classList.contains('station-card') || e.target.classList.contains('section-nav-tab'))) {
       document.querySelectorAll('.is-tv-focused').forEach(el => el.classList.remove('is-tv-focused'));
       e.target.classList.add('is-tv-focused');
     }
@@ -372,7 +372,8 @@ export function initTvNavigation() {
 
   // Atajos de teclado para mandos USB dongle, mandos bluetooth y teclados estándar
   window.addEventListener('keydown', (e) => {
-    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+    if (!e) return;
+    if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
       if (e.key === 'Escape') e.target.blur();
       return;
     }

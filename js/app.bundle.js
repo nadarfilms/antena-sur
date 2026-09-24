@@ -9473,7 +9473,7 @@ class PlayerEngine {
 
     // Sincronizar foco con el canal activo
     const currentId = this.currentStation ? this.currentStation.id : null;
-    const items = this.dom.zappingFsChannelList?.querySelectorAll('.zapping-ch-item');
+    const items = this.dom.zappingFsChannelList ? this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item') : null;
     if (items && items.length > 0) {
       items.forEach((it, idx) => {
         it.classList.remove('is-dpad-focused');
@@ -9518,9 +9518,12 @@ class PlayerEngine {
     const items = this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item');
     let matchCount = 0;
     items.forEach(it => {
-      const title = it.querySelector('.zapping-ch-title')?.textContent.toLowerCase() || '';
-      const sub = it.querySelector('.zapping-ch-sub')?.textContent.toLowerCase() || '';
-      const num = it.querySelector('.zapping-ch-num')?.textContent.toLowerCase() || '';
+      const titleEl = it.querySelector('.zapping-ch-title');
+      const title = (titleEl && titleEl.textContent) ? titleEl.textContent.toLowerCase() : '';
+      const subEl = it.querySelector('.zapping-ch-sub');
+      const sub = (subEl && subEl.textContent) ? subEl.textContent.toLowerCase() : '';
+      const numEl = it.querySelector('.zapping-ch-num');
+      const num = (numEl && numEl.textContent) ? numEl.textContent.toLowerCase() : '';
       const match = !query || title.includes(query) || sub.includes(query) || num.includes(query);
       it.style.display = match ? 'flex' : 'none';
       if (match) matchCount++;
@@ -9548,7 +9551,9 @@ class PlayerEngine {
     const items = this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item');
     if (!items || items.length === 0) return;
 
-    items[this.dpadFocusIndex]?.classList.remove('is-dpad-focused');
+    if (items[this.dpadFocusIndex] && items[this.dpadFocusIndex].classList) {
+      items[this.dpadFocusIndex].classList.remove('is-dpad-focused');
+    }
 
     this.dpadFocusIndex += direction;
     if (this.dpadFocusIndex < 0) this.dpadFocusIndex = items.length - 1;
@@ -9735,7 +9740,8 @@ class PlayerEngine {
 
   zapPrevious() {
     if (!this.tvStations || this.tvStations.length === 0) return;
-    let idx = this.tvStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.tvStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx - 1 + this.tvStations.length) % this.tvStations.length;
     this.playTv(this.tvStations[idx]);
@@ -9743,7 +9749,8 @@ class PlayerEngine {
 
   zapNext() {
     if (!this.tvStations || this.tvStations.length === 0) return;
-    let idx = this.tvStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.tvStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx + 1) % this.tvStations.length;
     this.playTv(this.tvStations[idx]);
@@ -10448,7 +10455,7 @@ class PlayerEngine {
             this.showFullscreenGuide();
           } else {
             this.toggleSidebar(true);
-            const activeItem = this.dom.zappingChannelList?.querySelector('.zapping-ch-item.is-active');
+            const activeItem = this.dom.zappingChannelList ? this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-active') : null;
             if (activeItem) activeItem.focus();
           }
           return;
@@ -10579,7 +10586,7 @@ class PlayerEngine {
 
       navigator.mediaSession.setActionHandler('play', () => {
         if (this.currentType === 'tv') {
-          this.dom.tvVideo?.play();
+          if (this.dom.tvVideo) this.dom.tvVideo.play();
         } else {
           this.isUserPaused = false;
           this.resumeRadio(true);
@@ -10588,7 +10595,7 @@ class PlayerEngine {
 
       navigator.mediaSession.setActionHandler('pause', () => {
         if (this.currentType === 'tv') {
-          this.dom.tvVideo?.pause();
+          if (this.dom.tvVideo) this.dom.tvVideo.pause();
         } else {
           this.isUserPaused = true;
           this.pauseRadio(true);
@@ -10659,7 +10666,8 @@ class PlayerEngine {
 
   playPreviousRadio() {
     if (!this.radioStations || this.radioStations.length === 0) return;
-    let idx = this.radioStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.radioStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx - 1 + this.radioStations.length) % this.radioStations.length;
     this.playRadio(this.radioStations[idx]);
@@ -10667,7 +10675,8 @@ class PlayerEngine {
 
   playNextRadio() {
     if (!this.radioStations || this.radioStations.length === 0) return;
-    let idx = this.radioStations.findIndex(s => s.id === this.currentStation?.id);
+    const curId = this.currentStation ? this.currentStation.id : null;
+    let idx = this.radioStations.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
     idx = (idx + 1) % this.radioStations.length;
     this.playRadio(this.radioStations[idx]);
@@ -12097,13 +12106,13 @@ function initTvNavigation() {
     // ========================================================================
     // 3. NAVEGACIÓN DETERMINISTA DENTRO DEL CATÁLOGO DE ESTACIONES (.station-card)
     // ========================================================================
-    if (current.classList?.contains('station-card')) {
+    if (current.classList && current.classList.contains('station-card')) {
       const allCards = Array.from(document.querySelectorAll('.stations-grid .station-card'));
       const idx = allCards.indexOf(current);
 
       if (idx !== -1) {
         const curRect = current.getBoundingClientRect();
-        const firstRowTop = allCards[0]?.getBoundingClientRect().top;
+        const firstRowTop = allCards[0] ? allCards[0].getBoundingClientRect().top : undefined;
 
         // Subir desde la primera fila de tarjetas regresa al gran botón de TV
         if (direction === 'ArrowUp') {
@@ -12236,8 +12245,8 @@ function initTvNavigation() {
   };
 
   window.onTvBack = function() {
-    const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
-    const isTvPlayerOpen = player?.dom?.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden');
+    const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
+    const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
     if (isTvPlayerOpen) {
       window.onTvNav('Back');
       return true;
@@ -12264,8 +12273,8 @@ function initTvNavigation() {
   };
 
   window.onTvNav = function(action) {
-    const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
-    const isTvPlayerOpen = player?.dom?.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden');
+    const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
+    const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
 
     if (isTvPlayerOpen) {
       if (action === 'ArrowUp') {
@@ -12349,7 +12358,7 @@ function initTvNavigation() {
     }
 
     if (action === 'PlayPause') {
-      const player = window.AntenaSurPlayer || window.__antenaSurApp?.player;
+      const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
       if (player) {
         if (player.currentType === 'tv') {
           player.togglePlayPause();
@@ -12368,7 +12377,7 @@ function initTvNavigation() {
 
   // Mantener foco visible al interactuar
   document.addEventListener('focusin', (e) => {
-    if (e.target && (e.target.classList?.contains('hero-action-card') || e.target.classList?.contains('station-card') || e.target.classList?.contains('section-nav-tab'))) {
+    if (e && e.target && e.target.classList && (e.target.classList.contains('hero-action-card') || e.target.classList.contains('station-card') || e.target.classList.contains('section-nav-tab'))) {
       document.querySelectorAll('.is-tv-focused').forEach(el => el.classList.remove('is-tv-focused'));
       e.target.classList.add('is-tv-focused');
     }
@@ -12376,7 +12385,8 @@ function initTvNavigation() {
 
   // Atajos de teclado para mandos USB dongle, mandos bluetooth y teclados estándar
   window.addEventListener('keydown', (e) => {
-    if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+    if (!e) return;
+    if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
       if (e.key === 'Escape') e.target.blur();
       return;
     }
@@ -12895,7 +12905,7 @@ class App {
       }
 
       // Si el reproductor Zapping TV está abierto, delegar navegación a PlayerEngine (player.js)
-      const isTvPlayerOpen = this.player?.dom?.tvZappingView && !this.player.dom.tvZappingView.classList.contains('is-hidden');
+      const isTvPlayerOpen = (this.player && this.player.dom && this.player.dom.tvZappingView && !this.player.dom.tvZappingView.classList.contains('is-hidden'));
       if (isTvPlayerOpen) {
         if (e.key === 'Escape') {
           this.player.closeTvPlayer();

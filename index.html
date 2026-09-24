@@ -24,6 +24,24 @@
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/player.css">
+
+  <!-- Gestor visual de errores para diagnóstico en Smart TV / Android TV -->
+  <script>
+    window.onerror = function(msg, url, line, col, err) {
+      try {
+        var banner = document.getElementById('tvErrorBanner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'tvErrorBanner';
+          banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:rgba(220,38,38,0.95);color:#fff;padding:12px 16px;font-family:monospace;font-size:14px;z-index:999999;box-shadow:0 -4px 15px rgba(0,0,0,0.6);line-height:1.4;';
+          (document.body || document.documentElement).appendChild(banner);
+        }
+        var filename = url ? url.split('/').pop() : 'script';
+        banner.innerHTML = '⚠️ <strong>ERROR JS:</strong> ' + msg + '<br><span style="opacity:0.85;font-size:12px;">Archivo: ' + filename + ' (Línea ' + line + ')</span>';
+      } catch (e) {}
+      return false;
+    };
+  </script>
 </head>
 <body>
 

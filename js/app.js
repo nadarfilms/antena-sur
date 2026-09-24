@@ -483,7 +483,7 @@ class App {
       }
 
       // Si el reproductor Zapping TV está abierto, delegar navegación a PlayerEngine (player.js)
-      const isTvPlayerOpen = this.player?.dom?.tvZappingView && !this.player.dom.tvZappingView.classList.contains('is-hidden');
+      const isTvPlayerOpen = (this.player && this.player.dom && this.player.dom.tvZappingView && !this.player.dom.tvZappingView.classList.contains('is-hidden'));
       if (isTvPlayerOpen) {
         if (e.key === 'Escape') {
           this.player.closeTvPlayer();
