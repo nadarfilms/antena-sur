@@ -44,13 +44,11 @@
    ========================================================================== */
 
 .zapping-sidebar {
-  width: 350px;
-  min-width: 320px;
-  max-width: 380px;
+  width: 260px;
+  min-width: 240px;
+  max-width: 270px;
   height: 100%;
-  background: rgba(9, 14, 25, 0.96);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: #090e19;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
@@ -69,42 +67,42 @@
 
 /* Encabezado de la Guía */
 .zapping-sidebar-header {
-  padding: 16px 18px 12px 18px;
+  padding: 10px 12px 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(14, 21, 37, 0.6);
+  background: rgba(14, 21, 37, 0.85);
 }
 
 .zapping-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .zapping-logo-icon {
-  font-size: 1.4rem;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  font-size: 1.1rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: linear-gradient(135deg, #00e5ff 0%, #2563eb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
 }
 
 .zapping-brand h3 {
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   color: #fff;
   margin: 0;
 }
 
 .zapping-ch-count {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   color: var(--accent-cyan, #00d4ff);
   font-weight: 600;
 }
@@ -113,9 +111,9 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 0.85rem;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -127,7 +125,7 @@
 
 /* Buscador Rápido en Guía */
 .zapping-search-box {
-  padding: 12px 16px 8px 16px;
+  padding: 8px 10px 4px 10px;
   position: relative;
   display: flex;
   align-items: center;
@@ -135,19 +133,19 @@
 
 .zapping-search-box svg {
   position: absolute;
-  left: 28px;
+  left: 20px;
   color: var(--text-muted);
   pointer-events: none;
 }
 
 .zapping-search-box input {
   width: 100%;
-  padding: 8px 12px 8px 34px;
+  padding: 6px 10px 6px 28px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border-radius: 8px;
   color: #fff;
-  font-size: 0.84rem;
+  font-size: 0.76rem;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -155,14 +153,14 @@
 .zapping-search-box input:focus {
   border-color: #00e5ff;
   background: rgba(0, 229, 255, 0.06);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
 }
 
 /* Chips de Categoría Zapping */
 .zapping-category-chips {
   display: flex;
-  gap: 6px;
-  padding: 4px 16px 10px 16px;
+  gap: 4px;
+  padding: 4px 10px 8px 10px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -174,10 +172,10 @@
 .zapping-chip {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 4px 10px;
+  border-radius: 16px;
+  padding: 3px 8px;
   color: var(--text-secondary);
-  font-size: 0.74rem;
+  font-size: 0.68rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -200,15 +198,15 @@
 .zapping-channel-list {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 12px;
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   outline: none;
 }
 
 .zapping-channel-list::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .zapping-channel-list::-webkit-scrollbar-thumb {
@@ -220,15 +218,15 @@
 .zapping-ch-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   color: #fff;
   cursor: pointer;
   text-align: left;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.15s ease, border-color 0.15s ease;
   outline: none;
   position: relative;
   user-select: none;
@@ -237,38 +235,36 @@
 .zapping-ch-item:hover,
 .zapping-ch-item:focus,
 .zapping-ch-item.is-dpad-focused {
-  background: rgba(0, 229, 255, 0.12);
+  background: rgba(0, 229, 255, 0.14);
   border-color: #00e5ff;
-  transform: translateX(4px);
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.3);
 }
 
 .zapping-ch-item.is-playing,
 .zapping-ch-item.is-active {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.22) 0%, rgba(37, 99, 235, 0.18) 100%);
+  background: rgba(0, 229, 255, 0.22);
   border-color: #00e5ff;
-  box-shadow: inset 3px 0 0 #00e5ff, 0 4px 16px rgba(0, 0, 0, 0.4);
+  border-left: 3px solid #00e5ff;
 }
 
 .zapping-ch-num {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   font-weight: 800;
   color: var(--accent-cyan, #00d4ff);
   background: rgba(0, 229, 255, 0.1);
-  padding: 3px 6px;
-  border-radius: 6px;
-  min-width: 32px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  min-width: 24px;
   text-align: center;
   flex-shrink: 0;
 }
 
 .zapping-ch-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
-  padding: 3px;
+  padding: 2px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -278,12 +274,12 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .zapping-ch-title {
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 600;
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
@@ -291,7 +287,7 @@
 }
 
 .zapping-ch-sub {
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -299,9 +295,9 @@
 }
 
 .zapping-live-pill {
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 4px;
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
@@ -316,6 +312,10 @@
   background: rgba(0, 229, 255, 0.2);
   color: #00e5ff;
   border-color: rgba(0, 229, 255, 0.4);
+}
+
+.zapping-sidebar .zapping-live-pill {
+  display: none !important;
 }
 
 /* Hint para Android TV en Sidebar */
@@ -350,13 +350,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background: rgba(7, 11, 20, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 10px 16px;
+  background: rgba(7, 11, 20, 0.95);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 20;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 .zapping-hud-left {
@@ -544,11 +542,9 @@
   left: 0;
   bottom: 0;
   height: 100%;
-  width: 380px;
+  width: 270px;
   max-width: 85vw;
-  background: rgba(6, 10, 18, 0.94);
-  backdrop-filter: blur(28px);
-  -webkit-backdrop-filter: blur(28px);
+  background: #060a12;
   border-right: 1px solid rgba(0, 229, 255, 0.3);
   transform: translateX(-100%);
   visibility: hidden;
@@ -704,13 +700,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
-  background: rgba(7, 11, 20, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 8px 16px;
+  background: rgba(7, 11, 20, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 20;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
 }
 
 /* Ocultamiento del layout en Pantalla Completa tras 5 segundos de inactividad */
@@ -912,8 +906,7 @@
   align-items: center;
   gap: 14px;
   z-index: 15;
-  background: rgba(10, 14, 23, 0.88);
-  backdrop-filter: blur(12px);
+  background: rgba(10, 14, 23, 0.95);
   padding: 24px 32px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1058,9 +1051,7 @@
   bottom: 0;
   left: 0;
   width: 100vw;
-  background: rgba(10, 14, 23, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #0a0e17;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
   z-index: 1200;
@@ -1307,7 +1298,8 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: 290px;
+    width: 260px;
+    max-width: 80vw;
     z-index: 50;
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.9);
   }

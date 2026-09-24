@@ -263,32 +263,40 @@ export function initTvNavigation() {
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
 
     if (isTvPlayerOpen) {
+      const isFullscreen = player.isFullscreenActive();
+      const isSidebarVisible = player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed');
+
       if (action === 'ArrowUp') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(-1);
+        } else if (!isFullscreen && isSidebarVisible) {
+          player.navigateSidebarList(-1);
         } else {
           player.zapPrevious();
         }
         return;
       }
       if (action === 'ArrowDown') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(1);
+        } else if (!isFullscreen && isSidebarVisible) {
+          player.navigateSidebarList(1);
         } else {
           player.zapNext();
         }
         return;
       }
       if (action === 'ArrowLeft') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           player.showFullscreenGuide();
         } else {
           player.toggleSidebar(true);
+          player.focusCurrentSidebarItem();
         }
         return;
       }
       if (action === 'ArrowRight') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           player.hideFullscreenGuide();
         } else {
           player.toggleSidebar(false);
@@ -296,21 +304,23 @@ export function initTvNavigation() {
         return;
       }
       if (action === 'Enter') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           if (!player.isGuideOverlayVisible) {
             player.showFullscreenGuide();
           } else {
             player.selectFocusedOverlayChannel();
           }
+        } else if (isSidebarVisible) {
+          player.selectFocusedSidebarChannel();
         } else {
           player.togglePlayPause();
         }
         return;
       }
       if (action === 'Back') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.hideFullscreenGuide();
-        } else if (player.isFullscreenActive()) {
+        } else if (isFullscreen) {
           player.exitFullscreenCrossBrowser();
         } else {
           player.closeTvPlayer();

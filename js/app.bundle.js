@@ -9038,6 +9038,7 @@ class PlayerEngine {
     this.currentTvIndex = 0;
     this.currentRadioIndex = 0;
     this.dpadFocusIndex = 0;
+    this.sidebarFocusIndex = 0;
 
     // Estado del overlay en pantalla completa
     this.isGuideOverlayVisible = false;
@@ -9415,12 +9416,34 @@ class PlayerEngine {
 
     this.dom.zappingChannelList.innerHTML = sidebarHtml || `<div style="padding: 20px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">No hay canales en este filtro</div>`;
 
-    // Asignar clics a los ítems del sidebar
-    this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item').forEach(item => {
+    // Asignar clics y doble clics a los ítems del sidebar
+    const sidebarItems = this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item');
+    sidebarItems.forEach(item => {
+      const id = item.getAttribute('data-id');
+      const idx = parseInt(item.getAttribute('data-index'), 10);
+
       item.addEventListener('click', () => {
-        const id = item.getAttribute('data-id');
+        if (!isNaN(idx)) this.sidebarFocusIndex = idx;
+        sidebarItems.forEach(el => el.classList.remove('is-dpad-focused'));
+        item.classList.add('is-dpad-focused');
+
+        const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
+        if (isCurrentlyActive) {
+          // Si el canal ya está sintonizado / marcado, un clic entra a pantalla completa
+          this.enterFullscreenCrossBrowser();
+        } else {
+          const st = this.tvStations.find(s => s.id === id);
+          if (st) this.playTv(st);
+        }
+      });
+
+      item.addEventListener('dblclick', (e) => {
+        e.preventDefault();
         const st = this.tvStations.find(s => s.id === id);
-        if (st) this.playTv(st);
+        if (st && (!this.currentStation || this.currentStation.id !== id)) {
+          this.playTv(st);
+        }
+        this.enterFullscreenCrossBrowser();
       });
     });
 
@@ -9428,21 +9451,38 @@ class PlayerEngine {
     if (this.dom.zappingFsChannelList) {
       this.dom.zappingFsChannelList.innerHTML = sidebarHtml;
       this.dom.zappingFsChannelList.querySelectorAll('.zapping-ch-item').forEach(item => {
+        const id = item.getAttribute('data-id');
         item.addEventListener('click', () => {
-          const id = item.getAttribute('data-id');
           const st = this.tvStations.find(s => s.id === id);
-          if (st) {
+          if (st && (!this.currentStation || this.currentStation.id !== id)) {
             this.playTv(st);
-            this.hideFullscreenGuide();
           }
+          this.hideFullscreenGuide();
+        });
+        item.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          const st = this.tvStations.find(s => s.id === id);
+          if (st && (!this.currentStation || this.currentStation.id !== id)) {
+            this.playTv(st);
+          }
+          this.hideFullscreenGuide();
         });
       });
     }
 
-    // Scroll suave al canal activo
+    // Foco y scroll al canal activo en el sidebar
     const activeItem = this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-active');
     if (activeItem) {
-      activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      const idx = parseInt(activeItem.getAttribute('data-index'), 10);
+      if (!isNaN(idx)) this.sidebarFocusIndex = idx;
+      sidebarItems.forEach(el => el.classList.remove('is-dpad-focused'));
+      activeItem.classList.add('is-dpad-focused');
+      try {
+        activeItem.scrollIntoView({ block: 'nearest' });
+      } catch (e) {}
+    } else if (sidebarItems.length > 0) {
+      if (this.sidebarFocusIndex >= sidebarItems.length) this.sidebarFocusIndex = 0;
+      sidebarItems[this.sidebarFocusIndex].classList.add('is-dpad-focused');
     }
   }
 
@@ -9565,7 +9605,9 @@ class PlayerEngine {
     const focusedItem = items[this.dpadFocusIndex];
     if (focusedItem) {
       focusedItem.classList.add('is-dpad-focused');
-      focusedItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      try {
+        focusedItem.scrollIntoView({ block: 'nearest' });
+      } catch (e) {}
     }
 
     this.resetFsOverlayInactivityTimer();
@@ -9577,11 +9619,82 @@ class PlayerEngine {
     const focusedItem = items[this.dpadFocusIndex];
     if (focusedItem) {
       const id = focusedItem.getAttribute('data-id');
-      const st = this.tvStations.find(s => s.id === id);
-      if (st) {
-        this.playTv(st);
+      const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
+      if (isCurrentlyActive) {
         this.hideFullscreenGuide();
+      } else {
+        const st = this.tvStations.find(s => s.id === id);
+        if (st) {
+          this.playTv(st);
+          this.hideFullscreenGuide();
+        }
       }
+    }
+  }
+
+  /* ========================================================================
+     NAVEGACIÓN EN GUÍA LATERAL ZAPPING (SIN SINTONIZACIÓN INMEDIATA)
+     ======================================================================== */
+
+  navigateSidebarList(direction) {
+    if (!this.dom.zappingChannelList) return;
+    const items = this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item');
+    if (!items || items.length === 0) return;
+
+    if (items[this.sidebarFocusIndex] && items[this.sidebarFocusIndex].classList) {
+      items[this.sidebarFocusIndex].classList.remove('is-dpad-focused');
+    }
+
+    this.sidebarFocusIndex += direction;
+    if (this.sidebarFocusIndex < 0) this.sidebarFocusIndex = items.length - 1;
+    if (this.sidebarFocusIndex >= items.length) this.sidebarFocusIndex = 0;
+
+    const focusedItem = items[this.sidebarFocusIndex];
+    if (focusedItem) {
+      focusedItem.classList.add('is-dpad-focused');
+      try {
+        focusedItem.scrollIntoView({ block: 'nearest' });
+      } catch (e) {}
+    }
+  }
+
+  selectFocusedSidebarChannel() {
+    if (!this.dom.zappingChannelList) return;
+    const items = this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item');
+    if (!items || items.length === 0) return;
+
+    const focusedItem = items[this.sidebarFocusIndex];
+    if (focusedItem) {
+      const id = focusedItem.getAttribute('data-id');
+      const isCurrentlyActive = this.currentStation && (this.currentStation.id === id);
+      if (isCurrentlyActive) {
+        // Si el canal ya está sintonizado / marcado, pasa a pantalla completa
+        this.enterFullscreenCrossBrowser();
+      } else {
+        const st = this.tvStations.find(s => s.id === id);
+        if (st) {
+          this.playTv(st);
+        }
+      }
+    }
+  }
+
+  focusCurrentSidebarItem() {
+    if (!this.dom.zappingChannelList) return;
+    const items = this.dom.zappingChannelList.querySelectorAll('.zapping-ch-item');
+    if (!items || items.length === 0) return;
+
+    if (this.sidebarFocusIndex < 0 || this.sidebarFocusIndex >= items.length) {
+      this.sidebarFocusIndex = 0;
+    }
+
+    items.forEach(el => el.classList.remove('is-dpad-focused'));
+    const focusedItem = items[this.sidebarFocusIndex];
+    if (focusedItem) {
+      focusedItem.classList.add('is-dpad-focused');
+      try {
+        focusedItem.scrollIntoView({ block: 'nearest' });
+      } catch (e) {}
     }
   }
 
@@ -10427,6 +10540,8 @@ class PlayerEngine {
 
   initRemoteKeyNavigation() {
     window.addEventListener('keydown', (e) => {
+      if (e.defaultPrevented) return;
+
       // Ignorar si el foco está en un input de texto ordinario
       const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
       if (['input', 'textarea'].includes(activeTag) && e.key !== 'Escape') {
@@ -10451,6 +10566,8 @@ class PlayerEngine {
           }
         }
 
+        const isSidebarVisible = this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed');
+
         // 1. Flecha Izquierda (ArrowLeft) -> Abrir guía lateral
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
@@ -10458,8 +10575,7 @@ class PlayerEngine {
             this.showFullscreenGuide();
           } else {
             this.toggleSidebar(true);
-            const activeItem = this.dom.zappingChannelList ? this.dom.zappingChannelList.querySelector('.zapping-ch-item.is-active') : null;
-            if (activeItem) activeItem.focus();
+            this.focusCurrentSidebarItem();
           }
           return;
         }
@@ -10475,22 +10591,26 @@ class PlayerEngine {
           return;
         }
 
-        // 3. Flecha Arriba (ArrowUp) -> Canal anterior o subir en guía
+        // 3. Flecha Arriba (ArrowUp) -> Subir en guía lateral (sin sintonizar) o overlay
         if (e.key === 'ArrowUp') {
           e.preventDefault();
           if (isFullscreen && this.isGuideOverlayVisible) {
             this.navigateOverlayGuide(-1);
+          } else if (!isFullscreen && isSidebarVisible) {
+            this.navigateSidebarList(-1);
           } else {
             this.zapPrevious();
           }
           return;
         }
 
-        // 4. Flecha Abajo (ArrowDown) -> Siguiente canal o bajar en guía
+        // 4. Flecha Abajo (ArrowDown) -> Bajar en guía lateral (sin sintonizar) o overlay
         if (e.key === 'ArrowDown') {
           e.preventDefault();
           if (isFullscreen && this.isGuideOverlayVisible) {
             this.navigateOverlayGuide(1);
+          } else if (!isFullscreen && isSidebarVisible) {
+            this.navigateSidebarList(1);
           } else {
             this.zapNext();
           }
@@ -10506,8 +10626,8 @@ class PlayerEngine {
             } else {
               this.selectFocusedOverlayChannel();
             }
-          } else if (document.activeElement && document.activeElement.classList.contains('zapping-ch-item')) {
-            document.activeElement.click();
+          } else if (isSidebarVisible) {
+            this.selectFocusedSidebarChannel();
           } else {
             this.togglePlayPause();
           }
@@ -12279,32 +12399,40 @@ function initTvNavigation() {
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
 
     if (isTvPlayerOpen) {
+      const isFullscreen = player.isFullscreenActive();
+      const isSidebarVisible = player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed');
+
       if (action === 'ArrowUp') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(-1);
+        } else if (!isFullscreen && isSidebarVisible) {
+          player.navigateSidebarList(-1);
         } else {
           player.zapPrevious();
         }
         return;
       }
       if (action === 'ArrowDown') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.navigateOverlayGuide(1);
+        } else if (!isFullscreen && isSidebarVisible) {
+          player.navigateSidebarList(1);
         } else {
           player.zapNext();
         }
         return;
       }
       if (action === 'ArrowLeft') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           player.showFullscreenGuide();
         } else {
           player.toggleSidebar(true);
+          player.focusCurrentSidebarItem();
         }
         return;
       }
       if (action === 'ArrowRight') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           player.hideFullscreenGuide();
         } else {
           player.toggleSidebar(false);
@@ -12312,21 +12440,23 @@ function initTvNavigation() {
         return;
       }
       if (action === 'Enter') {
-        if (player.isFullscreenActive()) {
+        if (isFullscreen) {
           if (!player.isGuideOverlayVisible) {
             player.showFullscreenGuide();
           } else {
             player.selectFocusedOverlayChannel();
           }
+        } else if (isSidebarVisible) {
+          player.selectFocusedSidebarChannel();
         } else {
           player.togglePlayPause();
         }
         return;
       }
       if (action === 'Back') {
-        if (player.isFullscreenActive() && player.isGuideOverlayVisible) {
+        if (isFullscreen && player.isGuideOverlayVisible) {
           player.hideFullscreenGuide();
-        } else if (player.isFullscreenActive()) {
+        } else if (isFullscreen) {
           player.exitFullscreenCrossBrowser();
         } else {
           player.closeTvPlayer();

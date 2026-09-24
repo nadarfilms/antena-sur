@@ -35,7 +35,8 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.6.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,15 +54,15 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.0.6.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.0.6
+    - name: Publicar Release v1.0.7
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.6.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.0.6"
-        name: "Antena Sur Android TV v1.0.6"
-        body: "Versión 1.0.6 con optimización extrema a 60 FPS: eliminación de filtros de desenfoque GPU, navegación O(1) sin reflows, aceleración por hardware forzada y renderizado progresivo."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.0.7.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.0.7"
+        name: "Antena Sur Android TV v1.0.7"
+        body: "Versión 1.0.7 con Guía Zapping refinada: navegación de canales con cursor sin sintonización inmediata (confirmación con Enter/OK), barra lateral compacta (260px) con tipografía optimizada, pantalla completa con doble clic o clic sobre canal activo, y selectores técnicos de fuente y calidad reubicados en la barra inferior."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
