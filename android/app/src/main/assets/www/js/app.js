@@ -36,6 +36,9 @@ class App {
     };
 
     this.selectedInfoStation = null;
+    this.allFilteredStations = [];
+    this.renderedStationCount = 0;
+    this.isGridEventsInitialized = false;
   }
 
   start() {
@@ -63,6 +66,7 @@ class App {
     }
 
     // 5. Inicializar navegación e interactividad (ahora player y filters YA existen)
+    this.initGridEvents();
     this.initMainSectionTabs();
     this.initKeyboardShortcuts();
     this.initCustomModalEvents();
@@ -135,13 +139,69 @@ class App {
   }
 
   /* ========================================================================
-     RENDERIZADO DE TARJETAS
+     RENDERIZADO PROGRESIVO DE TARJETAS Y DELEGACIÓN DE EVENTOS (60 FPS TV)
      ======================================================================== */
+
+  initGridEvents() {
+    if (!this.dom.stationsGrid || this.isGridEventsInitialized) return;
+    this.isGridEventsInitialized = true;
+
+    // Delegación centralizada de clics: un único listener para todo el catálogo
+    this.dom.stationsGrid.addEventListener('click', (e) => {
+      const card = e.target.closest('.station-card');
+      if (!card) return;
+      const id = card.getAttribute('data-id');
+      const station = this.dataManager.getStationById(id);
+      if (!station) return;
+
+      const favBtn = e.target.closest('[data-action="toggle-fav"]');
+      if (favBtn) {
+        e.stopPropagation();
+        const isFavNow = this.favoritesManager.toggleFavorite(station.id);
+        this.filters.updateFavCounter();
+        favBtn.classList.toggle('is-favorite', isFavNow);
+        const svg = favBtn.querySelector('svg');
+        if (svg) svg.setAttribute('fill', isFavNow ? '#f59e0b' : 'none');
+        this.showToast(isFavNow ? `Añadido a favoritos: ${station.name}` : `Quitado de favoritos: ${station.name}`, 'info');
+        if (this.filters.state.type === 'favorites') {
+          this.filters.triggerChange();
+        }
+        return;
+      }
+
+      this.handleStationPlayToggle(station);
+    });
+
+    // Delegación de teclado (Enter sobre tarjeta)
+    this.dom.stationsGrid.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.keyCode === 13) {
+        const card = e.target.closest('.station-card');
+        if (!card) return;
+        const id = card.getAttribute('data-id');
+        const station = this.dataManager.getStationById(id);
+        if (station) {
+          e.preventDefault();
+          this.handleStationPlayToggle(station);
+        }
+      }
+    });
+
+    // Carga progresiva al desplazarse hacia el final de la pantalla
+    window.addEventListener('scroll', () => {
+      if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 600)) {
+        this.loadMoreStations();
+      }
+    }, { passive: true });
+  }
 
   renderStations(stations) {
     if (!this.dom.stationsGrid) return;
 
-    if (!stations || stations.length === 0) {
+    this.allFilteredStations = stations || [];
+    this.renderedStationCount = 0;
+    this.dom.stationsGrid.innerHTML = '';
+
+    if (!this.allFilteredStations || this.allFilteredStations.length === 0) {
       this.dom.stationsGrid.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">📡</div>
@@ -159,20 +219,27 @@ class App {
       return;
     }
 
-    const currentPlayingId = this.player.currentStation ? this.player.currentStation.id : null;
-    const isActuallyPlaying = this.player.isPlaying;
+    // Renderizar primer lote de señales (32 tarjetas para arranque inmediato a 60 FPS)
+    this.loadMoreStations(32);
+  }
+
+  loadMoreStations(batchSize = 24) {
+    if (!this.allFilteredStations || this.renderedStationCount >= this.allFilteredStations.length) return;
+
+    const nextBatch = this.allFilteredStations.slice(this.renderedStationCount, this.renderedStationCount + batchSize);
+    this.renderedStationCount += nextBatch.length;
+
+    const currentPlayingId = this.player && this.player.currentStation ? this.player.currentStation.id : null;
+    const isActuallyPlaying = this.player && this.player.isPlaying;
 
     let html = '';
-    stations.forEach(station => {
+    nextBatch.forEach(station => {
       const isFav = this.favoritesManager.isFavorite(station.id);
       const isThisPlaying = (station.id === currentPlayingId) && isActuallyPlaying;
       const isTv = station.type === 'tv';
-
       const typeBadgeClass = isTv ? 'badge-tv' : 'badge-radio';
       const typeLabel = isTv ? '📺 TV' : '📻 Radio';
       const flag = this.getCountryFlag(station.country);
-
-      // Icono de fallback para logo
       const placeholderIcon = isTv ? '📺' : '📻';
 
       html += `
@@ -181,9 +248,7 @@ class App {
             <div class="card-badges">
               <span class="badge-tag ${typeBadgeClass}">${typeLabel}</span>
               ${(station.sources && station.sources.length > 1) ? `<span class="badge-tag" style="background: rgba(0, 229, 255, 0.15); border: 1px solid rgba(0, 229, 255, 0.35); color: #00e5ff; font-weight: 700;">📡 ${station.sources.length} Fuentes</span>` : ''}
-              <span class="live-indicator">
-                <span class="live-dot"></span> EN VIVO
-              </span>
+              <span class="live-indicator"><span class="live-dot"></span> EN VIVO</span>
               <span title="${station.countryName}">${flag}</span>
             </div>
             <button class="fav-btn ${isFav ? 'is-favorite' : ''}" data-action="toggle-fav" title="${isFav ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
@@ -227,60 +292,11 @@ class App {
       `;
     });
 
-    this.dom.stationsGrid.innerHTML = html;
-
-    // Asignar manejadores de eventos delegados a las tarjetas
-    this.dom.stationsGrid.querySelectorAll('.station-card').forEach(card => {
-      const id = card.getAttribute('data-id');
-      const station = this.dataManager.getStationById(id);
-      if (!station) return;
-
-      // Botón Play
-      const playBtn = card.querySelector('[data-action="play"]');
-      if (playBtn) {
-        playBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.handleStationPlayToggle(station);
-        });
-      }
-
-      // Botón Favorito
-      const favBtn = card.querySelector('[data-action="toggle-fav"]');
-      if (favBtn) {
-        favBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isFavNow = this.favoritesManager.toggleFavorite(station.id);
-          this.filters.updateFavCounter();
-          
-          favBtn.classList.toggle('is-favorite', isFavNow);
-          const svg = favBtn.querySelector('svg');
-          if (svg) svg.setAttribute('fill', isFavNow ? '#f59e0b' : 'none');
-
-          this.showToast(isFavNow ? `Añadido a favoritos: ${station.name}` : `Quitado de favoritos: ${station.name}`, 'info');
-
-          // Si estamos en la pestaña favoritos, re-renderizar
-          if (this.filters.state.type === 'favorites') {
-            this.filters.triggerChange();
-          }
-        });
-      }
-
-      // Clic en la tarjeta completa: sintoniza inmediatamente (TV abre Zapping TV, Radio inicia en barra de audio)
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('[data-action="toggle-fav"]') || e.target.closest('[data-action="play"]')) {
-          return;
-        }
-        this.handleStationPlayToggle(station);
-      });
-
-      // Tecla Enter del control remoto sobre la tarjeta enfocada
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.keyCode === 13) {
-          e.preventDefault();
-          this.handleStationPlayToggle(station);
-        }
-      });
-    });
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    while (tempDiv.firstChild) {
+      this.dom.stationsGrid.appendChild(tempDiv.firstChild);
+    }
   }
 
   handleStationPlayToggle(station) {

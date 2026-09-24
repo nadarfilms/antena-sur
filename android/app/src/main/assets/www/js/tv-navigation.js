@@ -20,6 +20,8 @@ export function initTvNavigation() {
       });
   }
 
+  let currentTvFocused = null;
+
   function setFocus(element) {
     if (!element) return;
     try {
@@ -27,20 +29,23 @@ export function initTvNavigation() {
     } catch (e) {
       try { element.focus(); } catch (e2) {}
     }
+    // Desplazamiento instantáneo sin animación para 60 FPS constantes en TV
     try {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     } catch (e) {
       try { element.scrollIntoView(); } catch (e2) {}
     }
-    document.querySelectorAll('.is-tv-focused').forEach(el => el.classList.remove('is-tv-focused'));
+    if (currentTvFocused && currentTvFocused !== element) {
+      currentTvFocused.classList.remove('is-tv-focused');
+    }
     element.classList.add('is-tv-focused');
+    currentTvFocused = element;
   }
 
   function navigateSpatial(direction) {
     let current = document.activeElement;
-    const tvFocused = document.querySelector('.is-tv-focused');
     if (!current || current === document.body || !document.contains(current)) {
-      current = tvFocused;
+      current = currentTvFocused || document.querySelector('.is-tv-focused');
     }
 
     const heroTv = document.getElementById('heroCardTv');
@@ -75,7 +80,8 @@ export function initTvNavigation() {
       if (direction === 'ArrowUp') { setFocus(tabTv); return; }
       if (direction === 'ArrowRight') { setFocus(heroRadio); return; }
       if (direction === 'ArrowDown') {
-        if (firstStationCard) setFocus(firstStationCard);
+        const firstCard = document.querySelector('.stations-grid .station-card');
+        if (firstCard) setFocus(firstCard);
         return;
       }
       return;
@@ -84,82 +90,75 @@ export function initTvNavigation() {
       if (direction === 'ArrowUp') { setFocus(tabRadio); return; }
       if (direction === 'ArrowLeft') { setFocus(heroTv); return; }
       if (direction === 'ArrowDown') {
-        if (firstStationCard) setFocus(firstStationCard);
+        const firstCard = document.querySelector('.stations-grid .station-card');
+        if (firstCard) setFocus(firstCard);
         return;
       }
       return;
     }
 
     // ========================================================================
-    // 3. NAVEGACIÓN DETERMINISTA DENTRO DEL CATÁLOGO DE ESTACIONES (.station-card)
+    // 3. NAVEGACIÓN MATEMÁTICA O(1) EN EL CATÁLOGO (.station-card) - CERO REFLOWS
     // ========================================================================
     if (current.classList && current.classList.contains('station-card')) {
-      const allCards = Array.from(document.querySelectorAll('.stations-grid .station-card'));
-      const idx = allCards.indexOf(current);
+      const allCards = document.querySelectorAll('.stations-grid .station-card');
+      const total = allCards.length;
+      if (total === 0) return;
 
-      if (idx !== -1) {
-        const curRect = current.getBoundingClientRect();
-        const firstRowTop = allCards[0] ? allCards[0].getBoundingClientRect().top : undefined;
-
-        // Subir desde la primera fila de tarjetas regresa al gran botón de TV
-        if (direction === 'ArrowUp') {
-          if (firstRowTop !== undefined && Math.abs(curRect.top - firstRowTop) < 35) {
-            setFocus(heroTv);
-            return;
-          }
-          // Subir a la fila anterior buscando la tarjeta verticalmente más cercana
-          let bestUp = null;
-          let minDiff = Infinity;
-          for (let i = 0; i < idx; i++) {
-            const r = allCards[i].getBoundingClientRect();
-            const dy = r.top - curRect.top;
-            if (dy < -20) {
-              const dx = Math.abs(r.left - curRect.left);
-              const score = Math.abs(dy) + dx * 2;
-              if (score < minDiff) {
-                minDiff = score;
-                bestUp = allCards[i];
-              }
-            }
-          }
-          if (bestUp) {
-            setFocus(bestUp);
-            return;
-          }
-        }
-
-        // Bajar a la siguiente fila de tarjetas
-        if (direction === 'ArrowDown') {
-          let bestDown = null;
-          let minDiff = Infinity;
-          for (let i = idx + 1; i < allCards.length; i++) {
-            const r = allCards[i].getBoundingClientRect();
-            const dy = r.top - curRect.top;
-            if (dy > 20) {
-              const dx = Math.abs(r.left - curRect.left);
-              const score = dy + dx * 2;
-              if (score < minDiff) {
-                minDiff = score;
-                bestDown = allCards[i];
-              }
-            }
-          }
-          if (bestDown) {
-            setFocus(bestDown);
-            return;
-          }
-        }
-
-        // Desplazamiento horizontal secuencial entre tarjetas
-        if (direction === 'ArrowLeft' && idx > 0) {
-          setFocus(allCards[idx - 1]);
-          return;
-        }
-        if (direction === 'ArrowRight' && idx < allCards.length - 1) {
-          setFocus(allCards[idx + 1]);
-          return;
-        }
+      let idx = -1;
+      for (let i = 0; i < total; i++) {
+        if (allCards[i] === current) { idx = i; break; }
       }
+      if (idx === -1) return;
+
+      // Calcular número de columnas en la primera fila (O(1), máximo 6 comparaciones)
+      let cols = 1;
+      const top0 = allCards[0].offsetTop;
+      while (cols < total && allCards[cols].offsetTop === top0) {
+        cols++;
+      }
+
+      if (direction === 'ArrowUp') {
+        if (idx < cols) {
+          // Primera fila: subir a los botones principales
+          setFocus(heroTv || tabTv);
+          return;
+        }
+        setFocus(allCards[idx - cols]);
+        return;
+      }
+
+      if (direction === 'ArrowDown') {
+        const nextIdx = idx + cols;
+        // Si nos acercamos al final del lote actual, cargar el siguiente bloque
+        if (window.__antenaSurApp && typeof window.__antenaSurApp.loadMoreStations === 'function') {
+          if (nextIdx >= total - 8) {
+            window.__antenaSurApp.loadMoreStations();
+          }
+        }
+        const updatedCards = document.querySelectorAll('.stations-grid .station-card');
+        if (nextIdx < updatedCards.length) {
+          setFocus(updatedCards[nextIdx]);
+        } else if (updatedCards.length > 0) {
+          setFocus(updatedCards[updatedCards.length - 1]);
+        }
+        return;
+      }
+
+      if (direction === 'ArrowLeft') {
+        if (idx > 0) {
+          setFocus(allCards[idx - 1]);
+        }
+        return;
+      }
+
+      if (direction === 'ArrowRight') {
+        if (idx < total - 1) {
+          setFocus(allCards[idx + 1]);
+        }
+        return;
+      }
+      return;
     }
 
     // ========================================================================

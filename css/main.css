@@ -107,9 +107,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #090e18;
   border-bottom: 1px solid var(--border-color);
   padding: 14px 0;
   margin-bottom: 24px;
@@ -207,9 +205,10 @@ body {
 .section-nav-tab.is-tv-focused {
   color: #fff !important;
   background: rgba(0, 229, 255, 0.22) !important;
-  outline: none !important;
-  box-shadow: 0 0 0 3px #00e5ff, 0 0 20px rgba(0, 229, 255, 0.6) !important;
-  transform: scale(1.06) !important;
+  outline: 3px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+  transform: scale(1.05) !important;
 }
 
 .section-nav-tab .tab-icon {

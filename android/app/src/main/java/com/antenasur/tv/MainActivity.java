@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView mWebView;
     private WebViewAssetLoader mAssetLoader;
     private long mLastBackPressTime = 0;
+    private long mLastNavTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupWebView() {
         mWebView = new WebView(this);
         mWebView.setBackgroundColor(Color.parseColor("#070B13"));
+        mWebView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         setContentView(mWebView);
 
         // Cargador de recursos locales autónomo (empaquetado dentro del APK)
@@ -92,6 +94,10 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            settings.setOffscreenPreRaster(true);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
@@ -344,12 +350,15 @@ public class MainActivity extends AppCompatActivity {
 
         if (navAction != null) {
             if (action == KeyEvent.ACTION_DOWN) {
+                long now = System.currentTimeMillis();
+                // Si el mando USB envía repeticiones rápidas continuas, limitar para evitar saturar el hilo UI
+                if (event.getRepeatCount() > 0 && (now - mLastNavTime < 110)) {
+                    return true;
+                }
+                mLastNavTime = now;
+
                 final String finalAction = navAction;
-                mWebView.evaluateJavascript(
-                    "if (window.onTvNav) { window.onTvNav('" + finalAction + "'); } " +
-                    "else { window.dispatchEvent(new KeyboardEvent('keydown', {key: '" + finalAction + "', code: '" + finalAction + "', bubbles: true})); }",
-                    null
-                );
+                mWebView.evaluateJavascript("if (window.onTvNav) window.onTvNav('" + finalAction + "');", null);
             }
             return true;
         }
