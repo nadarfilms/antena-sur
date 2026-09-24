@@ -804,6 +804,228 @@
   z-index: 100 !important;
 }
 
+/* ==========================================================================
+   MENÚ INTERIOR DE OPCIONES TÉCNICAS (BLACKMAGIC CAMERA OS OSD)
+   ========================================================================== */
+
+.tv-options-osd {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  user-select: none;
+}
+
+.tv-options-osd.is-hidden {
+  display: none !important;
+}
+
+.tv-options-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+}
+
+.tv-options-panel {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  background: #0e121a;
+  border: 1px solid var(--border-color, #273349);
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+  animation: osdPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes osdPopIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.tv-options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #121723;
+  border-bottom: 1px solid var(--border-color, #273349);
+}
+
+.tv-options-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tv-options-main-title {
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.tv-options-sub-title {
+  font-family: var(--font-family);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--bm-cyan, #0095ff);
+}
+
+.tv-options-close-btn {
+  background: #1c2436;
+  border: 1px solid var(--border-color, #273349);
+  color: var(--text-secondary, #7f8f9f);
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-family: var(--font-family);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.12s ease);
+}
+
+.tv-options-close-btn:hover,
+.tv-options-close-btn.is-dpad-focused {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.tv-options-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.tv-options-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tv-options-sec-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tv-options-tag {
+  font-family: var(--font-family);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--bm-cyan, #0095ff);
+  letter-spacing: 0.5px;
+}
+
+.tv-options-sec-title {
+  font-family: var(--font-family);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.tv-options-badge {
+  margin-left: auto;
+  font-family: var(--font-family);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary, #7f8f9f);
+  background: #171f2e;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color, #273349);
+}
+
+.tv-options-pills-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tv-opt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: #171f2e;
+  border: 1px solid var(--border-color, #273349);
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.12s ease);
+  outline: none;
+}
+
+.tv-opt-btn:hover,
+.tv-opt-btn.is-dpad-focused {
+  background: #222d42;
+  border-color: var(--bm-cyan, #0095ff);
+  box-shadow: 0 0 10px rgba(0, 149, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.tv-opt-btn.is-active {
+  background: #12283e !important;
+  border-color: var(--bm-cyan, #0095ff) !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid var(--bm-cyan, #0095ff) !important;
+}
+
+.tv-options-footer {
+  padding: 10px 20px;
+  background: #090c12;
+  border-top: 1px solid var(--border-color, #273349);
+  font-family: var(--font-family);
+  font-size: 0.7rem;
+  color: var(--text-secondary, #7f8f9f);
+  text-align: center;
+}
+
+.tv-options-footer strong {
+  color: var(--bm-cyan, #0095ff);
+}
+
+.tv-bottom-options-btn {
+  background: #1c2436;
+  border: 1px solid var(--border-color, #273349);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition-fast, 0.12s ease);
+}
+
+.tv-bottom-options-btn:hover,
+.tv-bottom-options-btn:focus,
+.tv-bottom-options-btn.is-dpad-focused {
+  background: var(--bm-cyan, #0095ff);
+  color: #ffffff;
+  border-color: var(--bm-cyan, #0095ff);
+}
+
 .zapping-controls-left {
   display: flex;
   align-items: center;
@@ -1432,26 +1654,30 @@
 .radio-fs-back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #111317;
-  border: 1px solid var(--border-color, #222630);
+  gap: 8px;
+  background: #171f2e;
+  border: 1px solid var(--border-color, #273349);
   color: #ffffff;
-  padding: 5px 12px;
-  border-radius: 2px;
+  padding: 7px 16px;
+  border-radius: 4px;
   font-family: var(--font-family);
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 800;
   cursor: pointer;
   transition: all var(--transition-fast, 0.12s ease);
+  min-height: 38px;
+  flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .radio-fs-back-btn:hover,
 .radio-fs-back-btn:focus,
 .radio-fs-back-btn.is-tv-focused {
-  background: var(--bm-cyan, #00d4ff);
-  color: #000000;
-  border-color: var(--bm-cyan, #00d4ff);
+  background: var(--bm-cyan, #0095ff);
+  color: #ffffff;
+  border-color: var(--bm-cyan, #0095ff);
   outline: none;
+  box-shadow: 0 0 12px rgba(0, 149, 255, 0.4);
 }
 
 .radio-fs-mode-tag {
@@ -1476,9 +1702,9 @@
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 1px;
-  color: var(--bm-cyan, #00d4ff);
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: var(--bm-cyan, #0095ff);
+  background: rgba(0, 149, 255, 0.08);
+  border: 1px solid rgba(0, 149, 255, 0.3);
   padding: 3px 8px;
   border-radius: 2px;
 }
@@ -1487,8 +1713,8 @@
   font-family: var(--font-family);
   font-size: 0.95rem;
   font-weight: 900;
-  color: #000000;
-  background: var(--bm-cyan, #00d4ff);
+  color: #ffffff;
+  background: var(--bm-cyan, #0095ff);
   padding: 2px 8px;
   border-radius: 2px;
   letter-spacing: 0.5px;
@@ -1507,37 +1733,41 @@
 }
 
 /* ==========================================================================
-   TIRA SUPERIOR DE EMISORAS (1 A 1 CON CONTROL REMOTO)
+   TIRA SUPERIOR DE EMISORAS (LÍNEA COMPLETA PARA DESLIZAR Y SELECCIONAR)
    ========================================================================== */
 
 .radio-fs-top-strip {
   background: #08090b;
-  border-bottom: 1px solid var(--border-color, #222630);
-  padding: 8px 24px;
+  border-bottom: 1px solid var(--border-color, #273349);
+  padding: 8px 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
   overflow: hidden;
 }
 
 .radio-fs-strip-label {
-  font-family: var(--font-family);
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: var(--text-muted, #565d69);
-  letter-spacing: 1px;
-  white-space: nowrap;
+  display: none !important;
 }
 
 .radio-fs-tray-scroll {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
   scrollbar-width: none;
   width: 100%;
-  padding: 2px 0;
+  padding: 4px 0;
+  cursor: grab;
+}
+
+.radio-fs-tray-scroll:active {
+  cursor: grabbing;
 }
 
 .radio-fs-tray-scroll::-webkit-scrollbar {
@@ -1848,25 +2078,47 @@
 
 @media (max-width: 768px) {
   .radio-fs-header {
-    padding: 10px 16px;
-    flex-wrap: wrap;
+    padding: 10px 14px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .radio-fs-header-left {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .radio-fs-back-btn {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    min-height: 40px;
+    background: #171f2e;
+    border: 1px solid var(--bm-cyan, #0095ff);
+    color: #ffffff;
+    border-radius: 4px;
+  }
+  .radio-fs-header-right {
+    display: none;
   }
   .radio-fs-mode-tag {
     display: none;
   }
   .radio-fs-top-strip {
-    padding: 8px 16px;
+    padding: 8px 12px;
   }
   .radio-fs-stage {
     grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 16px;
+    gap: 16px;
+    padding: 14px;
+    overflow-y: auto;
   }
   .radio-fs-artwork-container {
-    max-width: 200px;
+    max-width: 170px;
+    margin: 0 auto;
   }
   .radio-fs-station-name {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     text-align: center;
   }
   .radio-fs-pills-row {
@@ -1874,6 +2126,39 @@
   }
   .radio-fs-specs-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Controles y botones de volver en TV para móviles */
+  .zapping-top-hud {
+    padding: 8px 10px;
+  }
+  .zapping-exit-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 7px 12px !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    background: #1c2436 !important;
+    border: 1px solid var(--border-color, #273349) !important;
+    color: #ffffff !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    border-radius: 4px !important;
+  }
+  .zapping-sidebar-close-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    background: #1c2436 !important;
+    border: 1px solid var(--border-color, #273349) !important;
+    color: #ffffff !important;
+    border-radius: 4px !important;
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+  }
+  .tv-options-panel {
+    max-width: 95vw;
   }
 }
 

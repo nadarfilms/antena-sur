@@ -247,6 +247,10 @@ export function initTvNavigation() {
     // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
     const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
     if (isRadioFsOpen) {
+      if (player && typeof player.handleTvNav === 'function') {
+        player.handleTvNav(action);
+        return;
+      }
       if (action === 'ArrowLeft' || action === 'ArrowUp') {
         player.playPreviousRadio();
         return;
@@ -266,14 +270,17 @@ export function initTvNavigation() {
     }
 
     if (isTvPlayerOpen) {
+      if (player && typeof player.handleTvNav === 'function') {
+        player.handleTvNav(action);
+        return;
+      }
+
       const isFullscreen = player.isFullscreenActive();
       const isFsSidebarOpen = typeof player.isFsSidebarOpen === 'function' ? player.isFsSidebarOpen() : false;
       const isSidebarVisible = isFsSidebarOpen || (player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed'));
 
       if (action === 'ArrowUp') {
-        if (isFullscreen && player.isGuideOverlayVisible) {
-          player.navigateOverlayGuide(-1);
-        } else if (isSidebarVisible) {
+        if (isSidebarVisible) {
           player.navigateSidebarList(-1);
         } else {
           player.zapPrevious();
@@ -281,9 +288,7 @@ export function initTvNavigation() {
         return;
       }
       if (action === 'ArrowDown') {
-        if (isFullscreen && player.isGuideOverlayVisible) {
-          player.navigateOverlayGuide(1);
-        } else if (isSidebarVisible) {
+        if (isSidebarVisible) {
           player.navigateSidebarList(1);
         } else {
           player.zapNext();
@@ -294,8 +299,7 @@ export function initTvNavigation() {
         if (isFullscreen) {
           if (typeof player.toggleFullscreenSidebar === 'function') {
             player.toggleFullscreenSidebar(true);
-          } else {
-            player.showFullscreenGuide();
+            player.focusCurrentSidebarItem();
           }
         } else {
           player.toggleSidebar(true);
@@ -318,17 +322,14 @@ export function initTvNavigation() {
         if (isFullscreen) {
           if (isFsSidebarOpen) {
             player.selectFocusedSidebarChannel();
-          } else if (player.isGuideOverlayVisible) {
-            player.selectFocusedOverlayChannel();
-          } else {
-            if (typeof player.toggleFullscreenSidebar === 'function') {
-              player.toggleFullscreenSidebar(true);
-            } else {
-              player.showFullscreenGuide();
-            }
+            player.toggleFullscreenSidebar(false);
+          } else if (typeof player.openTvOptionsMenu === 'function') {
+            player.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();
+        } else if (typeof player.openTvOptionsMenu === 'function') {
+          player.openTvOptionsMenu();
         } else {
           player.togglePlayPause();
         }
@@ -336,27 +337,10 @@ export function initTvNavigation() {
       }
       if (action === 'Back') {
         if (isFullscreen) {
-          if (isFsSidebarOpen || player.isGuideOverlayVisible) {
-            const now = Date.now();
-            if (player._lastBackPressTime && (now - player._lastBackPressTime < 1200)) {
-              player.exitFullscreenCrossBrowser();
-            } else {
-              player._lastBackPressTime = now;
-              if (typeof player.toggleFullscreenSidebar === 'function') {
-                player.toggleFullscreenSidebar(false);
-              }
-              if (typeof player.hideFullscreenGuide === 'function') {
-                player.hideFullscreenGuide();
-              }
-            }
-          } else {
-            player._lastBackPressTime = Date.now();
-            if (typeof player.toggleFullscreenSidebar === 'function') {
-              player.toggleFullscreenSidebar(true);
-            } else if (typeof player.showFullscreenGuide === 'function') {
-              player.showFullscreenGuide();
-            }
+          if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(false);
           }
+          player.exitFullscreenCrossBrowser();
         } else {
           player.closeTvPlayer();
         }

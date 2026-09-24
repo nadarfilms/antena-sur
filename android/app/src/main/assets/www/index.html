@@ -274,17 +274,20 @@
         <!-- Barra de Opciones Técnicas Inferior (Fuentes y Calidad) -->
         <footer class="zapping-bottom-controls" id="tvBottomControls">
           <div class="zapping-controls-left" style="display: flex; align-items: center; gap: 14px;">
-            <!-- Selector de Fuente de Transmisión Alternativa -->
-            <div class="quality-wrapper source-wrapper" id="tvSourceWrapper" title="Fuente de transmisión alternativa" style="display:none;">
-              <span class="source-icon">📡</span>
-              <select id="tvSourceSelect" class="quality-selector source-selector" title="Seleccionar fuente de reproducción">
+            <!-- Botón de Menú de Opciones (Calidad, Fuentes) -->
+            <button class="zapping-hud-btn tv-bottom-options-btn" id="tvBottomOptionsBtn" title="Opciones de Señal y Calidad">
+              <span class="source-icon">⚙️</span>
+              <span>Ajustes de Señal / Calidad</span>
+            </button>
+
+            <!-- Selectores nativos (mantenidos ocultos para compatibilidad / fallback) -->
+            <div class="quality-wrapper source-wrapper" id="tvSourceWrapper" style="display:none;">
+              <select id="tvSourceSelect" class="quality-selector source-selector">
                 <option value="0">Fuente 1 (Principal)</option>
               </select>
             </div>
 
-            <!-- Selector de Calidad Adaptativa -->
-            <div class="quality-wrapper" id="tvQualityWrapper" title="Calidad de transmisión">
-              <span class="quality-icon">⚙️</span>
+            <div class="quality-wrapper" id="tvQualityWrapper" style="display:none;">
               <select id="tvQualitySelect" class="quality-selector">
                 <option value="-1">Auto (Adaptativa)</option>
               </select>
@@ -299,6 +302,66 @@
             </button>
           </div>
         </footer>
+
+        <!-- MENÚ INTERIOR DE OPCIONES TÉCNICAS (BLACKMAGIC CAMERA OS OSD) -->
+        <div class="tv-options-osd is-hidden" id="tvOptionsOsd" role="dialog" aria-modal="true" aria-label="Opciones de Transmisión">
+          <div class="tv-options-backdrop" id="tvOptionsBackdrop"></div>
+          <div class="tv-options-panel">
+            <div class="tv-options-header">
+              <div class="tv-options-title-box">
+                <span class="bm-cam-box">BMD</span>
+                <div>
+                  <h3 class="tv-options-main-title">AJUSTES DE TRANSMISIÓN</h3>
+                  <span class="tv-options-sub-title" id="tvOptionsStationTitle">Señal en Vivo</span>
+                </div>
+              </div>
+              <button class="tv-options-close-btn" id="tvOptionsCloseBtn" title="Cerrar Ajustes (Atrás / OK)">✕ CERRAR</button>
+            </div>
+
+            <div class="tv-options-body">
+              <!-- Fila: Fuentes de Transmisión -->
+              <div class="tv-options-section" id="tvOptRowSources">
+                <div class="tv-options-sec-header">
+                  <span class="tv-options-tag">01 // SEÑAL</span>
+                  <span class="tv-options-sec-title">FUENTES DE TRANSMISIÓN</span>
+                  <span class="tv-options-badge" id="tvOptSourcesCount">1 disponible</span>
+                </div>
+                <div class="tv-options-pills-row" id="tvOptSourcesTray">
+                  <!-- Inyectado dinámicamente: .tv-opt-btn -->
+                </div>
+              </div>
+
+              <!-- Fila: Calidad de Video -->
+              <div class="tv-options-section" id="tvOptRowQuality">
+                <div class="tv-options-sec-header">
+                  <span class="tv-options-tag">02 // RESOLUCIÓN</span>
+                  <span class="tv-options-sec-title">CALIDAD DE VIDEO</span>
+                  <span class="tv-options-badge" id="tvOptQualityActive">Auto</span>
+                </div>
+                <div class="tv-options-pills-row" id="tvOptQualityTray">
+                  <!-- Inyectado dinámicamente: .tv-opt-btn -->
+                </div>
+              </div>
+
+              <!-- Fila: Herramientas Rápidas -->
+              <div class="tv-options-section" id="tvOptRowActions">
+                <div class="tv-options-sec-header">
+                  <span class="tv-options-tag">03 // CONTROL</span>
+                  <span class="tv-options-sec-title">ACCIONES</span>
+                </div>
+                <div class="tv-options-pills-row" id="tvOptActionsTray">
+                  <button class="tv-opt-btn" id="tvOptBtnWeb" data-action="toggleWeb">🌐 Modo Web Oficial</button>
+                  <button class="tv-opt-btn" id="tvOptBtnFav" data-action="toggleFav">⭐ Añadir a Favoritos</button>
+                  <button class="tv-opt-btn" id="tvOptBtnExitFs" data-action="exitFs">📺 Volver a Guía Zapping</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tv-options-footer">
+              <span>▲ ▼ Navegar filas • ◀ ▶ Seleccionar opción • <strong>OK</strong> Aplicar • <strong>ATRÁS</strong> Salir</span>
+            </div>
+          </div>
+        </div>
 
         <!-- OVERLAY DE GUÍA EN PANTALLA COMPLETA (Activado con Menú Hamburguesa, Enter o Flecha Izquierda) -->
         <div class="zapping-fullscreen-overlay" id="zappingFullscreenOverlay">
@@ -345,7 +408,7 @@
       <div class="radio-fs-header-left">
         <button class="radio-fs-back-btn" id="radioFsBackBtn" title="Volver al Menú Principal (Atrás / Escape)">
           <span class="bm-back-arrow">◀</span>
-          <span>MENÚ [ATRÁS]</span>
+          <span class="radio-back-txt">VOLVER AL MENÚ</span>
         </button>
         <span class="radio-fs-mode-tag">AUDIO BROADCAST // FM CHILE</span>
       </div>
@@ -366,7 +429,6 @@
 
     <!-- Tira Superior de Selección Rápida de Emisoras (1 a 1) -->
     <div class="radio-fs-top-strip">
-      <div class="radio-fs-strip-label">EMISORAS [◀ / ▶ CAMBIAR]:</div>
       <div class="radio-fs-tray-scroll" id="radioFsTrayScroll">
         <!-- Inyectado dinámicamente con las 23 emisoras en estilo cámara Blackmagic -->
       </div>
@@ -409,7 +471,7 @@
           <div class="radio-fs-track-artist" id="radioFsTrackArtist">Emisión oficial abierta • Música continua</div>
         </div>
 
-        <!-- Ficha Técnica con la Información detallada de la radio -->
+        <!-- Ficha Técnica con la Información detallada de la radio (Sin descripción redundante) -->
         <div class="radio-fs-specs-grid">
           <div class="radio-spec-item">
             <span class="radio-spec-label">CIUDAD / REGIÓN</span>
@@ -422,10 +484,6 @@
           <div class="radio-spec-item">
             <span class="radio-spec-label">SITIO WEB OFICIAL</span>
             <a class="radio-spec-val radio-spec-link" id="radioFsWebsiteVal" href="#" target="_blank">www.rockandpop.cl</a>
-          </div>
-          <div class="radio-spec-item">
-            <span class="radio-spec-label">DESCRIPCIÓN</span>
-            <span class="radio-spec-val" id="radioFsDescVal">Los mejores clásicos del rock y pop de todos los tiempos.</span>
           </div>
         </div>
       </div>

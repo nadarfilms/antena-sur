@@ -9129,6 +9129,21 @@ class PlayerEngine {
       tvWebsiteBtn: document.getElementById('tvWebsiteBtn'),
       tvCloseBtn: document.getElementById('tvCloseBtn'),
 
+      // Menú OSD de Opciones Técnicas TV (Blackmagic Camera OS)
+      tvOptionsOsd: document.getElementById('tvOptionsOsd'),
+      tvOptionsBackdrop: document.getElementById('tvOptionsBackdrop'),
+      tvOptionsCloseBtn: document.getElementById('tvOptionsCloseBtn'),
+      tvOptionsStationTitle: document.getElementById('tvOptionsStationTitle'),
+      tvOptSourcesTray: document.getElementById('tvOptSourcesTray'),
+      tvOptSourcesCount: document.getElementById('tvOptSourcesCount'),
+      tvOptQualityTray: document.getElementById('tvOptQualityTray'),
+      tvOptQualityActive: document.getElementById('tvOptQualityActive'),
+      tvOptActionsTray: document.getElementById('tvOptActionsTray'),
+      tvOptBtnWeb: document.getElementById('tvOptBtnWeb'),
+      tvOptBtnFav: document.getElementById('tvOptBtnFav'),
+      tvOptBtnExitFs: document.getElementById('tvOptBtnExitFs'),
+      tvBottomOptionsBtn: document.getElementById('tvBottomOptionsBtn'),
+
       // Overlay de Guía en Pantalla Completa
       zappingFullscreenOverlay: document.getElementById('zappingFullscreenOverlay'),
       zappingFsChannelList: document.getElementById('zappingFsChannelList'),
@@ -9201,6 +9216,10 @@ class PlayerEngine {
 
     // Estado del reproductor de radios en pantalla completa
     this.isRadioFullscreen = false;
+
+    // Estado del Menú OSD de Opciones Técnicas TV
+    this.isOptionsOsdOpen = false;
+    this.optionsFocusIndex = 0;
 
     // Control de inactividad de 5s en pantalla completa (ocultar barras)
     this.fsControlsTimer = null;
@@ -9966,6 +9985,232 @@ class PlayerEngine {
         }
       });
     }
+
+    // Opciones OSD TV (Blackmagic OS)
+    if (this.dom.tvBottomOptionsBtn) {
+      this.dom.tvBottomOptionsBtn.addEventListener('click', () => {
+        this.toggleTvOptionsMenu();
+      });
+    }
+
+    if (this.dom.tvOptionsCloseBtn) {
+      this.dom.tvOptionsCloseBtn.addEventListener('click', () => {
+        this.closeTvOptionsMenu();
+      });
+    }
+
+    if (this.dom.tvOptionsBackdrop) {
+      this.dom.tvOptionsBackdrop.addEventListener('click', () => {
+        this.closeTvOptionsMenu();
+      });
+    }
+
+    if (this.dom.tvOptBtnWeb) {
+      this.dom.tvOptBtnWeb.addEventListener('click', () => {
+        this.toggleWebPlayerMode();
+        this.updateTvOptionsActions();
+      });
+    }
+
+    if (this.dom.tvOptBtnFav) {
+      this.dom.tvOptBtnFav.addEventListener('click', () => {
+        if (this.currentStation && this.fav) {
+          const isFav = this.fav.toggleFavorite(this.currentStation.id);
+          this.updateFavoriteButtons(this.currentStation.id, isFav);
+          this.updateTvOptionsActions();
+        }
+      });
+    }
+
+    if (this.dom.tvOptBtnExitFs) {
+      this.dom.tvOptBtnExitFs.addEventListener('click', () => {
+        this.closeTvOptionsMenu();
+        this.exitFullscreenCrossBrowser();
+      });
+    }
+  }
+
+  /* ========================================================================
+     MENÚ OSD DE AJUSTES TÉCNICOS (BLACKMAGIC CAMERA OS)
+     Permite navegar con el control remoto por fuentes, calidades y opciones
+     ======================================================================== */
+
+  openTvOptionsMenu() {
+    if (!this.dom.tvOptionsOsd) return;
+    this.isOptionsOsdOpen = true;
+    this.dom.tvOptionsOsd.classList.remove('is-hidden');
+
+    if (this.dom.tvOptionsStationTitle && this.currentStation) {
+      this.dom.tvOptionsStationTitle.textContent = `${this.currentStation.name} • ${this.currentStation.genre || 'En Vivo'}`;
+    }
+
+    this.renderTvOptionsSources();
+    this.renderTvOptionsQualities();
+    this.updateTvOptionsActions();
+
+    setTimeout(() => {
+      this.focusOptionsOsdItem(0);
+    }, 40);
+  }
+
+  closeTvOptionsMenu() {
+    if (!this.dom.tvOptionsOsd) return;
+    this.dom.tvOptionsOsd.classList.add('is-hidden');
+    this.isOptionsOsdOpen = false;
+  }
+
+  toggleTvOptionsMenu() {
+    if (this.isOptionsOsdOpen) {
+      this.closeTvOptionsMenu();
+    } else {
+      this.openTvOptionsMenu();
+    }
+  }
+
+  renderTvOptionsSources() {
+    if (!this.dom.tvOptSourcesTray) return;
+    const station = this.currentStation;
+    if (!station) return;
+
+    const sources = (station.sources && station.sources.length > 0)
+      ? station.sources
+      : [{ name: 'Fuente 1 (Principal)', url: station.streamUrl, needsProxy: station.needsProxy }];
+
+    if (this.dom.tvOptSourcesCount) {
+      this.dom.tvOptSourcesCount.textContent = `${sources.length} ${sources.length === 1 ? 'disponible' : 'disponibles'}`;
+    }
+
+    let html = '';
+    sources.forEach((src, idx) => {
+      const isActive = idx === this.currentSourceIndex;
+      const label = src.name || `Fuente ${idx + 1}`;
+      html += `
+        <button class="tv-opt-btn ${isActive ? 'is-active' : ''}" data-type="source" data-index="${idx}">
+          <span>📡 ${label}</span>
+          ${isActive ? '<span style="color:var(--bm-cyan,#0095ff)">● ACTIVA</span>' : ''}
+        </button>
+      `;
+    });
+
+    this.dom.tvOptSourcesTray.innerHTML = html;
+
+    this.dom.tvOptSourcesTray.querySelectorAll('.tv-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        this.switchTvSource(idx);
+        this.renderTvOptionsSources();
+      });
+    });
+  }
+
+  renderTvOptionsQualities() {
+    if (!this.dom.tvOptQualityTray) return;
+    const currentLvl = this.hls ? this.hls.currentLevel : -1;
+
+    let html = `
+      <button class="tv-opt-btn ${currentLvl === -1 ? 'is-active' : ''}" data-type="quality" data-index="-1">
+        <span>⚙️ Auto (Adaptativa)</span>
+        ${currentLvl === -1 ? '<span style="color:var(--bm-cyan,#0095ff)">● ACTIVA</span>' : ''}
+      </button>
+    `;
+
+    if (this.hls && this.hls.levels && this.hls.levels.length > 0) {
+      this.hls.levels.forEach((level, index) => {
+        const isActive = index === currentLvl;
+        const height = level.height || (level.attrs && level.attrs.RESOLUTION ? level.attrs.RESOLUTION.split('x')[1] : null);
+        const bitrateKbps = level.bitrate ? Math.round(level.bitrate / 1000) : 0;
+        let label = height ? `${height}p` : `Nivel ${index + 1}`;
+        if (bitrateKbps) label += ` (${bitrateKbps}k)`;
+
+        html += `
+          <button class="tv-opt-btn ${isActive ? 'is-active' : ''}" data-type="quality" data-index="${index}">
+            <span>${label}</span>
+            ${isActive ? '<span style="color:var(--bm-cyan,#0095ff)">● ACTIVA</span>' : ''}
+          </button>
+        `;
+      });
+    }
+
+    this.dom.tvOptQualityTray.innerHTML = html;
+
+    if (this.dom.tvOptQualityActive) {
+      if (currentLvl === -1) {
+        this.dom.tvOptQualityActive.textContent = 'Auto';
+      } else if (this.hls && this.hls.levels && this.hls.levels[currentLvl]) {
+        const lvl = this.hls.levels[currentLvl];
+        const h = lvl.height || '';
+        this.dom.tvOptQualityActive.textContent = h ? `${h}p` : `Nivel ${currentLvl + 1}`;
+      }
+    }
+
+    this.dom.tvOptQualityTray.querySelectorAll('.tv-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        if (this.hls) {
+          this.hls.currentLevel = idx;
+        }
+        if (this.dom.tvQualitySelect) {
+          this.dom.tvQualitySelect.value = String(idx);
+        }
+        this.renderTvOptionsQualities();
+      });
+    });
+  }
+
+  updateTvOptionsActions() {
+    if (this.dom.tvOptBtnWeb) {
+      this.dom.tvOptBtnWeb.textContent = this.isWebMode ? '📺 Volver a Señal Nativa' : '🌐 Modo Web Oficial';
+      this.dom.tvOptBtnWeb.classList.toggle('is-active', this.isWebMode);
+    }
+    if (this.dom.tvOptBtnFav && this.currentStation && this.fav) {
+      const isFav = this.fav.isFavorite(this.currentStation.id);
+      this.dom.tvOptBtnFav.textContent = isFav ? '★ En Favoritos' : '☆ Añadir a Favoritos';
+      this.dom.tvOptBtnFav.classList.toggle('is-active', isFav);
+    }
+    if (this.dom.tvOptBtnExitFs) {
+      const isFull = this.isFullscreenActive();
+      this.dom.tvOptBtnExitFs.style.display = isFull ? 'inline-flex' : 'none';
+    }
+  }
+
+  getNavigableOptionsItems() {
+    if (!this.dom.tvOptionsOsd) return [];
+    return Array.from(this.dom.tvOptionsOsd.querySelectorAll('.tv-opt-btn, .tv-options-close-btn')).filter(el => {
+      return el.offsetParent !== null && !el.disabled;
+    });
+  }
+
+  focusOptionsOsdItem(index) {
+    const items = this.getNavigableOptionsItems();
+    if (!items || items.length === 0) return;
+    if (index < 0) index = items.length - 1;
+    if (index >= items.length) index = 0;
+    this.optionsFocusIndex = index;
+
+    items.forEach(el => el.classList.remove('is-dpad-focused'));
+    const target = items[this.optionsFocusIndex];
+    if (target) {
+      target.classList.add('is-dpad-focused');
+      try {
+        target.focus();
+        target.scrollIntoView({ block: 'nearest' });
+      } catch (e) {}
+    }
+  }
+
+  navigateOptionsOsd(direction) {
+    const items = this.getNavigableOptionsItems();
+    if (!items || items.length === 0) return;
+    this.focusOptionsOsdItem(this.optionsFocusIndex + direction);
+  }
+
+  activateFocusedOption() {
+    const items = this.getNavigableOptionsItems();
+    if (!items || items.length === 0) return;
+    const target = items[this.optionsFocusIndex];
+    if (target) {
+      target.click();
+    }
   }
 
   zapPrevious() {
@@ -10457,6 +10702,7 @@ class PlayerEngine {
     this.showFsControls();
     this.clearConnectionWatchdog();
     this.hideFullscreenGuide();
+    this.closeTvOptionsMenu();
 
     if (this.hls) {
       this.hls.destroy();
@@ -10661,6 +10907,7 @@ class PlayerEngine {
     this.clearFsControlsInactivityTimer();
     this.showFsControls();
     this.hideFullscreenGuide();
+    this.closeTvOptionsMenu();
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.remove('is-fullscreen');
     }
@@ -10703,6 +10950,144 @@ class PlayerEngine {
      NAVEGACIÓN CON CONTROL REMOTO (ANDROID TV D-PAD / TECLADO)
      ======================================================================== */
 
+  handleTvNav(action) {
+    // 1. Si estamos en el reproductor de radio a pantalla completa
+    if (this.isRadioFullscreen) {
+      if (action === 'ArrowLeft' || action === 'ArrowUp') {
+        this.playPreviousRadio();
+        return true;
+      }
+      if (action === 'ArrowRight' || action === 'ArrowDown') {
+        this.playNextRadio();
+        return true;
+      }
+      if (action === 'Enter') {
+        this.toggleRadioPlayPause();
+        return true;
+      }
+      if (action === 'Back') {
+        this.closeFullscreenRadio();
+        return true;
+      }
+      return false;
+    }
+
+    // 2. Si estamos en el reproductor de TV (Zapping)
+    if (this.dom.tvZappingView && !this.dom.tvZappingView.classList.contains('is-hidden')) {
+      const isFullscreen = this.isFullscreenActive();
+
+      // Caso A: El Menú OSD de Opciones está abierto
+      if (this.isOptionsOsdOpen) {
+        if (action === 'ArrowUp') {
+          this.navigateOptionsOsd(-1);
+          return true;
+        }
+        if (action === 'ArrowDown') {
+          this.navigateOptionsOsd(1);
+          return true;
+        }
+        if (action === 'ArrowLeft') {
+          this.navigateOptionsOsd(-1);
+          return true;
+        }
+        if (action === 'ArrowRight') {
+          this.navigateOptionsOsd(1);
+          return true;
+        }
+        if (action === 'Enter') {
+          this.activateFocusedOption();
+          return true;
+        }
+        if (action === 'Back') {
+          this.closeTvOptionsMenu();
+          return true;
+        }
+        return true;
+      }
+
+      const isFsSidebarOpen = this.isFsSidebarOpen();
+      const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
+
+      // Caso B: Flecha Izquierda (ArrowLeft)
+      // "al apretar el boton izquierdo debe aparecer el menu lateral con el listado de canales, y me debe dejar navegar en el, manteniendo el video o señal en pantalla completa."
+      if (action === 'ArrowLeft') {
+        if (isFullscreen) {
+          this.toggleFullscreenSidebar(true);
+          this.focusCurrentSidebarItem();
+        } else {
+          this.toggleSidebar(true);
+          this.focusCurrentSidebarItem();
+        }
+        return true;
+      }
+
+      // Caso C: Flecha Derecha (ArrowRight) -> Cerrar guía lateral
+      if (action === 'ArrowRight') {
+        if (isFullscreen) {
+          this.toggleFullscreenSidebar(false);
+          this.hideFullscreenGuide();
+        } else {
+          this.toggleSidebar(false);
+        }
+        return true;
+      }
+
+      // Caso D: Flecha Arriba (ArrowUp) -> Subir en guía lateral
+      if (action === 'ArrowUp') {
+        if (isSidebarVisible) {
+          this.navigateSidebarList(-1);
+        } else {
+          this.zapPrevious();
+        }
+        return true;
+      }
+
+      // Caso E: Flecha Abajo (ArrowDown) -> Bajar en guía lateral
+      if (action === 'ArrowDown') {
+        if (isSidebarVisible) {
+          this.navigateSidebarList(1);
+        } else {
+          this.zapNext();
+        }
+        return true;
+      }
+
+      // Caso F: Botón Central (Enter / OK)
+      // "al estar en pantalla completa y apreto el boton central del control, debe aparecer el menu con las respectivas opciones"
+      if (action === 'Enter') {
+        if (isFullscreen) {
+          if (isFsSidebarOpen) {
+            this.selectFocusedSidebarChannel();
+            this.toggleFullscreenSidebar(false);
+          } else {
+            this.openTvOptionsMenu();
+          }
+        } else if (isSidebarVisible) {
+          this.selectFocusedSidebarChannel();
+        } else {
+          this.openTvOptionsMenu();
+        }
+        return true;
+      }
+
+      // Caso G: Botón Atrás (Back)
+      // "al estar en pantalla completa y apretar el boton atras, me hace aparecer el menu interno, eso debe cambiar, al apretar ese boton 'atras' debe volver al menu principal de guia de zapping, donde tengo en menu lateral y se sale de pantalla completa."
+      if (action === 'Back') {
+        if (isFullscreen) {
+          if (this.isFsSidebarOpen()) {
+            this.toggleFullscreenSidebar(false);
+          }
+          this.exitFullscreenCrossBrowser();
+        } else {
+          this.closeTvPlayer();
+        }
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   initRemoteKeyNavigation() {
     window.addEventListener('keydown', (e) => {
       if (e.defaultPrevented) return;
@@ -10713,146 +11098,40 @@ class PlayerEngine {
         return;
       }
 
-      // Solo si la interfaz Zapping TV está abierta
-      if (this.dom.tvZappingView && !this.dom.tvZappingView.classList.contains('is-hidden')) {
-        const isFullscreen = this.isFullscreenActive();
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'BrowserBack'].includes(e.key) || e.keyCode === 8) {
+        let action = e.key;
+        if (e.key === 'Escape' || e.key === 'BrowserBack' || e.keyCode === 8) action = 'Back';
 
-        if (isFullscreen) {
-          if (this.isFsControlsHidden) {
-            this.showFsControls();
-            this.resetFsControlsInactivityTimer();
-            if (e.key === 'Enter') {
-              // Si las barras de control estaban ocultas, el botón central las despierta primero
-              e.preventDefault();
-              return;
-            }
-          } else {
-            this.resetFsControlsInactivityTimer();
-          }
-        }
-
-        const isFsSidebarOpen = this.isFsSidebarOpen();
-        const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
-
-        // 1. Flecha Izquierda (ArrowLeft) -> Abrir guía lateral
-        if (e.key === 'ArrowLeft') {
+        const handled = this.handleTvNav(action);
+        if (handled) {
           e.preventDefault();
-          if (isFullscreen) {
-            this.toggleFullscreenSidebar(true);
-          } else {
-            this.toggleSidebar(true);
-            this.focusCurrentSidebarItem();
-          }
           return;
         }
+      }
 
-        // 2. Flecha Derecha (ArrowRight) -> Cerrar guía lateral
-        if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (isFullscreen) {
-            this.toggleFullscreenSidebar(false);
-            this.hideFullscreenGuide();
-          } else {
-            this.toggleSidebar(false);
-          }
-          return;
-        }
+      // Atajos directos de teclado estándar de escritorio
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        this.nextTvSource();
+        return;
+      }
 
-        // 3. Flecha Arriba (ArrowUp) -> Subir en guía lateral (sin sintonizar) o overlay
-        if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          if (isFullscreen && this.isGuideOverlayVisible) {
-            this.navigateOverlayGuide(-1);
-          } else if (isSidebarVisible) {
-            this.navigateSidebarList(-1);
-          } else {
-            this.zapPrevious();
-          }
-          return;
-        }
+      if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        this.togglePlayPause();
+        return;
+      }
 
-        // 4. Flecha Abajo (ArrowDown) -> Bajar en guía lateral (sin sintonizar) o overlay
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          if (isFullscreen && this.isGuideOverlayVisible) {
-            this.navigateOverlayGuide(1);
-          } else if (isSidebarVisible) {
-            this.navigateSidebarList(1);
-          } else {
-            this.zapNext();
-          }
-          return;
-        }
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        this.toggleFullscreen();
+        return;
+      }
 
-        // 5. Botón Central del Control (Enter / OK)
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (isFullscreen) {
-            if (isFsSidebarOpen) {
-              this.selectFocusedSidebarChannel();
-            } else if (this.isGuideOverlayVisible) {
-              this.selectFocusedOverlayChannel();
-            } else {
-              this.toggleFullscreenSidebar(true);
-            }
-          } else if (isSidebarVisible) {
-            this.selectFocusedSidebarChannel();
-          } else {
-            this.togglePlayPause();
-          }
-          return;
-        }
-
-        // 6. Tecla 'S' / 's' -> Alternar rápidamente a la siguiente fuente de transmisión
-        if (e.key === 's' || e.key === 'S') {
-          e.preventDefault();
-          this.nextTvSource();
-          return;
-        }
-
-        // 7. Botón Atrás / Escape (Back / Escape)
-        if (e.key === 'Escape' || e.key === 'BrowserBack' || e.keyCode === 8) {
-          e.preventDefault();
-          if (isFullscreen) {
-            if (this.isFsSidebarOpen() || this.isGuideOverlayVisible) {
-              const now = Date.now();
-              if (this._lastBackPressTime && (now - this._lastBackPressTime < 1200)) {
-                this.exitFullscreenCrossBrowser();
-              } else {
-                this._lastBackPressTime = now;
-                this.toggleFullscreenSidebar(false);
-                this.hideFullscreenGuide();
-              }
-            } else {
-              this._lastBackPressTime = Date.now();
-              this.toggleFullscreenSidebar(true);
-            }
-          } else {
-            this.closeTvPlayer();
-          }
-          return;
-        }
-
-        // 7. Espacio -> Play/Pausa
-        if (e.key === ' ' || e.code === 'Space') {
-          e.preventDefault();
-          this.togglePlayPause();
-          return;
-        }
-
-        // 8. F -> Alternar Pantalla Completa
-        if (e.key === 'f' || e.key === 'F') {
-          e.preventDefault();
-          this.toggleFullscreen();
-          return;
-        }
-
-        // 9. M -> Mute
-        if (e.key === 'm' || e.key === 'M') {
-          e.preventDefault();
-          this.toggleMute();
-          return;
-        }
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        this.toggleMute();
+        return;
       }
     });
   }
@@ -11196,6 +11475,29 @@ class PlayerEngine {
       try {
         activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       } catch (e) {}
+    }
+
+    if (!this._radioTrayDragInitialized && this.dom.radioFsTrayScroll) {
+      this._radioTrayDragInitialized = true;
+      const tray = this.dom.radioFsTrayScroll;
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+
+      tray.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - tray.offsetLeft;
+        scrollLeft = tray.scrollLeft;
+      });
+      window.addEventListener('mouseup', () => { isDown = false; });
+      tray.addEventListener('mouseleave', () => { isDown = false; });
+      tray.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - tray.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        tray.scrollLeft = scrollLeft - walk;
+      });
     }
   }
 
@@ -12837,6 +13139,10 @@ function initTvNavigation() {
     // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
     const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
     if (isRadioFsOpen) {
+      if (player && typeof player.handleTvNav === 'function') {
+        player.handleTvNav(action);
+        return;
+      }
       if (action === 'ArrowLeft' || action === 'ArrowUp') {
         player.playPreviousRadio();
         return;
@@ -12856,14 +13162,17 @@ function initTvNavigation() {
     }
 
     if (isTvPlayerOpen) {
+      if (player && typeof player.handleTvNav === 'function') {
+        player.handleTvNav(action);
+        return;
+      }
+
       const isFullscreen = player.isFullscreenActive();
       const isFsSidebarOpen = typeof player.isFsSidebarOpen === 'function' ? player.isFsSidebarOpen() : false;
       const isSidebarVisible = isFsSidebarOpen || (player.dom.zappingSidebar && !player.dom.zappingSidebar.classList.contains('is-collapsed'));
 
       if (action === 'ArrowUp') {
-        if (isFullscreen && player.isGuideOverlayVisible) {
-          player.navigateOverlayGuide(-1);
-        } else if (isSidebarVisible) {
+        if (isSidebarVisible) {
           player.navigateSidebarList(-1);
         } else {
           player.zapPrevious();
@@ -12871,9 +13180,7 @@ function initTvNavigation() {
         return;
       }
       if (action === 'ArrowDown') {
-        if (isFullscreen && player.isGuideOverlayVisible) {
-          player.navigateOverlayGuide(1);
-        } else if (isSidebarVisible) {
+        if (isSidebarVisible) {
           player.navigateSidebarList(1);
         } else {
           player.zapNext();
@@ -12884,8 +13191,7 @@ function initTvNavigation() {
         if (isFullscreen) {
           if (typeof player.toggleFullscreenSidebar === 'function') {
             player.toggleFullscreenSidebar(true);
-          } else {
-            player.showFullscreenGuide();
+            player.focusCurrentSidebarItem();
           }
         } else {
           player.toggleSidebar(true);
@@ -12908,17 +13214,14 @@ function initTvNavigation() {
         if (isFullscreen) {
           if (isFsSidebarOpen) {
             player.selectFocusedSidebarChannel();
-          } else if (player.isGuideOverlayVisible) {
-            player.selectFocusedOverlayChannel();
-          } else {
-            if (typeof player.toggleFullscreenSidebar === 'function') {
-              player.toggleFullscreenSidebar(true);
-            } else {
-              player.showFullscreenGuide();
-            }
+            player.toggleFullscreenSidebar(false);
+          } else if (typeof player.openTvOptionsMenu === 'function') {
+            player.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();
+        } else if (typeof player.openTvOptionsMenu === 'function') {
+          player.openTvOptionsMenu();
         } else {
           player.togglePlayPause();
         }
@@ -12926,27 +13229,10 @@ function initTvNavigation() {
       }
       if (action === 'Back') {
         if (isFullscreen) {
-          if (isFsSidebarOpen || player.isGuideOverlayVisible) {
-            const now = Date.now();
-            if (player._lastBackPressTime && (now - player._lastBackPressTime < 1200)) {
-              player.exitFullscreenCrossBrowser();
-            } else {
-              player._lastBackPressTime = now;
-              if (typeof player.toggleFullscreenSidebar === 'function') {
-                player.toggleFullscreenSidebar(false);
-              }
-              if (typeof player.hideFullscreenGuide === 'function') {
-                player.hideFullscreenGuide();
-              }
-            }
-          } else {
-            player._lastBackPressTime = Date.now();
-            if (typeof player.toggleFullscreenSidebar === 'function') {
-              player.toggleFullscreenSidebar(true);
-            } else if (typeof player.showFullscreenGuide === 'function') {
-              player.showFullscreenGuide();
-            }
+          if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(false);
           }
+          player.exitFullscreenCrossBrowser();
         } else {
           player.closeTvPlayer();
         }
