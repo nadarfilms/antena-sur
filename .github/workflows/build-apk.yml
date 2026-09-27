@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.4.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.4.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.3
+    - name: Publicar Release v1.2.4
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.3"
-        name: "Antena Sur Android TV v1.2.3"
-        body: "Versión 1.2.3: Centrado vertical de la señal de video en modo vertical móvil, nueva barra bajo el video con botón de Ajustes a la izquierda y gráfica EN VIVO a la derecha, descongestión de la barra superior y botones de canales más altos en el carrusel inferior."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.4"
+        name: "Antena Sur Android TV v1.2.4"
+        body: "Versión 1.2.4: Salida de pantalla completa sin cortes ni pausas en modo horizontal. Eliminación de webkitExitFullscreen redundante, supresión de pausas nativas del motor web al salir de pantalla completa y reanudación sincrónica inmediata sin retrasos."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

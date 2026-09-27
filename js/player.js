@@ -58,6 +58,11 @@ export class PlayerEngine {
     this.wasPlayingBeforeInterruption = false;
     this.isReconnecting = false;
     this.isReloading = false;
+
+    // Control de estado de pantalla completa y supresión de pausas automáticas del navegador
+    this._isExitingFullscreen = false;
+    this._exitFsGraceTimer = null;
+    this._userRequestedPause = false;
     this.reconnectAttempts = 0;
     this.reconnectTimer = null;
     this.watchdogTimer = null;
@@ -903,6 +908,21 @@ export class PlayerEngine {
     });
 
     this.dom.tvVideo.addEventListener('pause', () => {
+      // Si la pausa es producida automáticamente por el navegador al salir de pantalla completa
+      // o por reflow/rotación y el usuario NO presionó pausar explícitamente, reanudar al instante
+      if (this.currentStation && this.currentStation.type === 'tv' && (this._isExitingFullscreen || !this._userRequestedPause)) {
+        console.log('[TV] Interceptada pausa automática del navegador; reanudando transmisión al instante');
+        if (this.dom.tvVideo.paused) {
+          const p = this.dom.tvVideo.play();
+          if (p !== undefined) {
+            p.catch(e => console.warn('[TV] Error al reanudar tras pausa automática:', e));
+          }
+        }
+        this.isPlaying = true;
+        this.updateTvPlayIcon(true);
+        return;
+      }
+
       this.isPlaying = false;
       this.updateTvPlayIcon(false);
     });
@@ -937,16 +957,17 @@ export class PlayerEngine {
 
     this.dom.tvVideo.addEventListener('webkitendfullscreen', () => {
       console.log('[TV] webkitendfullscreen detectado (salida de pantalla completa móvil)');
-      this.exitFullscreenCrossBrowser();
-      // Reanudar inmediatamente el video si el navegador móvil lo pausó al salir de pantalla completa
-      setTimeout(() => {
-        if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
-          const p = this.dom.tvVideo.play();
-          if (p !== undefined) {
-            p.catch(e => console.warn('Error reanudando video tras webkitendfullscreen:', e));
-          }
+      if (!this._isExitingFullscreen) {
+        this.exitFullscreenCrossBrowser();
+      }
+      if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
+        const p = this.dom.tvVideo.play();
+        if (p !== undefined) {
+          p.catch(e => console.warn('[TV] Error reanudando video tras webkitendfullscreen:', e));
         }
-      }, 60);
+      }
+      this.isPlaying = true;
+      this.updateTvPlayIcon(true);
     });
 
     // Mute / Volumen
@@ -1308,9 +1329,12 @@ export class PlayerEngine {
 
   togglePlayPause() {
     if (!this.dom.tvVideo) return;
+    this._isExitingFullscreen = false;
     if (this.dom.tvVideo.paused) {
+      this._userRequestedPause = false;
       this.dom.tvVideo.play().catch(e => console.warn('Play prevenido:', e));
     } else {
+      this._userRequestedPause = true;
       this.dom.tvVideo.pause();
     }
   }
@@ -1418,6 +1442,8 @@ export class PlayerEngine {
     }
     this.stopRadio();
     this.clearConnectionWatchdog();
+    this._userRequestedPause = false;
+    this._isExitingFullscreen = false;
 
     this.currentStation = station;
     this.currentType = 'tv';
@@ -1817,6 +1843,8 @@ export class PlayerEngine {
     this.currentStation = null;
     this.isPlaying = false;
     this.currentType = null;
+    this._isExitingFullscreen = false;
+    this._userRequestedPause = false;
 
     const heroTv = document.getElementById('heroCardTv');
     if (heroTv) {
@@ -1862,6 +1890,12 @@ export class PlayerEngine {
           }
           this.resetFsControlsInactivityTimer();
         } else {
+          this._isExitingFullscreen = true;
+          if (this._exitFsGraceTimer) clearTimeout(this._exitFsGraceTimer);
+          this._exitFsGraceTimer = setTimeout(() => {
+            this._isExitingFullscreen = false;
+          }, 1500);
+
           if (this.dom.zappingSidebar) {
             this.dom.zappingSidebar.classList.remove('is-open-fs');
             this.dom.zappingSidebar.classList.remove('is-collapsed');
@@ -1869,16 +1903,33 @@ export class PlayerEngine {
           this.clearFsControlsInactivityTimer();
           this.showFsControls();
           this.hideFullscreenGuide();
-          // Asegurar que el video nunca quede pausado al salir de pantalla completa
+
+          // Asegurar que el video nunca quede pausado ni sufra cortes al salir de pantalla completa
           if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
-            setTimeout(() => {
-              if (this.dom.tvVideo && this.dom.tvVideo.paused) {
+            if (this.dom.tvVideo.paused) {
+              const p = this.dom.tvVideo.play();
+              if (p !== undefined) {
+                p.catch(e => console.warn('[TV] Auto-resume inmediato tras fullscreenchange exit:', e));
+              }
+            }
+            this.isPlaying = true;
+            this.updateTvPlayIcon(true);
+
+            // Verificaciones secundarias en los siguientes ticks para evitar pausas tardías del motor del navegador
+            const checkPlaying = () => {
+              if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
                 const p = this.dom.tvVideo.play();
                 if (p !== undefined) {
-                  p.catch(e => console.warn('Auto-resume tras fullscreenchange exit:', e));
+                  p.catch(e => console.warn('[TV] Auto-resume guardia tras fullscreenchange:', e));
                 }
               }
-            }, 60);
+            };
+            if (typeof requestAnimationFrame === 'function') {
+              requestAnimationFrame(checkPlaying);
+            }
+            setTimeout(checkPlaying, 80);
+            setTimeout(checkPlaying, 250);
+            setTimeout(checkPlaying, 600);
           }
         }
       });
@@ -1987,7 +2038,9 @@ export class PlayerEngine {
   }
 
   fallbackSafariVideoFullscreen() {
-    if (this.dom.tvVideo && this.dom.tvVideo.webkitEnterFullscreen) {
+    // Solo invocar en iOS Safari (donde requestFullscreen no está soportado en elementos HTML)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isIOS && this.dom.tvVideo && typeof this.dom.tvVideo.webkitEnterFullscreen === 'function') {
       try {
         this.dom.tvVideo.webkitEnterFullscreen();
       } catch (e) {
@@ -1997,10 +2050,21 @@ export class PlayerEngine {
   }
 
   exitFullscreenCrossBrowser() {
+    // 1. Activar bandera de guardia para interceptar pausas no deseadas del navegador durante la salida
+    this._isExitingFullscreen = true;
+    if (this._exitFsGraceTimer) {
+      clearTimeout(this._exitFsGraceTimer);
+    }
+    this._exitFsGraceTimer = setTimeout(() => {
+      this._isExitingFullscreen = false;
+    }, 1500);
+
     this.clearFsControlsInactivityTimer();
     this.showFsControls();
     this.hideFullscreenGuide();
     this.closeTvOptionsMenu();
+
+    // 2. Limpiar clases visuales de pantalla completa
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.remove('is-fullscreen');
       this.dom.zappingPlayerArea.classList.remove('is-fullscreen-idle');
@@ -2012,34 +2076,62 @@ export class PlayerEngine {
       this.dom.zappingSidebar.classList.remove('is-open-fs');
       this.dom.zappingSidebar.classList.remove('is-collapsed');
     }
+
+    // 3. Salir de pantalla completa nativa de documento si está activa
     if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(e => console.warn(e));
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(e => console.warn('[TV] Error en document.exitFullscreen:', e));
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      } catch (e) {
+        console.warn('[TV] Excepción al salir de fullscreen nativo:', e);
       }
     }
-    if (this.dom.tvVideo && this.dom.tvVideo.webkitExitFullscreen) {
+
+    // 4. Salir de fullscreen nativo de video ÚNICAMENTE si el video realmente está en modo webkit fullscreen (iOS Safari)
+    if (this.dom.tvVideo && this.dom.tvVideo.webkitDisplayingFullscreen && typeof this.dom.tvVideo.webkitExitFullscreen === 'function') {
       try {
         this.dom.tvVideo.webkitExitFullscreen();
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[TV] Error en webkitExitFullscreen:', e);
+      }
     }
+
     this.updateFullscreenIcon();
 
-    // Reanudar automáticamente la reproducción en video reducido para no pausar nunca
+    // 5. Garantizar inmediatamente y sin pausa que la reproducción de video continúe sin cortes
     if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
-      setTimeout(() => {
-        if (this.dom.tvVideo && this.dom.tvVideo.paused) {
+      // Reanudación inmediata sincrónica (aprovechando el contexto de evento del usuario)
+      if (this.dom.tvVideo.paused) {
+        const p = this.dom.tvVideo.play();
+        if (p !== undefined) {
+          p.catch(e => console.warn('[TV] Error en auto-resume sincrónico tras exitFullscreenCrossBrowser:', e));
+        }
+      }
+      this.isPlaying = true;
+      this.updateTvPlayIcon(true);
+
+      // Guardias en los siguientes ciclos de animación / reflow para contrarrestar pausas tardías del motor web
+      const ensureKeepPlaying = () => {
+        if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
           const p = this.dom.tvVideo.play();
           if (p !== undefined) {
-            p.catch(e => console.warn('Auto-resume tras exitFullscreenCrossBrowser:', e));
+            p.catch(e => console.warn('[TV] Guardia de reproducción post-exit:', e));
           }
         }
-      }, 60);
+      };
+      if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(ensureKeepPlaying);
+      }
+      setTimeout(ensureKeepPlaying, 80);
+      setTimeout(ensureKeepPlaying, 250);
+      setTimeout(ensureKeepPlaying, 600);
     }
   }
 
