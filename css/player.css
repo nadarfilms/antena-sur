@@ -107,40 +107,41 @@
   font-weight: 600;
 }
 
-.zapping-sidebar-toggle-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.zapping-sidebar-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
 .zapping-sidebar-close-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #151e2e;
+  border: 1px solid rgba(0, 212, 255, 0.4);
   color: #fff;
   border-radius: 4px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .zapping-sidebar-close-btn:hover,
-.zapping-sidebar-close-btn:focus {
+.zapping-sidebar-close-btn:focus,
+.zapping-sidebar-close-btn:focus-visible {
   background: var(--bm-cyan, #00d4ff);
   color: #000;
   border-color: var(--bm-cyan, #00d4ff);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+  outline: none;
+}
+
+/* En modo normal (video reducido), la guía siempre está visible; ocultar botón redundant de guía en HUD */
+.zapping-hud-btn#zappingOpenGuideBtn {
+  display: none !important;
+}
+
+.zapping-player-area.is-fullscreen .zapping-hud-btn#zappingOpenGuideBtn {
+  display: inline-flex !important;
 }
 
 /* Buscador Rápido en Guía */

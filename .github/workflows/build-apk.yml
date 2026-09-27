@@ -36,7 +36,7 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.9.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.0.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,16 +54,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.9.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.0.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.9
+    - name: Publicar Release v1.2.0
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.9.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.9"
-        name: "Antena Sur Android TV v1.1.9"
-        body: "Versión 1.1.9: Retorno fluido a modo de video reducido con guía de canales al costado izquierdo al salir de pantalla completa en celulares sin pausar el video, título de guía actualizado a Antena Sur, indicador EN VIVO trasladado a la franja inferior derecha antes del botón de pantalla completa, simplificación de la barra inferior con botón único de ajustes de señal/calidad y unificación del botón de salida en la barra lateral izquierda."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.0"
+        name: "Antena Sur Android TV v1.2.0"
+        body: "Versión 1.2.0: Eliminación definitiva de la opción de contraer/ocultar la lista de canales en el modo de TV manteniendo la guía fija y visible a la izquierda junto al video reducido, y ampliación del botón 'ATRAS' con diseño industrial ergonómico."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

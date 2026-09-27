@@ -9480,13 +9480,16 @@ class PlayerEngine {
 
   toggleSidebar(forceState = null) {
     if (!this.dom.zappingSidebar) return;
+    // En modo normal (video reducido), la lista de canales es fija y nunca se contrae
+    if (!this.isFullscreenActive()) {
+      this.dom.zappingSidebar.classList.remove('is-collapsed');
+      return;
+    }
     const shouldShow = forceState !== null ? forceState : this.dom.zappingSidebar.classList.contains('is-collapsed');
     if (shouldShow) {
       this.dom.zappingSidebar.classList.remove('is-collapsed');
-      if (this.dom.zappingSidebarToggleBtn) this.dom.zappingSidebarToggleBtn.textContent = '◀';
     } else {
       this.dom.zappingSidebar.classList.add('is-collapsed');
-      if (this.dom.zappingSidebarToggleBtn) this.dom.zappingSidebarToggleBtn.textContent = '▶';
     }
   }
 
