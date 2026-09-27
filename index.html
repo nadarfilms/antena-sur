@@ -144,7 +144,7 @@
           <div class="zapping-brand">
             <span class="zapping-logo-icon">⚡</span>
             <div>
-              <h3>GUÍA ZAPPING</h3>
+              <h3>ANTENA SUR</h3>
               <span class="zapping-ch-count" id="zappingChCount">Canales en Vivo</span>
             </div>
           </div>
@@ -202,7 +202,6 @@
                 <h2 id="tvStationTitle">Canal de Televisión</h2>
                 <p id="tvStationSubtitle">Chile • Señal en Directo</p>
               </div>
-              <span class="zapping-live-badge"><span class="pulse-dot"></span> EN VIVO</span>
             </div>
           </div>
 
@@ -227,11 +226,6 @@
                 <line x1="10" y1="14" x2="21" y2="3"></line>
               </svg>
             </a>
-
-            <!-- Botón Salir de TV a Inicio -->
-            <button class="zapping-exit-btn" id="tvCloseBtn" title="Volver al Menú Principal (Esc)">
-              <span>✕ Salir de TV</span>
-            </button>
           </div>
         </header>
 
@@ -262,30 +256,19 @@
           </div>
         </div>
 
-        <!-- Barra de Opciones Técnicas Inferior (Fuentes y Calidad) -->
+        <!-- Barra de Opciones Técnicas Inferior (Ajustes y Pantalla Completa) -->
         <footer class="zapping-bottom-controls" id="tvBottomControls">
-          <div class="zapping-controls-left" style="display: flex; align-items: center; gap: 14px;">
+          <div class="zapping-controls-left">
             <!-- Botón de Menú de Opciones (Calidad, Fuentes) -->
             <button class="zapping-hud-btn tv-bottom-options-btn" id="tvBottomOptionsBtn" title="Opciones de Señal y Calidad">
               <span class="source-icon">⚙️</span>
               <span>Ajustes de Señal / Calidad</span>
             </button>
-
-            <!-- Selectores nativos (mantenidos ocultos para compatibilidad / fallback) -->
-            <div class="quality-wrapper source-wrapper" id="tvSourceWrapper" style="display:none;">
-              <select id="tvSourceSelect" class="quality-selector source-selector">
-                <option value="0">Fuente 1 (Principal)</option>
-              </select>
-            </div>
-
-            <div class="quality-wrapper" id="tvQualityWrapper" style="display:none;">
-              <select id="tvQualitySelect" class="quality-selector">
-                <option value="-1">Auto (Adaptativa)</option>
-              </select>
-            </div>
           </div>
 
-          <div class="zapping-controls-right">
+          <div class="zapping-controls-right" style="display: flex; align-items: center; gap: 12px;">
+            <!-- Indicador EN VIVO trasladado a la franja inferior a la derecha -->
+            <span class="zapping-live-badge" id="tvLiveBadge"><span class="pulse-dot"></span> EN VIVO</span>
             <button class="control-btn control-btn-fullscreen" id="tvFullscreenBtn" title="Pantalla Completa (F / Doble Clic)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>

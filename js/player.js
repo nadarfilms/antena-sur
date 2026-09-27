@@ -880,6 +880,32 @@ export class PlayerEngine {
       if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
     });
 
+    // Control de pantalla completa nativa en dispositivos móviles (iOS Safari / Android)
+    this.dom.tvVideo.addEventListener('webkitbeginfullscreen', () => {
+      console.log('[TV] webkitbeginfullscreen detectado');
+      if (this.dom.zappingPlayerArea) {
+        this.dom.zappingPlayerArea.classList.add('is-fullscreen');
+      }
+      if (this.dom.tvZappingView) {
+        this.dom.tvZappingView.classList.add('is-fullscreen-mode');
+      }
+      this.updateFullscreenIcon();
+    });
+
+    this.dom.tvVideo.addEventListener('webkitendfullscreen', () => {
+      console.log('[TV] webkitendfullscreen detectado (salida de pantalla completa móvil)');
+      this.exitFullscreenCrossBrowser();
+      // Reanudar inmediatamente el video si el navegador móvil lo pausó al salir de pantalla completa
+      setTimeout(() => {
+        if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
+          const p = this.dom.tvVideo.play();
+          if (p !== undefined) {
+            p.catch(e => console.warn('Error reanudando video tras webkitendfullscreen:', e));
+          }
+        }
+      }, 60);
+    });
+
     // Mute / Volumen
     if (this.dom.tvMuteBtn) {
       this.dom.tvMuteBtn.addEventListener('click', () => this.toggleMute());
@@ -1275,7 +1301,7 @@ export class PlayerEngine {
         this.dom.tvToggleWebBtn.title = 'Cambiar a Reproductor Web Oficial';
       }
       if (this.dom.tvSourceWrapper) {
-        this.dom.tvSourceWrapper.style.display = 'inline-flex';
+        this.dom.tvSourceWrapper.style.display = 'none';
       }
       if (this.currentStation) {
         this.playTv(this.currentStation, this.isUsingProxy);
@@ -1387,7 +1413,7 @@ export class PlayerEngine {
       this.dom.tvQualitySelect.innerHTML = `<option value="-1">Auto (Adaptativa)</option>`;
     }
     if (this.dom.tvQualityWrapper) {
-      this.dom.tvQualityWrapper.style.display = 'inline-flex';
+      this.dom.tvQualityWrapper.style.display = 'none';
     }
 
     // Si el canal está configurado para reproducción web incrustada (ej. Meganoticias Ahora 24/7)
@@ -1448,8 +1474,8 @@ export class PlayerEngine {
     this.dom.tvSourceSelect.innerHTML = html;
     this.dom.tvSourceSelect.value = String(activeIndex);
 
-    // Mostrar el selector en el HUD tanto en pantalla completa como en ventana normal
-    this.dom.tvSourceWrapper.style.display = 'inline-flex';
+    // Mantener selector nativo oculto (las fuentes se gestionan en el menú OSD de Ajustes)
+    this.dom.tvSourceWrapper.style.display = 'none';
     this.dom.tvSourceWrapper.title = `${sources.length} ${sources.length === 1 ? 'fuente disponible' : 'fuentes de reproducción disponibles'}`;
 
     if (this.dom.tvNextSourceBtn) {
@@ -1644,7 +1670,7 @@ export class PlayerEngine {
       return;
     }
 
-    if (this.dom.tvQualityWrapper) this.dom.tvQualityWrapper.style.display = 'inline-flex';
+    if (this.dom.tvQualityWrapper) this.dom.tvQualityWrapper.style.display = 'none';
 
     let html = `<option value="-1">Auto (Adaptativa)</option>`;
     levels.forEach((level, index) => {
@@ -1768,6 +1794,17 @@ export class PlayerEngine {
           this.clearFsControlsInactivityTimer();
           this.showFsControls();
           this.hideFullscreenGuide();
+          // Asegurar que el video nunca quede pausado al salir de pantalla completa
+          if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
+            setTimeout(() => {
+              if (this.dom.tvVideo && this.dom.tvVideo.paused) {
+                const p = this.dom.tvVideo.play();
+                if (p !== undefined) {
+                  p.catch(e => console.warn('Auto-resume tras fullscreenchange exit:', e));
+                }
+              }
+            }, 60);
+          }
         }
       });
     });
@@ -1891,6 +1928,7 @@ export class PlayerEngine {
     this.closeTvOptionsMenu();
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.remove('is-fullscreen');
+      this.dom.zappingPlayerArea.classList.remove('is-fullscreen-idle');
     }
     if (this.dom.tvZappingView) {
       this.dom.tvZappingView.classList.remove('is-fullscreen-mode');
@@ -1899,16 +1937,35 @@ export class PlayerEngine {
       this.dom.zappingSidebar.classList.remove('is-open-fs');
       this.dom.zappingSidebar.classList.remove('is-collapsed');
     }
-    if (document.exitFullscreen) {
-      document.exitFullscreen().catch(e => console.warn(e));
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-      document.mozCancelFullScreen();
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen();
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(e => console.warn(e));
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    if (this.dom.tvVideo && this.dom.tvVideo.webkitExitFullscreen) {
+      try {
+        this.dom.tvVideo.webkitExitFullscreen();
+      } catch (e) {}
     }
     this.updateFullscreenIcon();
+
+    // Reanudar automáticamente la reproducción en video reducido para no pausar nunca
+    if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
+      setTimeout(() => {
+        if (this.dom.tvVideo && this.dom.tvVideo.paused) {
+          const p = this.dom.tvVideo.play();
+          if (p !== undefined) {
+            p.catch(e => console.warn('Auto-resume tras exitFullscreenCrossBrowser:', e));
+          }
+        }
+      }, 60);
+    }
   }
 
   updateFullscreenIcon() {
