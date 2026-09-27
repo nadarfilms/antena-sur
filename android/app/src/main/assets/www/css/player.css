@@ -81,16 +81,15 @@
   gap: 8px;
 }
 
-.zapping-logo-icon {
-  font-size: 1.1rem;
+.zapping-logo-icon,
+.zapping-logo-img {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #00e5ff 0%, #2563eb 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+  flex-shrink: 0;
 }
 
 .zapping-brand h3 {
