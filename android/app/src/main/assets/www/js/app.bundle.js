@@ -10881,70 +10881,57 @@ class PlayerEngine {
 
   initFullscreenListeners() {
     const events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+    let fsEventDebounce = null;
     events.forEach(ev => {
       document.addEventListener(ev, () => {
-        const isFull = Boolean(
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
-          document.msFullscreenElement
-        );
-        if (this.dom.zappingPlayerArea) {
-          this.dom.zappingPlayerArea.classList.toggle('is-fullscreen', isFull);
-        }
-        if (this.dom.tvZappingView) {
-          this.dom.tvZappingView.classList.toggle('is-fullscreen-mode', isFull);
-        }
-        this.updateFullscreenIcon();
-        if (isFull) {
-          if (this.dom.zappingSidebar) {
-            this.dom.zappingSidebar.classList.add('is-collapsed');
-            this.dom.zappingSidebar.classList.remove('is-open-fs');
+        if (fsEventDebounce) clearTimeout(fsEventDebounce);
+        fsEventDebounce = setTimeout(() => {
+          const isFull = Boolean(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+          );
+          if (this.dom.zappingPlayerArea) {
+            this.dom.zappingPlayerArea.classList.toggle('is-fullscreen', isFull);
           }
-          this.resetFsControlsInactivityTimer();
-        } else {
-          this._isExitingFullscreen = true;
-          if (this._exitFsGraceTimer) clearTimeout(this._exitFsGraceTimer);
-          this._exitFsGraceTimer = setTimeout(() => {
-            this._isExitingFullscreen = false;
-          }, 1500);
-
-          if (this.dom.zappingSidebar) {
-            this.dom.zappingSidebar.classList.remove('is-open-fs');
-            this.dom.zappingSidebar.classList.remove('is-collapsed');
+          if (this.dom.tvZappingView) {
+            this.dom.tvZappingView.classList.toggle('is-fullscreen-mode', isFull);
           }
-          this.clearFsControlsInactivityTimer();
-          this.showFsControls();
-          this.hideFullscreenGuide();
-
-          // Asegurar que el video nunca quede pausado ni sufra cortes al salir de pantalla completa
-          if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
-            if (this.dom.tvVideo.paused) {
-              const p = this.dom.tvVideo.play();
-              if (p !== undefined) {
-                p.catch(e => console.warn('[TV] Auto-resume inmediato tras fullscreenchange exit:', e));
-              }
+          this.updateFullscreenIcon();
+          if (isFull) {
+            if (this.dom.zappingSidebar) {
+              this.dom.zappingSidebar.classList.add('is-collapsed');
+              this.dom.zappingSidebar.classList.remove('is-open-fs');
             }
-            this.isPlaying = true;
-            this.updateTvPlayIcon(true);
+            this.resetFsControlsInactivityTimer();
+          } else {
+            this._isExitingFullscreen = true;
+            if (this._exitFsGraceTimer) clearTimeout(this._exitFsGraceTimer);
+            this._exitFsGraceTimer = setTimeout(() => {
+              this._isExitingFullscreen = false;
+            }, 1500);
 
-            // Verificaciones secundarias en los siguientes ticks para evitar pausas tardías del motor del navegador
-            const checkPlaying = () => {
-              if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
+            if (this.dom.zappingSidebar) {
+              this.dom.zappingSidebar.classList.remove('is-open-fs');
+              this.dom.zappingSidebar.classList.remove('is-collapsed');
+            }
+            this.clearFsControlsInactivityTimer();
+            this.showFsControls();
+            this.hideFullscreenGuide();
+
+            if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
+              if (this.dom.tvVideo.paused) {
                 const p = this.dom.tvVideo.play();
                 if (p !== undefined) {
-                  p.catch(e => console.warn('[TV] Auto-resume guardia tras fullscreenchange:', e));
+                  p.catch(e => console.warn('[TV] Auto-resume inmediato tras fullscreenchange exit:', e));
                 }
               }
-            };
-            if (typeof requestAnimationFrame === 'function') {
-              requestAnimationFrame(checkPlaying);
+              this.isPlaying = true;
+              this.updateTvPlayIcon(true);
             }
-            setTimeout(checkPlaying, 80);
-            setTimeout(checkPlaying, 250);
-            setTimeout(checkPlaying, 600);
           }
-        }
+        }, 30);
       });
     });
 
@@ -11020,9 +11007,6 @@ class PlayerEngine {
   }
 
   enterFullscreenCrossBrowser() {
-    // Al entrar en pantalla completa, el objetivo es el contenedor Zapping completo para que el video tome 100% de la pantalla
-    const target = this.dom.zappingPlayerArea || this.dom.tvZappingView || document.documentElement;
-
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.add('is-fullscreen');
     }
@@ -11034,16 +11018,23 @@ class PlayerEngine {
       this.dom.zappingSidebar.classList.remove('is-open-fs');
     }
 
-    if (target.requestFullscreen) {
-      target.requestFullscreen().catch(() => this.fallbackSafariVideoFullscreen());
-    } else if (target.webkitRequestFullscreen) {
-      target.webkitRequestFullscreen();
-    } else if (target.mozRequestFullScreen) {
-      target.mozRequestFullScreen();
-    } else if (target.msRequestFullscreen) {
-      target.msRequestFullscreen();
-    } else {
-      this.fallbackSafariVideoFullscreen();
+    // En dispositivos móviles (Android / iOS / TV Box / pantallas táctiles), el modo de pantalla
+    // completa se implementa de manera pura y óptima mediante CSS (in-page fullscreen),
+    // garantizando que tome el 100% de la pantalla sin invocar la API nativa de pantalla completa.
+    // En Chromium Android y WebKit móvil, la API nativa document.requestFullscreen / exitFullscreen
+    // envía órdenes forzadas de pausa ('pause') al decodificador multimedia, provocando cortes
+    // y pausas dobles al salir. Con pantalla completa CSS, la reproducción es 100% continua y fluida.
+    const isMobileOrTv = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+                         (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
+    if (!isMobileOrTv) {
+      const target = this.dom.zappingPlayerArea || this.dom.tvZappingView || document.documentElement;
+      if (target.requestFullscreen) {
+        target.requestFullscreen().catch(() => {});
+      } else if (target.webkitRequestFullscreen) {
+        target.webkitRequestFullscreen();
+      }
     }
 
     this.resetFsControlsInactivityTimer();
@@ -11051,15 +11042,7 @@ class PlayerEngine {
   }
 
   fallbackSafariVideoFullscreen() {
-    // Solo invocar en iOS Safari (donde requestFullscreen no está soportado en elementos HTML)
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIOS && this.dom.tvVideo && typeof this.dom.tvVideo.webkitEnterFullscreen === 'function') {
-      try {
-        this.dom.tvVideo.webkitEnterFullscreen();
-      } catch (e) {
-        console.warn('Error en webkitEnterFullscreen:', e);
-      }
-    }
+    // No-op para evitar invocar el reproductor nativo de iOS que pausa el video al cerrarse
   }
 
   exitFullscreenCrossBrowser() {
@@ -11090,7 +11073,7 @@ class PlayerEngine {
       this.dom.zappingSidebar.classList.remove('is-collapsed');
     }
 
-    // 3. Salir de pantalla completa nativa de documento si está activa
+    // 3. Salir de pantalla completa nativa de documento únicamente si estaba activa (ej. escritorio)
     if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
       try {
         if (document.exitFullscreen) {
@@ -11107,7 +11090,7 @@ class PlayerEngine {
       }
     }
 
-    // 4. Salir de fullscreen nativo de video ÚNICAMENTE si el video realmente está en modo webkit fullscreen (iOS Safari)
+    // 4. Salir de fullscreen nativo de video ÚNICAMENTE si el video realmente está en modo webkit fullscreen
     if (this.dom.tvVideo && this.dom.tvVideo.webkitDisplayingFullscreen && typeof this.dom.tvVideo.webkitExitFullscreen === 'function') {
       try {
         this.dom.tvVideo.webkitExitFullscreen();
@@ -11120,48 +11103,49 @@ class PlayerEngine {
 
     // 5. Garantizar inmediatamente y sin pausa que la reproducción de video continúe sin cortes
     if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv') {
-      // Reanudación inmediata sincrónica (aprovechando el contexto de evento del usuario)
       if (this.dom.tvVideo.paused) {
         const p = this.dom.tvVideo.play();
         if (p !== undefined) {
-          p.catch(e => console.warn('[TV] Error en auto-resume sincrónico tras exitFullscreenCrossBrowser:', e));
+          p.catch(e => console.warn('[TV] Auto-resume en exitFullscreenCrossBrowser:', e));
         }
       }
       this.isPlaying = true;
       this.updateTvPlayIcon(true);
-
-      // Guardias en los siguientes ciclos de animación / reflow para contrarrestar pausas tardías del motor web
-      const ensureKeepPlaying = () => {
-        if (this.dom.tvVideo && this.currentStation && this.currentStation.type === 'tv' && this.dom.tvVideo.paused) {
-          const p = this.dom.tvVideo.play();
-          if (p !== undefined) {
-            p.catch(e => console.warn('[TV] Guardia de reproducción post-exit:', e));
-          }
-        }
-      };
-      if (typeof requestAnimationFrame === 'function') {
-        requestAnimationFrame(ensureKeepPlaying);
-      }
-      setTimeout(ensureKeepPlaying, 80);
-      setTimeout(ensureKeepPlaying, 250);
-      setTimeout(ensureKeepPlaying, 600);
     }
   }
 
   updateFullscreenIcon() {
-    if (!this.dom.tvFullscreenBtn) return;
     const isFull = this.isFullscreenActive();
 
-    this.dom.tvFullscreenBtn.innerHTML = isFull
-      ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-           <polyline points="4 14 10 14 10 20"></polyline>
-           <polyline points="20 10 14 10 14 4"></polyline>
-           <line x1="14" y1="10" x2="21" y2="3"></line>
-           <line x1="3" y1="21" x2="10" y2="14"></line>
-         </svg>`
-      : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-           <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
-         </svg>`;
+    const svgCollapse = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <polyline points="4 14 10 14 10 20"></polyline>
+         <polyline points="20 10 14 10 14 4"></polyline>
+         <line x1="14" y1="10" x2="21" y2="3"></line>
+         <line x1="3" y1="21" x2="10" y2="14"></line>
+       </svg>`;
+
+    const svgExpand = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+       </svg>`;
+
+    if (this.dom.tvFullscreenBtn) {
+      this.dom.tvFullscreenBtn.innerHTML = isFull ? svgCollapse : svgExpand;
+      this.dom.tvFullscreenBtn.title = isFull ? 'Salir de Pantalla Completa (F / Doble Clic)' : 'Pantalla Completa (F / Doble Clic)';
+    }
+
+    if (this.dom.tvPortraitFullscreenBtn) {
+      this.dom.tvPortraitFullscreenBtn.innerHTML = isFull
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <polyline points="4 14 10 14 10 20"></polyline>
+             <polyline points="20 10 14 10 14 4"></polyline>
+             <line x1="14" y1="10" x2="21" y2="3"></line>
+             <line x1="3" y1="21" x2="10" y2="14"></line>
+           </svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+           </svg>`;
+      this.dom.tvPortraitFullscreenBtn.title = isFull ? 'Salir de Pantalla Completa' : 'Pantalla Completa';
+    }
   }
 
   /* ========================================================================

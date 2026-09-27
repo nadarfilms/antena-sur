@@ -756,21 +756,36 @@
 .zapping-player-area:fullscreen,
 .zapping-player-area:-webkit-full-screen,
 .zapping-player-area.is-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  position: relative !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  z-index: 500 !important;
   overflow: hidden !important;
   background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .zapping-player-area:fullscreen .zapping-video-container,
 .zapping-player-area:-webkit-full-screen .zapping-video-container,
 .zapping-player-area.is-fullscreen .zapping-video-container {
   position: absolute !important;
-  top: 0;
-  left: 0;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: unset !important;
+  flex: 1 1 100% !important;
 }
 
 .zapping-player-area:fullscreen .zapping-top-hud,
@@ -2031,12 +2046,25 @@
     display: none !important;
   }
 
-  /* En pantalla completa móvil, ocultar barras informativas */
   .zapping-player-area.is-fullscreen .zapping-portrait-station-bar,
   .zapping-player-area.is-fullscreen .zapping-portrait-video-bar,
   .zapping-tv-view.is-fullscreen-mode .zapping-portrait-station-bar,
   .zapping-tv-view.is-fullscreen-mode .zapping-portrait-video-bar {
     display: none !important;
+  }
+
+  .zapping-player-area.is-fullscreen .zapping-video-container,
+  .zapping-tv-view.is-fullscreen-mode .zapping-video-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: unset !important;
+    flex: 1 1 100% !important;
   }
 }
 
