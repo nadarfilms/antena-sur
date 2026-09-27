@@ -186,6 +186,15 @@
         <!-- HUD Superior Flotante del Canal Activo -->
         <header class="zapping-top-hud">
           <div class="zapping-hud-left">
+            <!-- Botón ATRAS para vista vertical en celular -->
+            <button class="zapping-sidebar-close-btn zapping-portrait-back-btn" id="tvPortraitBackBtn" title="Volver al Menú Principal">◀ ATRAS</button>
+
+            <!-- Brand Antena Sur en vista vertical -->
+            <div class="zapping-portrait-brand">
+              <img src="./img/icon-192.png" alt="Antena Sur" class="zapping-logo-img">
+              <span class="zapping-portrait-title">ANTENA SUR</span>
+            </div>
+
             <button class="zapping-hud-btn" id="zappingOpenGuideBtn" title="Mostrar Guía de Canales (← / Enter)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -205,10 +214,26 @@
           </div>
 
           <div class="zapping-hud-right">
+            <!-- Botón Ajustes de Señal / Calidad en barra superior (Modo Vertical Móvil) -->
+            <button class="zapping-hud-btn tv-bottom-options-btn zapping-portrait-options-btn" id="tvPortraitOptionsBtn" title="Opciones de Señal y Calidad">
+              <span class="source-icon">⚙️</span>
+              <span class="zapping-opt-label">Ajustes</span>
+            </button>
+
+            <!-- Indicador EN VIVO (Modo Vertical Móvil) -->
+            <span class="zapping-live-badge zapping-portrait-live" id="tvPortraitLiveBadge"><span class="pulse-dot"></span> EN VIVO</span>
+
             <!-- Marcar como Favorito -->
             <button class="zapping-hud-icon-btn" id="tvFavoriteBtn" title="Marcar como Favorito">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </button>
+
+            <!-- Botón Pantalla Completa en barra superior (Modo Vertical Móvil) -->
+            <button class="control-btn control-btn-fullscreen zapping-portrait-fs-btn" id="tvPortraitFullscreenBtn" title="Pantalla Completa (F / Doble Clic)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
               </svg>
             </button>
 
@@ -246,6 +271,17 @@
               <button class="btn-primary" id="tvRetryBtn">🔄 Reintentar Transmisión</button>
               <button class="btn-secondary" id="tvUseProxyBtn">🛡️ Usar Proxy Local (CORS Fix)</button>
               <button class="btn-primary" id="tvWebFallbackBtn" style="background: rgba(0, 212, 255, 0.2); border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">🌐 Reproductor Web Oficial</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra informativa de la estación en modo vertical móvil -->
+        <div class="zapping-portrait-station-bar" id="tvPortraitStationBar">
+          <div class="zapping-station-bar-info">
+            <span class="zapping-station-bar-num" id="tvPortraitChNum">CH 01</span>
+            <div class="zapping-station-bar-text">
+              <h2 class="zapping-station-bar-title" id="tvPortraitChTitle">Canal de Televisión</h2>
+              <p class="zapping-station-bar-sub" id="tvPortraitChSub">Chile • Señal en Directo</p>
             </div>
           </div>
         </div>

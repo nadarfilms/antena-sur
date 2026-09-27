@@ -125,6 +125,15 @@ export class PlayerEngine {
       tvOptBtnExitFs: document.getElementById('tvOptBtnExitFs'),
       tvBottomOptionsBtn: document.getElementById('tvBottomOptionsBtn'),
 
+      // Elementos específicos de barra superior y drawer vertical móvil
+      tvPortraitBackBtn: document.getElementById('tvPortraitBackBtn'),
+      tvPortraitOptionsBtn: document.getElementById('tvPortraitOptionsBtn'),
+      tvPortraitFullscreenBtn: document.getElementById('tvPortraitFullscreenBtn'),
+      tvPortraitStationBar: document.getElementById('tvPortraitStationBar'),
+      tvPortraitChNum: document.getElementById('tvPortraitChNum'),
+      tvPortraitChTitle: document.getElementById('tvPortraitChTitle'),
+      tvPortraitChSub: document.getElementById('tvPortraitChSub'),
+
       // Overlay de Guía en Pantalla Completa
       zappingFullscreenOverlay: document.getElementById('zappingFullscreenOverlay'),
       zappingFsChannelList: document.getElementById('zappingFsChannelList'),
@@ -278,6 +287,37 @@ export class PlayerEngine {
         } else {
           this.closeTvPlayer();
         }
+      });
+    }
+
+    // Botón ATRAS en barra superior de modo vertical móvil
+    if (this.dom.tvPortraitBackBtn) {
+      this.dom.tvPortraitBackBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.isFullscreenActive()) {
+          this.toggleFullscreenSidebar(false);
+        } else {
+          this.closeTvPlayer();
+        }
+      });
+    }
+
+    // Botón Opciones / Ajustes en barra superior de modo vertical móvil
+    if (this.dom.tvPortraitOptionsBtn) {
+      this.dom.tvPortraitOptionsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.openTvOptionsMenu();
+      });
+    }
+
+    // Botón Pantalla Completa en barra superior de modo vertical móvil
+    if (this.dom.tvPortraitFullscreenBtn) {
+      this.dom.tvPortraitFullscreenBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggleFullscreen();
       });
     }
 
@@ -517,7 +557,7 @@ export class PlayerEngine {
           this.sidebarFocusIndex = idx;
         }
         try {
-          next.scrollIntoView({ block: 'nearest' });
+          next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         } catch (e) {}
       }
     });
@@ -591,7 +631,7 @@ export class PlayerEngine {
       const idx = parseInt(activeItem.getAttribute('data-index'), 10);
       if (!isNaN(idx)) this.sidebarFocusIndex = idx;
       try {
-        activeItem.scrollIntoView({ block: 'nearest' });
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       } catch (e) {}
     }
   }
@@ -1009,6 +1049,31 @@ export class PlayerEngine {
       });
     }
 
+    // Soporte para arrastre horizontal con mouse en el carrusel de canales
+    if (this.dom.zappingChannelList && !this._tvListDragInitialized) {
+      this._tvListDragInitialized = true;
+      const list = this.dom.zappingChannelList;
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
+      list.addEventListener('mousedown', (e) => {
+        if (list.scrollWidth <= list.clientWidth) return;
+        isDown = true;
+        startX = e.pageX - list.offsetLeft;
+        scrollLeft = list.scrollLeft;
+      });
+      list.addEventListener('mouseleave', () => { isDown = false; });
+      list.addEventListener('mouseup', () => { isDown = false; });
+      list.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        if (list.scrollWidth <= list.clientWidth) return;
+        e.preventDefault();
+        const x = e.pageX - list.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        list.scrollLeft = scrollLeft - walk;
+      });
+    }
+
     if (this.dom.tvOptionsBackdrop) {
       this.dom.tvOptionsBackdrop.addEventListener('click', () => {
         this.closeTvOptionsMenu();
@@ -1409,6 +1474,13 @@ export class PlayerEngine {
     }
     if (this.dom.tvFavoriteBtn) {
       this.updateFavoriteButtons(station.id, this.fav.isFavorite(station.id));
+    }
+
+    // Actualizar barra informativa en modo vertical móvil
+    if (this.dom.tvPortraitChNum) this.dom.tvPortraitChNum.textContent = `CH ${chNum}`;
+    if (this.dom.tvPortraitChTitle) this.dom.tvPortraitChTitle.textContent = station.name;
+    if (this.dom.tvPortraitChSub) {
+      this.dom.tvPortraitChSub.textContent = `${station.city || 'Chile'} • ${station.genre || 'General'}`;
     }
 
     // Reiniciar selector de calidad a Auto

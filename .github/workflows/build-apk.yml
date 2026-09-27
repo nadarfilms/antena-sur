@@ -35,8 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.1.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.1.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.1
+    - name: Publicar Release v1.2.2
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.1"
-        name: "Antena Sur Android TV v1.2.1"
-        body: "Versión 1.2.1: Eliminación del botón 'Modo Web Oficial' de la barra superior del reproductor TV manteniendo la opción exclusivamente en el menú OSD de ajustes, e incorporación del logo oficial de la aplicación Antena Sur en la cabecera de la guía de canales."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.2"
+        name: "Antena Sur Android TV v1.2.2"
+        body: "Versión 1.2.2: Rediseño responsivo para celulares en posición vertical (modo portrait) con barra superior técnica para opciones (Atrás, Logo, Ajustes OSD, EN VIVO, Pantalla Completa y Favoritos), reproductor de video centrado en 16:9 y carrusel horizontal inferior de canales estilo Radios FM. En posición horizontal (landscape) mantiene la disposición original sin modificaciones."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
