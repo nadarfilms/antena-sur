@@ -75,6 +75,107 @@ body {
   background: #000000;
 }
 
+/* Pantalla de Carga Inicial Blackmagic (Rueda Animada y Porcentaje) */
+.bm-splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #080c14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 1;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.bm-splash-screen.is-loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.bm-splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.bm-splash-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bm-splash-title {
+  font-family: var(--font-family);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #ffffff;
+}
+
+.bm-spinner-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+}
+
+.bm-loading-wheel {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(0, 149, 255, 0.15);
+  border-top-color: var(--bm-cyan, #0095ff);
+  border-right-color: var(--bm-cyan, #0095ff);
+  border-radius: 50%;
+  animation: bmWheelSpin 0.75s linear infinite;
+  box-shadow: 0 0 16px rgba(0, 149, 255, 0.25);
+}
+
+@keyframes bmWheelSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bm-splash-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 160px;
+}
+
+.bm-splash-bar-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bm-splash-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--bm-cyan, #0095ff);
+  transition: width 0.18s ease-out;
+  box-shadow: 0 0 8px var(--bm-cyan, #0095ff);
+}
+
+.bm-splash-pct {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--bm-cyan, #0095ff);
+  min-width: 36px;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+
 /* Scrollbar Personalizado Industrial */
 ::-webkit-scrollbar {
   width: 6px;
@@ -245,6 +346,7 @@ body {
 }
 
 /* Layout del Inicio Centrado y Minimalista (2 Botones Principales) */
+main.app-container.bm-home-container,
 .bm-home-container {
   display: flex;
   flex-direction: column;
@@ -260,7 +362,7 @@ body {
 .bm-home-hero {
   width: 100%;
   max-width: 1080px;
-  margin: 0 auto;
+  margin: 16px auto 0 auto;
   box-sizing: border-box;
 }
 
@@ -274,14 +376,16 @@ body {
 }
 
 @media (max-width: 768px) {
+  main.app-container.bm-home-container,
   .bm-home-container {
     min-height: auto;
-    padding: 24px 16px 40px 16px;
+    padding: 24px 16px 40px 16px !important;
     justify-content: flex-start;
   }
   .bm-home-hero {
     max-width: 100%;
     width: 100%;
+    margin-top: 16px;
   }
   .bm-hero-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -292,13 +396,15 @@ body {
 }
 
 @media (min-width: 480px) and (max-height: 540px) and (orientation: landscape) {
+  main.app-container.bm-home-container,
   .bm-home-container {
     min-height: calc(100vh - 55px);
-    padding: 12px 20px;
+    padding: 12px 20px !important;
     justify-content: center;
   }
   .bm-home-hero {
     max-width: 860px;
+    margin-top: 8px;
   }
   .bm-hero-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -635,7 +741,7 @@ body {
     max-width: 100%;
     width: 100%;
   }
-  .app-container {
+  .app-container:not(.bm-home-container) {
     padding: 0 16px;
   }
 }

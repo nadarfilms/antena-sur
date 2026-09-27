@@ -48,6 +48,28 @@
   <!-- Atmósfera luminosa de fondo -->
   <div class="bg-atmosphere"></div>
 
+  <!-- Pantalla de Carga Inicial Blackmagic (Rueda Animada y Porcentaje) -->
+  <div class="bm-splash-screen" id="appSplashLoader">
+    <div class="bm-splash-content">
+      <div class="bm-splash-logo">
+        <div class="bm-cam-indicator">
+          <span class="bm-cam-box">BMD</span>
+          <span class="bm-record-dot"></span>
+        </div>
+        <span class="bm-splash-title">ANTENA SUR</span>
+      </div>
+      <div class="bm-spinner-container">
+        <div class="bm-loading-wheel"></div>
+      </div>
+      <div class="bm-splash-progress">
+        <div class="bm-splash-bar-track">
+          <div class="bm-splash-bar-fill" id="bmSplashBarFill"></div>
+        </div>
+        <span class="bm-splash-pct" id="bmSplashPct">0%</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Barra de Navegación Superior -->
   <!-- Barra de Navegación Superior Estilo Blackmagic Camera OS -->
   <header class="top-navbar bm-header">

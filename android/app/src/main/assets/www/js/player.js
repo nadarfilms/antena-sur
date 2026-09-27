@@ -2832,7 +2832,7 @@ export class PlayerEngine {
     }
   }
 
-  playRadioSource(url) {
+  playRadioSource(url, forceFresh = false) {
     if (!url) return;
     if (this.isInterrupted) {
       console.log('playRadioSource omitido: llamada telefónica en curso.');

@@ -11845,7 +11845,7 @@ class PlayerEngine {
     }
   }
 
-  playRadioSource(url) {
+  playRadioSource(url, forceFresh = false) {
     if (!url) return;
     if (this.isInterrupted) {
       console.log('playRadioSource omitido: llamada telefónica en curso.');
@@ -13284,11 +13284,23 @@ class App {
     this.isGridEventsInitialized = false;
   }
 
-  start() {
-    this.showToast('Cargando señales de Chile...', 'info');
+  async start() {
+    const splashLoader = document.getElementById('appSplashLoader');
+    const splashFill = document.getElementById('bmSplashBarFill');
+    const splashPct = document.getElementById('bmSplashPct');
+
+    const updateSplash = (pct) => {
+      if (splashFill) splashFill.style.width = `${pct}%`;
+      if (splashPct) splashPct.textContent = `${pct}%`;
+    };
+
+    updateSplash(20);
+    await new Promise(r => setTimeout(r, 50));
 
     // 1. Cargar catálogo de datos en memoria (síncrono)
     this.dataManager.load();
+    updateSplash(50);
+    await new Promise(r => setTimeout(r, 50));
 
     // 2. Inicializar Player Engine y exponerlo globalmente
     this.player = new PlayerEngine(this.favoritesManager, (station, status) => {
@@ -13303,10 +13315,13 @@ class App {
     });
     this.filters.init();
 
-    // 4. Ocultar estado de carga inicial
+    // 4. Ocultar estado de carga inicial legacy si existe
     if (this.dom.loadingState) {
       this.dom.loadingState.style.display = 'none';
     }
+
+    updateSplash(80);
+    await new Promise(r => setTimeout(r, 50));
 
     // 5. Inicializar navegación e interactividad (ahora player y filters YA existen)
     this.initGridEvents();
@@ -13331,8 +13346,15 @@ class App {
     const initialList = this.filters.getFilteredStations();
     this.renderStations(initialList);
 
-    if (tvCount > 0) {
-      this.showToast(`¡Listo! ${tvCount} Canales de TV y ${radioCount} Radios de Chile activas`, 'success');
+    updateSplash(100);
+    await new Promise(r => setTimeout(r, 160));
+
+    // Transición suave de salida para la pantalla de carga industrial Blackmagic
+    if (splashLoader) {
+      splashLoader.classList.add('is-loaded');
+      setTimeout(() => {
+        splashLoader.style.display = 'none';
+      }, 350);
     }
 
     // 8. Enfocar inmediatamente el botón principal de Canales de TV
