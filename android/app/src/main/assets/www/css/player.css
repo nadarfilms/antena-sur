@@ -250,6 +250,7 @@
   outline: none;
   position: relative;
   user-select: none;
+  touch-action: manipulation;
 }
 
 .zapping-ch-item:hover,
@@ -536,8 +537,22 @@
   height: 100%;
   max-height: 100%;
   object-fit: contain;
-  background: #000;
+  background: #050811 !important;
   outline: none;
+  transition: opacity 0.15s ease;
+}
+
+/* Ocultar de forma absoluta cualquier botón o control nativo de Android WebView / WebKit */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .zapping-iframe {
@@ -1163,47 +1178,45 @@
 /* Indicador de Carga y Fallback */
 .video-loading-indicator {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  z-index: 15;
-  background: rgba(10, 14, 23, 0.95);
-  padding: 24px 32px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  justify-content: center;
+  gap: 16px;
+  z-index: 30;
+  background: #050811; /* Color de fondo oficial de Antena Sur para tapar 100% el reproductor nativo */
 }
 
 .video-loading-indicator .spinner {
-  width: 44px;
-  height: 44px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  width: 48px;
+  height: 48px;
+  border: 3.5px solid rgba(0, 229, 255, 0.15);
   border-top-color: #00e5ff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 .video-loading-indicator span {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
+  font-size: 0.9rem;
+  color: var(--text-secondary, #94a3b8);
   font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .video-fallback-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5, 8, 17, 0.95);
+  background: rgba(5, 8, 17, 0.98);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   padding: 30px;
-  z-index: 18;
+  z-index: 35;
 }
 
 .video-fallback-overlay.is-hidden {

@@ -9352,7 +9352,7 @@ class PlayerEngine {
       });
     }
 
-    // Delegación de clics y doble clics en la Guía Lateral (Rendimiento 60 FPS sin lag)
+    // Delegación de clics en la Guía Lateral (Rendimiento 60 FPS sin lag de dblclick)
     if (this.dom.zappingChannelList) {
       this.dom.zappingChannelList.addEventListener('click', (e) => {
         const item = e.target.closest('.zapping-ch-item');
@@ -9381,22 +9381,6 @@ class PlayerEngine {
           }
         }
       });
-
-      this.dom.zappingChannelList.addEventListener('dblclick', (e) => {
-        const item = e.target.closest('.zapping-ch-item');
-        if (!item) return;
-        e.preventDefault();
-        const id = item.getAttribute('data-id');
-        const st = this.tvStations.find(s => s.id === id);
-        if (st && (!this.currentStation || this.currentStation.id !== id)) {
-          this.playTv(st);
-        }
-        if (!this.isFullscreenActive()) {
-          this.enterFullscreenCrossBrowser();
-        } else {
-          this.toggleFullscreenSidebar(false);
-        }
-      });
     }
 
     // Delegación central en Guía Overlay de Pantalla Completa
@@ -9404,19 +9388,6 @@ class PlayerEngine {
       this.dom.zappingFsChannelList.addEventListener('click', (e) => {
         const item = e.target.closest('.zapping-ch-item');
         if (!item) return;
-        const id = item.getAttribute('data-id');
-        const st = this.tvStations.find(s => s.id === id);
-        if (st && (!this.currentStation || this.currentStation.id !== id)) {
-          this.playTv(st);
-        }
-        this.hideFullscreenGuide();
-        this.toggleFullscreenSidebar(false);
-      });
-
-      this.dom.zappingFsChannelList.addEventListener('dblclick', (e) => {
-        const item = e.target.closest('.zapping-ch-item');
-        if (!item) return;
-        e.preventDefault();
         const id = item.getAttribute('data-id');
         const st = this.tvStations.find(s => s.id === id);
         if (st && (!this.currentStation || this.currentStation.id !== id)) {
@@ -9575,7 +9546,7 @@ class PlayerEngine {
           this.sidebarFocusIndex = idx;
         }
         try {
-          next.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          next.scrollIntoView({ block: 'nearest', inline: 'center' });
         } catch (e) {}
       }
     });
@@ -9821,6 +9792,9 @@ class PlayerEngine {
     if (focusedItem) {
       focusedItem.classList.add('is-dpad-focused');
       try {
+        focusedItem.focus({ preventScroll: true });
+      } catch (e) {}
+      try {
         focusedItem.scrollIntoView({ block: 'nearest' });
       } catch (e) {}
     }
@@ -9868,6 +9842,9 @@ class PlayerEngine {
     if (focusedItem) {
       focusedItem.classList.add('is-dpad-focused');
       try {
+        focusedItem.focus({ preventScroll: true });
+      } catch (e) {}
+      try {
         focusedItem.scrollIntoView({ block: 'nearest' });
       } catch (e) {}
     }
@@ -9910,12 +9887,12 @@ class PlayerEngine {
       this.isPlaying = true;
       this.updateTvPlayIcon(true);
       this.clearConnectionWatchdog();
-      if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'none';
-      if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
+      // NO ocultar tvLoading en 'play' para no exponer la superficie vacía antes de decodificar cuadros
     });
 
     this.dom.tvVideo.addEventListener('playing', () => {
       this.clearConnectionWatchdog();
+      if (this.dom.tvVideo) this.dom.tvVideo.style.opacity = '1';
       if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'none';
       if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
     });
@@ -9946,12 +9923,14 @@ class PlayerEngine {
 
     this.dom.tvVideo.addEventListener('loadeddata', () => {
       this.clearConnectionWatchdog();
+      if (this.dom.tvVideo) this.dom.tvVideo.style.opacity = '1';
       if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'none';
       if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
     });
 
     this.dom.tvVideo.addEventListener('canplay', () => {
       this.clearConnectionWatchdog();
+      if (this.dom.tvVideo) this.dom.tvVideo.style.opacity = '1';
       if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'none';
       if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
     });
@@ -10460,18 +10439,22 @@ class PlayerEngine {
 
     this.currentStation = station;
     this.currentType = 'tv';
-    this.fav.addToHistory(station);
 
-    try {
-      localStorage.setItem('antena_sur_last_tv_id', station.id);
-    } catch (e) {}
+    // 1. RESPUESTA VISUAL INMEDIATA (0 ms de latencia)
+    // Ocultar video de inmediato para que nunca se vea ningún cuadro previo ni icono de play nativo
+    if (this.dom.tvVideo) {
+      this.dom.tvVideo.style.opacity = '0';
+    }
+    // Mostrar pantalla de carga con fondo sólido de la aplicación inmediatamente
+    if (this.dom.tvLoading) {
+      this.dom.tvLoading.style.display = 'flex';
+    }
+    if (this.dom.tvFallbackOverlay) {
+      this.dom.tvFallbackOverlay.classList.add('is-hidden');
+    }
 
-    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
-      window.__antenaSurApp.updateHeroLastStationBadges();
-    }
-    if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
-      window.__antenaSurApp.updateHeaderActiveTab('tv');
-    }
+    // Actualizar canal activo en la guía lateral de inmediato
+    this.syncActiveChannelHighlight(station.id);
 
     // Resetear modo web
     this.isWebMode = false;
@@ -10496,7 +10479,7 @@ class PlayerEngine {
       this.resetFsControlsInactivityTimer();
     }
 
-    // Actualizar HUD superior del canal activo
+    // Actualizar HUD superior del canal activo de inmediato
     const chNum = station.channelNumber ? String(station.channelNumber).padStart(2, '0') : '01';
     if (this.dom.tvChannelNumber) this.dom.tvChannelNumber.textContent = `CH ${chNum}`;
     if (this.dom.tvStationTitle) this.dom.tvStationTitle.textContent = station.name;
@@ -10532,37 +10515,40 @@ class PlayerEngine {
 
     // Si el canal está configurado para reproducción web incrustada (ej. Meganoticias Ahora 24/7)
     if (station.useIframe) {
-      this.syncActiveChannelHighlight(station.id);
       this.switchToWebPlayer();
+      return;
+    }
+
+    // Configurar y mostrar selector interactivo de fuentes
+    this.updateSourceSelector(station, 0);
+
+    // Tareas no críticas en segundo plano para no demorar la reproducción
+    setTimeout(() => {
+      try {
+        localStorage.setItem('antena_sur_last_tv_id', station.id);
+      } catch (e) {}
+
+      this.fav.addToHistory(station);
+
+      if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeroLastStationBadges === 'function') {
+        window.__antenaSurApp.updateHeroLastStationBadges();
+      }
+      if (window.__antenaSurApp && typeof window.__antenaSurApp.updateHeaderActiveTab === 'function') {
+        window.__antenaSurApp.updateHeaderActiveTab('tv');
+      }
+
       this.updateMediaSession({
         title: station.name,
         artist: `Canal ${chNum} • ${station.city || 'Chile'} (${station.genre || 'En Vivo'})`,
         album: 'Antena Sur • Televisión Abierta de Chile',
         artwork: [
+          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '96x96', type: 'image/svg+xml' },
+          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '128x128', type: 'image/svg+xml' },
+          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '256x256', type: 'image/svg+xml' },
           { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '512x512', type: 'image/svg+xml' }
         ]
       });
-      return;
-    }
-
-    // Configurar y mostrar selector interactivo de fuentes (accesible en pantalla completa y HUD)
-    this.updateSourceSelector(station, 0);
-
-    // Actualizar canal activo en la guía lateral (0 ms de sobrecarga)
-    this.syncActiveChannelHighlight(station.id);
-
-    // Actualizar metadatos para Apple CarPlay, Android Auto y pantalla de bloqueo
-    this.updateMediaSession({
-      title: station.name,
-      artist: `Canal ${chNum} • ${station.city || 'Chile'} (${station.genre || 'En Vivo'})`,
-      album: 'Antena Sur • Televisión Abierta de Chile',
-      artwork: [
-        { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '96x96', type: 'image/svg+xml' },
-        { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '128x128', type: 'image/svg+xml' },
-        { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '256x256', type: 'image/svg+xml' },
-        { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '512x512', type: 'image/svg+xml' }
-      ]
-    });
+    }, 0);
 
     const activeSource = (station.sources && station.sources.length > 0)
       ? station.sources[0]
@@ -10639,13 +10625,16 @@ class PlayerEngine {
     if (!this.currentStation || !source || !source.url) return;
     this.clearConnectionWatchdog();
 
-    if (this.hls) {
-      this.hls.destroy();
-      this.hls = null;
+    // Mantener video oculto e indicador de carga de Antena Sur activo sobre la superficie
+    if (this.dom.tvVideo) {
+      this.dom.tvVideo.style.opacity = '0';
     }
-
-    if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'flex';
-    if (this.dom.tvFallbackOverlay) this.dom.tvFallbackOverlay.classList.add('is-hidden');
+    if (this.dom.tvLoading) {
+      this.dom.tvLoading.style.display = 'flex';
+    }
+    if (this.dom.tvFallbackOverlay) {
+      this.dom.tvFallbackOverlay.classList.add('is-hidden');
+    }
 
     const station = this.currentStation;
     const targetUrl = source.url;
@@ -10670,9 +10659,8 @@ class PlayerEngine {
       streamUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}&ref=${refParam}`;
     }
 
+    // Pausar video anterior sin llamar a video.load() ni removeAttribute('src') para no reiniciar codecs de Android
     this.dom.tvVideo.pause();
-    this.dom.tvVideo.removeAttribute('src');
-    this.dom.tvVideo.load();
 
     // Temporizador de conexión: si en 4.5 segundos no conecta, conmutar a siguiente fuente si hay
     this.connectionWatchdogTimer = setTimeout(() => {
@@ -10693,70 +10681,82 @@ class PlayerEngine {
 
     // Reproducción mediante Hls.js
     if (window.Hls && window.Hls.isSupported()) {
-      this.hls = new window.Hls({
-        enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 45,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 60,
-        manifestLoadingTimeOut: 10000,
-        levelLoadingTimeOut: 10000
-      });
-
-      this.hls.loadSource(streamUrl);
-      this.hls.attachMedia(this.dom.tvVideo);
-
-      this.hls.on(window.Hls.Events.MANIFEST_PARSED, (event, data) => {
-        this.dom.tvVideo.play().catch(e => {
-          console.warn('Reproducción inicial prevenida por el navegador:', e);
+      if (this.hls) {
+        // Conmutación ultra-rápida: reutilizar decodificador y buffer de Hls.js existente
+        this.hls.stopLoad();
+        this.hls.loadSource(streamUrl);
+        this.hls.startLoad();
+        this.dom.tvVideo.play().catch(e => console.warn('Play rápido prevenido:', e));
+      } else {
+        this.hls = new window.Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 30,
+          maxBufferLength: 20,
+          maxMaxBufferLength: 40,
+          manifestLoadingTimeOut: 10000,
+          levelLoadingTimeOut: 10000
         });
-        this.updateQualityOptions(this.hls.levels);
-      });
 
-      this.hls.on(window.Hls.Events.LEVELS_UPDATED, (event, data) => {
-        this.updateQualityOptions(data.levels || this.hls.levels);
-      });
+        this.hls.loadSource(streamUrl);
+        this.hls.attachMedia(this.dom.tvVideo);
 
-      this.hls.on(window.Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          console.warn('Error fatal en HLS (Fuente):', data.type);
-          switch (data.type) {
-            case window.Hls.ErrorTypes.NETWORK_ERROR:
-              if (!this.isUsingProxy) {
-                console.log('Fallo de red en fuente. Reintentando con Proxy local...');
-                this.playTvWithSource(source, true);
-                return;
-              }
-              if (station.sources && this.currentSourceIndex < station.sources.length - 1) {
-                console.log(`Conmutando a siguiente fuente #${this.currentSourceIndex + 2}...`);
-                this.switchTvSource(this.currentSourceIndex + 1);
-                return;
-              }
-              if (station.embedUrl) {
-                console.log('Conmutando a reproductor web oficial...');
-                this.switchToWebPlayer();
-                return;
-              }
-              this.showTvFallback('La fuente pública actual puede tener restricciones de conexión.');
-              break;
-            case window.Hls.ErrorTypes.MEDIA_ERROR:
-              console.log('Error de medios HLS. Recuperando decodificador...');
-              this.hls.recoverMediaError();
-              break;
-            default:
-              if (station.sources && this.currentSourceIndex < station.sources.length - 1) {
-                this.switchTvSource(this.currentSourceIndex + 1);
-                return;
-              }
-              if (station.embedUrl) {
-                this.switchToWebPlayer();
-              } else {
-                this.showTvFallback('Error desconocido al reproducir la fuente seleccionada.');
-              }
-              break;
+        this.hls.on(window.Hls.Events.MANIFEST_PARSED, (event, data) => {
+          this.dom.tvVideo.play().catch(e => {
+            console.warn('Reproducción inicial prevenida por el navegador:', e);
+          });
+          this.updateQualityOptions(this.hls.levels);
+        });
+
+        this.hls.on(window.Hls.Events.LEVELS_UPDATED, (event, data) => {
+          this.updateQualityOptions(data.levels || this.hls.levels);
+        });
+
+        this.hls.on(window.Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            console.warn('Error fatal en HLS (Fuente):', data.type);
+            switch (data.type) {
+              case window.Hls.ErrorTypes.NETWORK_ERROR:
+                if (!this.isUsingProxy) {
+                  console.log('Fallo de red en fuente. Reintentando con Proxy local...');
+                  this.playTvWithSource(source, true);
+                  return;
+                }
+                if (station.sources && this.currentSourceIndex < station.sources.length - 1) {
+                  console.log(`Conmutando a siguiente fuente #${this.currentSourceIndex + 2}...`);
+                  this.switchTvSource(this.currentSourceIndex + 1);
+                  return;
+                }
+                if (station.embedUrl) {
+                  console.log('Conmutando a reproductor web oficial...');
+                  this.switchToWebPlayer();
+                  return;
+                }
+                this.showTvFallback('La fuente pública actual puede tener restricciones de conexión.');
+                break;
+              case window.Hls.ErrorTypes.MEDIA_ERROR:
+                console.log('Error de medios HLS. Recuperando decodificador...');
+                this.hls.recoverMediaError();
+                break;
+              default:
+                if (this.hls) {
+                  this.hls.destroy();
+                  this.hls = null;
+                }
+                if (station.sources && this.currentSourceIndex < station.sources.length - 1) {
+                  this.switchTvSource(this.currentSourceIndex + 1);
+                  return;
+                }
+                if (station.embedUrl) {
+                  this.switchToWebPlayer();
+                } else {
+                  this.showTvFallback('Error desconocido al reproducir la fuente seleccionada.');
+                }
+                break;
+            }
           }
-        }
-      });
+        });
+      }
     } else if (this.dom.tvVideo.canPlayType('application/vnd.apple.mpegurl')) {
       // Soporte nativo HLS (Safari iOS y macOS)
       this.dom.tvVideo.src = streamUrl;
