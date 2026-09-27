@@ -36,7 +36,7 @@ jobs:
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.7.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.1.8.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -54,16 +54,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.1.7.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.1.8.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.1.7
+    - name: Publicar Release v1.1.8
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.7.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.1.7"
-        name: "Antena Sur Android TV v1.1.7"
-        body: "Versión 1.1.7: Corrección de error JavaScript (ReferenceError forceFresh) al entrar al reproductor de radios, margen superior limpio y separación visible entre el encabezado y el botón 1 de Canales de TV en dispositivos móviles, y nueva pantalla de inicio cinemática estilo Blackmagic Camera OS con rueda de carga animada y porcentaje progresivo en sustitución de las notificaciones flotantes de texto inferiores."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.1.8.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.1.8"
+        name: "Antena Sur Android TV v1.1.8"
+        body: "Versión 1.1.8: Duración cinemática optimizada de la pantalla de carga inicial estilo Blackmagic (~2.2 segundos de progreso continuo y fluido a 60 FPS) para apreciar plenamente el giro de la rueda industrial y el conteo porcentual de carga de canales y radios sin cortes abruptos."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

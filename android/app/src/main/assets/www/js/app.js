@@ -46,18 +46,39 @@ class App {
     const splashFill = document.getElementById('bmSplashBarFill');
     const splashPct = document.getElementById('bmSplashPct');
 
+    let currentPct = 0;
     const updateSplash = (pct) => {
+      currentPct = pct;
       if (splashFill) splashFill.style.width = `${pct}%`;
       if (splashPct) splashPct.textContent = `${pct}%`;
     };
 
-    updateSplash(20);
-    await new Promise(r => setTimeout(r, 50));
+    const animateProgressTo = (targetPct, durationMs) => {
+      return new Promise(resolve => {
+        const startVal = currentPct;
+        const startTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        const step = () => {
+          const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          const elapsed = now - startTime;
+          const factor = Math.min(elapsed / durationMs, 1);
+          // Curva suave cúbica
+          const eased = factor < 0.5 ? 4 * factor * factor * factor : 1 - Math.pow(-2 * factor + 2, 3) / 2;
+          const val = Math.round(startVal + (targetPct - startVal) * Math.min(Math.max(eased, 0), 1));
+          updateSplash(val);
+          if (factor < 1) {
+            requestAnimationFrame(step);
+          } else {
+            resolve();
+          }
+        };
+        requestAnimationFrame(step);
+      });
+    };
+
+    updateSplash(0);
 
     // 1. Cargar catálogo de datos en memoria (síncrono)
     this.dataManager.load();
-    updateSplash(50);
-    await new Promise(r => setTimeout(r, 50));
 
     // 2. Inicializar Player Engine y exponerlo globalmente
     this.player = new PlayerEngine(this.favoritesManager, (station, status) => {
@@ -76,9 +97,6 @@ class App {
     if (this.dom.loadingState) {
       this.dom.loadingState.style.display = 'none';
     }
-
-    updateSplash(80);
-    await new Promise(r => setTimeout(r, 50));
 
     // 5. Inicializar navegación e interactividad (ahora player y filters YA existen)
     this.initGridEvents();
@@ -103,15 +121,28 @@ class App {
     const initialList = this.filters.getFilteredStations();
     this.renderStations(initialList);
 
-    updateSplash(100);
-    await new Promise(r => setTimeout(r, 160));
+    // Secuencia de animación cinemática Blackmagic Camera OS (~2.2 segundos para apreciar la rueda y el progreso)
+    // Tramo 1: Arranque y lectura de frecuencias (0% -> 38% en 600ms)
+    await animateProgressTo(38, 600);
+
+    // Tramo 2: Sintonización de señales y carátulas (38% -> 74% en 700ms)
+    await animateProgressTo(74, 700);
+
+    // Tramo 3: Montaje de guías de emisión en directo (74% -> 95% en 550ms)
+    await animateProgressTo(95, 550);
+
+    // Tramo 4: Sincronización final a 100% (95% -> 100% en 350ms)
+    await animateProgressTo(100, 350);
+
+    // Pausa deliberada en 100% para apreciar el estado completado
+    await new Promise(r => setTimeout(r, 260));
 
     // Transición suave de salida para la pantalla de carga industrial Blackmagic
     if (splashLoader) {
       splashLoader.classList.add('is-loaded');
       setTimeout(() => {
         splashLoader.style.display = 'none';
-      }, 350);
+      }, 420);
     }
 
     // 8. Enfocar inmediatamente el botón principal de Canales de TV
