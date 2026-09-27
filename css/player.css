@@ -1545,17 +1545,19 @@
 .zapping-portrait-options-btn,
 .zapping-portrait-live,
 .zapping-portrait-fs-btn,
-.zapping-portrait-station-bar {
+.zapping-portrait-station-bar,
+.zapping-portrait-video-bar {
   display: none !important;
 }
 
 /* ==========================================================================
    MODO VERTICAL EN CELULAR (PORTRAIT)
-   - Barra superior técnica con opciones (Atrás, Logo, Ajustes, EN VIVO, Pantalla Completa, Fav)
-   - Reproductor de video centrado a ancho completo (16:9)
+   - Barra superior técnica con opciones (Atrás, Logo, Pantalla Completa, Fav)
+   - Reproductor de video centrado verticalmente a ancho completo (16:9)
    - Barra informativa del canal sintonizado
+   - Barra inferior bajo la señal de video con Ajustes (izq) y EN VIVO (der)
    - Selector horizontal de categorías
-   - Carrusel inferior de canales horizontal (al igual que el menú de las radios)
+   - Carrusel inferior de canales horizontal con botones más altos y cómodos
    ========================================================================== */
 
 @media (orientation: portrait) {
@@ -1569,30 +1571,35 @@
     background: #000000 !important;
   }
 
-  /* Área de video en la parte superior */
+  /* Área central: CENTRADA VERTICALMENTE */
   .zapping-player-area {
     order: 1 !important;
     flex: 1 1 auto !important;
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
     min-height: 0 !important;
     display: flex !important;
     flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
     position: relative !important;
     overflow: hidden !important;
     background: #000000 !important;
+    padding-top: max(54px, env(safe-area-inset-top, 54px)) !important;
+    padding-bottom: 8px !important;
+    box-sizing: border-box !important;
   }
 
-  /* BARRA SUPERIOR TÉCNICA (HUD Superior en Portrait) */
+  /* BARRA SUPERIOR TÉCNICA (Fijada arriba) */
   .zapping-top-hud {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     width: 100% !important;
     background: #090e18 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    padding: max(10px, env(safe-area-inset-top, 10px)) 12px 10px 12px !important;
+    padding: max(10px, env(safe-area-inset-top, 10px)) 14px 10px 14px !important;
     min-height: 52px !important;
     box-sizing: border-box !important;
     display: flex !important;
@@ -1655,7 +1662,7 @@
     white-space: nowrap !important;
   }
 
-  /* En portrait, ocultar del HUD superior los elementos que se reubican */
+  /* Ocultar elementos redundantes del HUD superior */
   .zapping-top-hud .zapping-now-channel,
   .zapping-top-hud #zappingOpenGuideBtn {
     display: none !important;
@@ -1664,43 +1671,8 @@
   .zapping-hud-right {
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
     flex-shrink: 0 !important;
-  }
-
-  /* Botón Ajustes de Señal / Calidad en la barra superior */
-  .zapping-portrait-options-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    background: #131926 !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: #ffffff !important;
-    border-radius: 4px !important;
-    padding: 6px 9px !important;
-    font-size: 0.74rem !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    white-space: nowrap !important;
-  }
-
-  .zapping-portrait-options-btn:active {
-    background: #1c2538 !important;
-    border-color: var(--bm-cyan, #00d4ff) !important;
-  }
-
-  /* Badge EN VIVO en la barra superior */
-  .zapping-portrait-live {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 5px !important;
-    font-size: 0.68rem !important;
-    font-weight: 700 !important;
-    padding: 4px 8px !important;
-    border-radius: 4px !important;
-    background: rgba(239, 68, 68, 0.15) !important;
-    color: #ef4444 !important;
-    border: 1px solid rgba(239, 68, 68, 0.4) !important;
   }
 
   /* Botón Pantalla Completa en la barra superior */
@@ -1712,7 +1684,7 @@
     height: 32px !important;
     padding: 0 !important;
     background: #131926 !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     color: #ffffff !important;
     border-radius: 4px !important;
     cursor: pointer !important;
@@ -1757,7 +1729,8 @@
     padding: 8px 14px !important;
     background: #090e18 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    flex-shrink: 0 !important;
+    flex: 0 0 auto !important;
+    box-sizing: border-box !important;
   }
 
   .zapping-station-bar-info {
@@ -1805,7 +1778,68 @@
     text-overflow: ellipsis !important;
   }
 
-  /* Ocultar barra inferior de opciones en modo vertical (ahora en barra superior) */
+  /* BARRA INFERIOR BAJO LA SEÑAL DE VIDEO */
+  .zapping-portrait-video-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 8px 14px !important;
+    background: #0d121c !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .zapping-portrait-video-bar-left {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .zapping-portrait-video-bar-right {
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Botón Ajustes de Señal en el costado izquierdo */
+  .zapping-portrait-options-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: #151e2d !important;
+    border: 1px solid rgba(0, 212, 255, 0.4) !important;
+    color: #ffffff !important;
+    border-radius: 5px !important;
+    padding: 6px 12px !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .zapping-portrait-options-btn:active {
+    background: #1c273a !important;
+    border-color: var(--bm-cyan, #00d4ff) !important;
+  }
+
+  /* Gráfica EN VIVO en la esquina derecha */
+  .zapping-portrait-live {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    padding: 5px 10px !important;
+    border-radius: 4px !important;
+    background: rgba(239, 68, 68, 0.18) !important;
+    color: #ef4444 !important;
+    border: 1px solid rgba(239, 68, 68, 0.45) !important;
+    letter-spacing: 0.5px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Ocultar barra inferior tradicional de controles en modo vertical */
   .zapping-bottom-controls {
     display: none !important;
   }
@@ -1826,7 +1860,7 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
     background: #070a12 !important;
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8) !important;
-    padding: 8px 0 max(12px, env(safe-area-inset-bottom, 12px)) 0 !important;
+    padding: 8px 0 max(14px, env(safe-area-inset-bottom, 14px)) 0 !important;
     display: flex !important;
     flex-direction: column !important;
     z-index: 40 !important;
@@ -1877,7 +1911,7 @@
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 10px !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;
@@ -1887,8 +1921,8 @@
     padding: 4px 12px 4px 12px !important;
     box-sizing: border-box !important;
     flex: 0 0 auto !important;
-    min-height: 60px !important;
-    max-height: 70px !important;
+    min-height: 78px !important;
+    max-height: 88px !important;
     cursor: grab !important;
   }
 
@@ -1900,25 +1934,26 @@
     display: none !important;
   }
 
-  /* Tarjeta de canal en el carrusel (estilo radio-tray-card) */
+  /* Tarjeta de canal en el carrusel agrandada en lo alto */
   .zapping-ch-item {
     display: inline-flex !important;
     align-items: center !important;
     flex-direction: row !important;
-    gap: 8px !important;
-    padding: 6px 12px !important;
+    gap: 10px !important;
+    padding: 8px 14px !important;
     background: #11141c !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
     color: #ffffff !important;
     cursor: pointer !important;
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     outline: none !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
-    min-width: 130px !important;
-    max-width: 190px !important;
-    height: 48px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    min-width: 155px !important;
+    max-width: 220px !important;
+    height: 64px !important;
+    min-height: 64px !important;
     box-sizing: border-box !important;
     transition: all 0.15s ease !important;
   }
@@ -1934,7 +1969,7 @@
     background: #121a28 !important;
     border-color: var(--bm-cyan, #00d4ff) !important;
     outline: 2px solid var(--bm-cyan, #00d4ff) !important;
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.4) !important;
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.45) !important;
   }
 
   .zapping-ch-item.is-playing .zapping-ch-title,
@@ -1944,60 +1979,63 @@
   }
 
   .zapping-ch-num {
-    font-size: 0.68rem !important;
+    font-size: 0.74rem !important;
     font-weight: 800 !important;
     color: var(--bm-cyan, #00d4ff) !important;
     background: rgba(0, 212, 255, 0.12) !important;
-    padding: 2px 5px !important;
-    border-radius: 2px !important;
-    min-width: 22px !important;
+    padding: 3px 6px !important;
+    border-radius: 3px !important;
+    min-width: 24px !important;
     text-align: center !important;
     flex-shrink: 0 !important;
   }
 
   .zapping-ch-logo {
-    width: 26px !important;
-    height: 26px !important;
+    width: 36px !important;
+    height: 36px !important;
     object-fit: contain !important;
-    border-radius: 3px !important;
+    border-radius: 5px !important;
     flex-shrink: 0 !important;
-    padding: 1px !important;
+    padding: 2px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
   }
 
   .zapping-ch-text {
     display: flex !important;
     flex-direction: column !important;
     overflow: hidden !important;
-    gap: 1px !important;
+    gap: 2px !important;
     text-align: left !important;
   }
 
   .zapping-ch-title {
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
+    font-size: 0.78rem !important;
+    font-weight: 800 !important;
     color: #ffffff !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 105px !important;
+    max-width: 115px !important;
   }
 
   .zapping-ch-sub {
-    font-size: 0.6rem !important;
+    font-size: 0.64rem !important;
     color: var(--text-secondary, #8e95a2) !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    max-width: 105px !important;
+    max-width: 115px !important;
   }
 
   .zapping-live-pill {
     display: none !important;
   }
 
-  /* En pantalla completa móvil, ocultar barra informativa */
+  /* En pantalla completa móvil, ocultar barras informativas */
   .zapping-player-area.is-fullscreen .zapping-portrait-station-bar,
-  .zapping-tv-view.is-fullscreen-mode .zapping-portrait-station-bar {
+  .zapping-player-area.is-fullscreen .zapping-portrait-video-bar,
+  .zapping-tv-view.is-fullscreen-mode .zapping-portrait-station-bar,
+  .zapping-tv-view.is-fullscreen-mode .zapping-portrait-video-bar {
     display: none !important;
   }
 }

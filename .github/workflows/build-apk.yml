@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.2
+    - name: Publicar Release v1.2.3
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.2"
-        name: "Antena Sur Android TV v1.2.2"
-        body: "Versión 1.2.2: Rediseño responsivo para celulares en posición vertical (modo portrait) con barra superior técnica para opciones (Atrás, Logo, Ajustes OSD, EN VIVO, Pantalla Completa y Favoritos), reproductor de video centrado en 16:9 y carrusel horizontal inferior de canales estilo Radios FM. En posición horizontal (landscape) mantiene la disposición original sin modificaciones."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.3"
+        name: "Antena Sur Android TV v1.2.3"
+        body: "Versión 1.2.3: Centrado vertical de la señal de video en modo vertical móvil, nueva barra bajo el video con botón de Ajustes a la izquierda y gráfica EN VIVO a la derecha, descongestión de la barra superior y botones de canales más altos en el carrusel inferior."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
