@@ -810,26 +810,31 @@ window.STATIONS_DATA = {
       "genre": "Cultura",
       "isNational": true,
       "logo": "./img/logos/cl-tv-ntv.svg",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
+      "streamUrl": "https://www.tvn.cl/ntv",
+      "backupStreamUrl": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
       "website": "https://www.tvn.cl/ntv",
       "description": "Señal pública cultural y familiar de Televisión Nacional de Chile con contenidos educativos e infantiles.",
       "embedUrl": "https://www.tvn.cl/ntv",
       "channelNumber": 28,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/ntv",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Reproductor Mediastream)",
+          "url": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 4 (HLS Respaldo Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 3 (M3U Alternativa)",
-          "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8?PlaylistM3UCL",
           "needsProxy": false
         }
       ]
@@ -1232,29 +1237,39 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-tvn.svg",
-      "streamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
-      "website": "https://www.tvn.cl/envivo",
+      "streamUrl": "https://www.tvn.cl/en-vivo",
+      "backupStreamUrl": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
+      "website": "https://www.tvn.cl/en-vivo",
       "description": "Señal abierta nacional en directo de Televisión Nacional de Chile en Full HD (1080p).",
-      "embedUrl": "https://www.tvn.cl/envivo",
+      "embedUrl": "https://www.tvn.cl/en-vivo",
       "status": "online",
-      "needsProxy": true,
+      "needsProxy": false,
       "channelNumber": 43,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-          "needsProxy": true
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/en-vivo",
+          "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 2 (Reproductor TVN En Vivo)",
+          "url": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal Internacional TV Chile)",
           "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 3 (M3U Alternativa)",
-          "url": "https://iptv2.intersurtv.cl/TVN/index.m3u8?PlaylistM3UCL",
-          "needsProxy": false
+          "name": "Fuente 4 (HLS Alternativa HD)",
+          "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+          "needsProxy": true
+        },
+        {
+          "name": "Fuente 5 (HLS Respaldo DPS)",
+          "url": "https://redirector.dps.live/hls/tvn/playlist.m3u8?PlaylistM3UCL",
+          "needsProxy": true
         }
       ]
     },
@@ -3452,10 +3467,29 @@ class PlayerEngine {
       this.dom.tvQualityWrapper.style.display = 'none';
     }
 
-    const targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    let targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    if (targetUrl && targetUrl.includes('live.tvn.cl') && !targetUrl.includes('ads=false')) {
+      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&controls=true';
+    }
+
     if (this.dom.tvIframe) {
       this.dom.tvIframe.src = targetUrl;
       this.dom.tvIframe.classList.remove('is-hidden');
+      try {
+        this.dom.tvIframe.onload = () => {
+          try {
+            const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
+            if (ifrDoc) {
+              const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton');
+              skipBtns.forEach(b => { try { b.click(); } catch(e){} });
+              const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"]');
+              ads.forEach(a => a.style.display = 'none');
+            }
+          } catch (e) {
+            // Protección contra cross-origin: la intercepción nativa de MainActivity neutraliza las redes publicitarias
+          }
+        };
+      } catch (e) {}
     }
     this.isWebMode = true;
     if (this.dom.tvToggleWebBtn) {
@@ -3484,7 +3518,16 @@ class PlayerEngine {
         this.dom.tvSourceWrapper.style.display = 'none';
       }
       if (this.currentStation) {
-        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (!s.url.includes('13.cl/en-vivo') && !s.url.includes('rudo.video/live'))));
+        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (
+          !s.url.includes('13.cl/en-vivo') &&
+          !s.url.includes('rudo.video/live') &&
+          !s.url.includes('/live/c13') &&
+          !s.url.includes('tvn.cl/ntv') &&
+          !s.url.includes('tvn.cl/en-vivo') &&
+          !s.url.includes('tvn.cl/envivo') &&
+          !s.url.includes('live.tvn.cl') &&
+          !s.url.includes('mdstrm.com/live-stream/')
+        )));
         if (nonEmbedIdx >= 0) {
           this.switchTvSource(nonEmbedIdx);
         } else {
@@ -3740,12 +3783,17 @@ class PlayerEngine {
     const station = this.currentStation;
     const targetUrl = source.url;
 
-    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, rudo.video/live)
+    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, tvn.cl/ntv, tvn.cl/en-vivo, live.tvn.cl, rudo.video)
     const isEmbedSource = source.isEmbed ||
       (targetUrl && (
         targetUrl.includes('13.cl/en-vivo') ||
         targetUrl.includes('rudo.video/live') ||
-        targetUrl.includes('/live/c13')
+        targetUrl.includes('/live/c13') ||
+        targetUrl.includes('tvn.cl/ntv') ||
+        targetUrl.includes('tvn.cl/en-vivo') ||
+        targetUrl.includes('tvn.cl/envivo') ||
+        targetUrl.includes('live.tvn.cl') ||
+        targetUrl.includes('mdstrm.com/live-stream/')
       ));
 
     if (isEmbedSource) {
@@ -3777,8 +3825,7 @@ class PlayerEngine {
         targetUrl.includes('tlink.cl') ||
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
-      )) ||
-      station.id === 'cl-tv-tvn';
+      ));
 
     this.isUsingProxy = needsAutoProxy;
     let streamUrl = targetUrl;

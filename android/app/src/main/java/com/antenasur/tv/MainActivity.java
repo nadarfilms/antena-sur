@@ -124,7 +124,16 @@ public class MainActivity extends AppCompatActivity {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 try {
                     Uri uri = request.getUrl();
-                    // Proxy HLS inteligente nativo en Java para señales que exigen Referer (Canal 13, etc.)
+                    String urlStr = uri != null ? uri.toString() : "";
+
+                    // Neutralización y salto instantáneo de redes publicitarias y pre-rolls
+                    if (isAdRequest(urlStr)) {
+                        Map<String, String> noCacheHeaders = new HashMap<>();
+                        noCacheHeaders.put("Access-Control-Allow-Origin", "*");
+                        return new WebResourceResponse("text/plain", "UTF-8", 204, "No Content", noCacheHeaders, new ByteArrayInputStream(new byte[0]));
+                    }
+
+                    // Proxy HLS inteligente nativo en Java para señales que exigen Referer (Canal 13, TVN, etc.)
                     if (uri.getPath() != null && uri.getPath().contains("/api/proxy")) {
                         WebResourceResponse proxyResp = handleHlsProxy(request);
                         if (proxyResp != null) return proxyResp;
@@ -176,6 +185,18 @@ public class MainActivity extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 mWebView.requestFocus();
                 mWebView.evaluateJavascript("if (window.initTvFocus) window.initTvFocus();", null);
+                mWebView.evaluateJavascript(
+                    "(function() {" +
+                    "  setInterval(function() {" +
+                    "    try {" +
+                    "      var btns = document.querySelectorAll('.cerrar, [onclick*=\"ads13PrestitialTrigger\"], [class*=\"skip\"], [class*=\"saltar\"], button[aria-label*=\"Skip\"], .videoAdUiSkipButton');" +
+                    "      for (var i = 0; i < btns.length; i++) { btns[i].click(); }" +
+                    "      var ads = document.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*=\"google_ads\"], [class*=\"ad-container\"]');" +
+                    "      for (var j = 0; j < ads.length; j++) { ads[j].style.display = 'none'; }" +
+                    "    } catch(e) {}" +
+                    "  }, 800);" +
+                    "})();", null
+                );
                 mWebView.postDelayed(() -> {
                     mWebView.evaluateJavascript("if (window.initTvFocus) window.initTvFocus();", null);
                 }, 300);
@@ -201,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
             if (ref == null || ref.isEmpty()) {
                 String low = targetUrl.toLowerCase();
                 if (low.contains("13") || low.contains("dpsgo.com")) ref = "https://www.13.cl/";
+                else if (low.contains("tvn") || low.contains("ntv")) ref = "https://www.tvn.cl/";
                 else if (low.contains("uchile")) ref = "https://tv.uchile.cl/";
                 else if (low.contains("chv") || low.contains("rudo.video")) ref = "https://www.chilevision.cl/";
                 else if (low.contains("mega")) ref = "https://www.mega.cl/";
@@ -290,6 +312,27 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private boolean isAdRequest(String url) {
+        if (url == null || url.isEmpty()) return false;
+        String low = url.toLowerCase();
+        return low.contains("pubads.g.doubleclick.net") ||
+               low.contains("securepubads.g.doubleclick.net") ||
+               low.contains("googleads.g.doubleclick.net") ||
+               low.contains("pagead2.googlesyndication.com") ||
+               low.contains("imasdk.googleapis.com") ||
+               low.contains("/gampad/ads") ||
+               low.contains("vad_type=linear") ||
+               low.contains("output=vast") ||
+               low.contains("output=vmap") ||
+               low.contains("ads13.js") ||
+               low.contains("adnxs.com") ||
+               low.contains("scorecardresearch.com") ||
+               low.contains("outbrain.com") ||
+               low.contains("taboola.com") ||
+               low.contains("c.amazon-adsystem.com") ||
+               low.contains("cdn.by.wonderpush.com");
     }
 
     private static final Map<String, String> PRISA_MOUNTS = new HashMap<String, String>() {{

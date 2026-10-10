@@ -797,26 +797,31 @@
       "genre": "Cultura",
       "isNational": true,
       "logo": "./img/logos/cl-tv-ntv.svg",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
+      "streamUrl": "https://www.tvn.cl/ntv",
+      "backupStreamUrl": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
       "website": "https://www.tvn.cl/ntv",
       "description": "Señal pública cultural y familiar de Televisión Nacional de Chile con contenidos educativos e infantiles.",
       "embedUrl": "https://www.tvn.cl/ntv",
       "channelNumber": 28,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/ntv",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Reproductor Mediastream)",
+          "url": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 4 (HLS Respaldo Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 3 (M3U Alternativa)",
-          "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8?PlaylistM3UCL",
           "needsProxy": false
         }
       ]
@@ -1219,29 +1224,39 @@
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-tvn.svg",
-      "streamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
-      "website": "https://www.tvn.cl/envivo",
+      "streamUrl": "https://www.tvn.cl/en-vivo",
+      "backupStreamUrl": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
+      "website": "https://www.tvn.cl/en-vivo",
       "description": "Señal abierta nacional en directo de Televisión Nacional de Chile en Full HD (1080p).",
-      "embedUrl": "https://www.tvn.cl/envivo",
+      "embedUrl": "https://www.tvn.cl/en-vivo",
       "status": "online",
-      "needsProxy": true,
+      "needsProxy": false,
       "channelNumber": 43,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-          "needsProxy": true
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/en-vivo",
+          "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 2 (Reproductor TVN En Vivo)",
+          "url": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal Internacional TV Chile)",
           "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 3 (M3U Alternativa)",
-          "url": "https://iptv2.intersurtv.cl/TVN/index.m3u8?PlaylistM3UCL",
-          "needsProxy": false
+          "name": "Fuente 4 (HLS Alternativa HD)",
+          "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+          "needsProxy": true
+        },
+        {
+          "name": "Fuente 5 (HLS Respaldo DPS)",
+          "url": "https://redirector.dps.live/hls/tvn/playlist.m3u8?PlaylistM3UCL",
+          "needsProxy": true
         }
       ]
     },

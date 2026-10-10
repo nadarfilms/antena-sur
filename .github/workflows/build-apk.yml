@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.1.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.1.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.0
+    - name: Publicar Release v1.3.1
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.0"
-        name: "Antena Sur Android TV v1.3.0"
-        body: "Versión 1.3.0: Incorporación de la señal web oficial en vivo de Canal 13 (https://www.13.cl/en-vivo) como Opción 1 de transmisión, integración del reproductor oficial Rudo como Opción 2, respaldo HLS directo y optimización del proxy inteligente para redirecciones multi-hop."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.1"
+        name: "Antena Sur Android TV v1.3.1"
+        body: "Versión 1.3.1: Reactivación de señales oficiales en vivo de NTV (tvn.cl/ntv) y TVN (tvn.cl/en-vivo y live.tvn.cl) como opción principal, bloqueo nativo de pre-rolls publicitarios en todos los canales y salto automatizado de anuncios iniciales."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

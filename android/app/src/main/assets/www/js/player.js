@@ -1359,10 +1359,29 @@ export class PlayerEngine {
       this.dom.tvQualityWrapper.style.display = 'none';
     }
 
-    const targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    let targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    if (targetUrl && targetUrl.includes('live.tvn.cl') && !targetUrl.includes('ads=false')) {
+      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&controls=true';
+    }
+
     if (this.dom.tvIframe) {
       this.dom.tvIframe.src = targetUrl;
       this.dom.tvIframe.classList.remove('is-hidden');
+      try {
+        this.dom.tvIframe.onload = () => {
+          try {
+            const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
+            if (ifrDoc) {
+              const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton');
+              skipBtns.forEach(b => { try { b.click(); } catch(e){} });
+              const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"]');
+              ads.forEach(a => a.style.display = 'none');
+            }
+          } catch (e) {
+            // Protección contra cross-origin: la intercepción nativa de MainActivity neutraliza las redes publicitarias
+          }
+        };
+      } catch (e) {}
     }
     this.isWebMode = true;
     if (this.dom.tvToggleWebBtn) {
@@ -1391,7 +1410,16 @@ export class PlayerEngine {
         this.dom.tvSourceWrapper.style.display = 'none';
       }
       if (this.currentStation) {
-        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (!s.url.includes('13.cl/en-vivo') && !s.url.includes('rudo.video/live'))));
+        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (
+          !s.url.includes('13.cl/en-vivo') &&
+          !s.url.includes('rudo.video/live') &&
+          !s.url.includes('/live/c13') &&
+          !s.url.includes('tvn.cl/ntv') &&
+          !s.url.includes('tvn.cl/en-vivo') &&
+          !s.url.includes('tvn.cl/envivo') &&
+          !s.url.includes('live.tvn.cl') &&
+          !s.url.includes('mdstrm.com/live-stream/')
+        )));
         if (nonEmbedIdx >= 0) {
           this.switchTvSource(nonEmbedIdx);
         } else {
@@ -1647,12 +1675,17 @@ export class PlayerEngine {
     const station = this.currentStation;
     const targetUrl = source.url;
 
-    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, rudo.video/live)
+    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, tvn.cl/ntv, tvn.cl/en-vivo, live.tvn.cl, rudo.video)
     const isEmbedSource = source.isEmbed ||
       (targetUrl && (
         targetUrl.includes('13.cl/en-vivo') ||
         targetUrl.includes('rudo.video/live') ||
-        targetUrl.includes('/live/c13')
+        targetUrl.includes('/live/c13') ||
+        targetUrl.includes('tvn.cl/ntv') ||
+        targetUrl.includes('tvn.cl/en-vivo') ||
+        targetUrl.includes('tvn.cl/envivo') ||
+        targetUrl.includes('live.tvn.cl') ||
+        targetUrl.includes('mdstrm.com/live-stream/')
       ));
 
     if (isEmbedSource) {
@@ -1684,8 +1717,7 @@ export class PlayerEngine {
         targetUrl.includes('tlink.cl') ||
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
-      )) ||
-      station.id === 'cl-tv-tvn';
+      ));
 
     this.isUsingProxy = needsAutoProxy;
     let streamUrl = targetUrl;
