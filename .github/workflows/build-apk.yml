@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.6.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.7.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.6.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.7.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.6
+    - name: Publicar Release v1.2.7
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.6.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.6"
-        name: "Antena Sur Android TV v1.2.6"
-        body: "Versión 1.2.6: Optimización de velocidad de cambio de canal para Android TV (0 ms de delay visual, respuesta inmediata y reciclaje de decodificador de hardware Hls.js sin reinicio de codecs), y cobertura total del reproductor con fondo sólido de la aplicación (#050811), eliminando por completo el icono pixelado nativo de play de Android."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.7.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.7"
+        name: "Antena Sur Android TV v1.2.7"
+        body: "Versión 1.2.7: Selección curada de 49 canales de alta calidad (CH 01 al CH 49), menú flotante lateral de canales en Google TV y Android TV accesible en pantalla completa mediante flecha izquierda y botón central (OK) sin cortar ni achicar el video, cambio instantáneo de canal con un clic y ocultación automática del menú flotante, y reemplazo total de la marca BMD por el logotipo oficial de Antena TV."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

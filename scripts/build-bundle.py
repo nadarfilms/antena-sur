@@ -75,4 +75,7 @@ for item in os.listdir(JS_DIR):
 # 4. Sync data
 shutil.copytree(os.path.join(ROOT_DIR, 'data'), os.path.join(ANDROID_WWW_DIR, 'data'), dirs_exist_ok=True)
 
+# 5. Sync img
+shutil.copytree(os.path.join(ROOT_DIR, 'img'), os.path.join(ANDROID_WWW_DIR, 'img'), dirs_exist_ok=True)
+
 print(f"Fully synced all web assets to Android assets www!")

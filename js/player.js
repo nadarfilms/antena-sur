@@ -266,7 +266,12 @@ export class PlayerEngine {
     if (!Array.isArray(allStations)) return;
     this.tvStations = allStations
       .filter(s => s.type === 'tv')
-      .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+      .sort((a, b) => {
+        if (typeof a.channelNumber === 'number' && typeof b.channelNumber === 'number') {
+          return a.channelNumber - b.channelNumber;
+        }
+        return a.name.localeCompare(b.name, 'es', { sensitivity: 'base' });
+      });
     this.radioStations = allStations.filter(s => s.type === 'radio');
     this.renderTvGuide();
     this.renderRadioQuickScrollTray();
@@ -274,6 +279,17 @@ export class PlayerEngine {
   }
 
   initZappingSidebarEvents() {
+    // Cerrar menú lateral flotante en pantalla completa al hacer clic sobre el video (fuera del sidebar)
+    if (this.dom.zappingPlayerArea) {
+      this.dom.zappingPlayerArea.addEventListener('click', (e) => {
+        if (this.isFullscreenActive() && this.isFsSidebarOpen()) {
+          if (!e.target.closest('#zappingSidebar')) {
+            this.toggleFullscreenSidebar(false);
+          }
+        }
+      });
+    }
+
     // Botón para colapsar/expandir barra lateral
     if (this.dom.zappingSidebarToggleBtn) {
       this.dom.zappingSidebarToggleBtn.addEventListener('click', () => {
@@ -504,6 +520,9 @@ export class PlayerEngine {
     if (shouldOpen) {
       this.dom.zappingSidebar.classList.add('is-open-fs');
       this.dom.zappingSidebar.classList.remove('is-collapsed');
+      if (this.currentStation) {
+        this.syncActiveChannelHighlight(this.currentStation.id);
+      }
       this.focusCurrentSidebarItem();
     } else {
       this.dom.zappingSidebar.classList.remove('is-open-fs');
@@ -832,7 +851,7 @@ export class PlayerEngine {
         focusedItem.focus({ preventScroll: true });
       } catch (e) {}
       try {
-        focusedItem.scrollIntoView({ block: 'nearest' });
+        focusedItem.scrollIntoView({ block: 'center', inline: 'nearest' });
       } catch (e) {}
     }
   }
@@ -2242,14 +2261,15 @@ export class PlayerEngine {
       }
 
       // Caso F: Botón Central (Enter / OK)
-      // "al estar en pantalla completa y apreto el boton central del control, debe aparecer el menu con las respectivas opciones"
+      // "al estar en pantalla completa en canales de tv, al apretar el boton del lado izquierdo y el boton del centro o ok, tiene que aparecer el menu de la lista de canales en el lado izquerdo de la pantalla, sin salir del modo pantalla completa, y sin achicar la señal de video. teniendo la capacidad de navegar los canales, con un click puedo cambiar de canal y desaparecera ese menu de canales al lado izquierdo, se vera solo la señal de video q aprete"
       if (action === 'Enter') {
         if (isFullscreen) {
           if (isFsSidebarOpen) {
             this.selectFocusedSidebarChannel();
             this.toggleFullscreenSidebar(false);
           } else {
-            this.openTvOptionsMenu();
+            this.toggleFullscreenSidebar(true);
+            this.focusCurrentSidebarItem();
           }
         } else if (isSidebarVisible) {
           this.selectFocusedSidebarChannel();
@@ -2260,11 +2280,11 @@ export class PlayerEngine {
       }
 
       // Caso G: Botón Atrás (Back)
-      // "al estar en pantalla completa y apretar el boton atras, me hace aparecer el menu interno, eso debe cambiar, al apretar ese boton 'atras' debe volver al menu principal de guia de zapping, donde tengo en menu lateral y se sale de pantalla completa."
       if (action === 'Back') {
         if (isFullscreen) {
           if (this.isFsSidebarOpen()) {
             this.toggleFullscreenSidebar(false);
+            return true;
           }
           this.exitFullscreenCrossBrowser();
         } else {

@@ -323,8 +323,9 @@ export function initTvNavigation() {
           if (isFsSidebarOpen) {
             player.selectFocusedSidebarChannel();
             player.toggleFullscreenSidebar(false);
-          } else if (typeof player.openTvOptionsMenu === 'function') {
-            player.openTvOptionsMenu();
+          } else if (typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(true);
+            player.focusCurrentSidebarItem();
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();
@@ -339,6 +340,7 @@ export function initTvNavigation() {
         if (isFullscreen) {
           if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
             player.toggleFullscreenSidebar(false);
+            return;
           }
           player.exitFullscreenCrossBrowser();
         } else {

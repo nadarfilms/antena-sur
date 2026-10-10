@@ -230,7 +230,29 @@ body {
 .bm-cam-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.antena-tv-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 5px;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 6px rgba(0, 149, 255, 0.45));
+}
+
+.bm-splash-logo .antena-tv-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+
+.tv-options-title-box .antena-tv-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
 }
 
 .bm-cam-box {

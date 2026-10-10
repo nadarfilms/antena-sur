@@ -162,7 +162,7 @@ class App {
             heroTvLastStation.textContent = `Último canal visto: ${st.name} • Sintonizar en directo`;
           }
         } else {
-          heroTvLastStation.textContent = '321 señales nacionales y regionales • Sintonización en directo';
+          heroTvLastStation.textContent = '49 señales seleccionadas • Sintonización en directo';
         }
       }
 

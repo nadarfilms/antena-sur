@@ -2201,11 +2201,12 @@ video::-webkit-media-controls-overlay-play-button {
 /* ==========================================================================
    PANTALLA COMPLETA TV: OCULTAR GUÍA LATERAL AUTOMÁTICAMENTE
    En pantalla completa la guía lateral desaparece para dar 100% de video.
-   Al pulsar "Atrás" en fullscreen, reaparece como overlay sin cortar la señal.
+   Al pulsar Flecha Izquierda o Botón Central (Enter/OK), reaparece como menú
+   flotante sobre el video al costado izquierdo sin achicar la señal.
    ========================================================================== */
 
-.zapping-tv-view.is-fullscreen-mode .zapping-sidebar,
-.zapping-sidebar.is-collapsed {
+.zapping-tv-view.is-fullscreen-mode .zapping-sidebar:not(.is-open-fs),
+.zapping-sidebar.is-collapsed:not(.is-open-fs) {
   display: none !important;
 }
 
@@ -2216,21 +2217,37 @@ video::-webkit-media-controls-overlay-play-button {
   flex: 1 1 100% !important;
 }
 
-/* Overlay de Guía en Pantalla Completa al pulsar "Atrás" */
+/* Menú Flotante de Canales en Pantalla Completa (Google TV / Android TV) */
+.zapping-tv-view.is-fullscreen-mode .zapping-sidebar.is-open-fs,
 .zapping-sidebar.is-open-fs {
   display: flex !important;
-  position: absolute !important;
+  position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   bottom: 0 !important;
   height: 100vh !important;
-  z-index: 1000 !important;
-  background: rgba(0, 0, 0, 0.96) !important;
+  z-index: 999999 !important;
+  background: rgba(6, 10, 20, 0.94) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   border-right: 2px solid var(--bm-cyan, #00d4ff) !important;
   box-shadow: 20px 0 60px rgba(0, 0, 0, 0.95) !important;
   transform: translateX(0) !important;
-  width: 280px !important;
-  min-width: 280px !important;
+  width: 320px !important;
+  min-width: 320px !important;
+  max-width: 360px !important;
+  animation: slideInSidebarFs 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes slideInSidebarFs {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* ==========================================================================
