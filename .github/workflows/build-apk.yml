@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.8.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.8.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.8
+    - name: Publicar Release v1.2.9
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.8.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.8"
-        name: "Antena Sur Android TV v1.2.8"
-        body: "Versión 1.2.8: Mantenimiento estricto de los números de canal originales (CH 01 al 10, 13, 21, 22, 23, 30, 34, 50, 51, 52, 59, 60, 81, 82, 86, 108, 109, 118, 124, 131, 132, 197, 215, 216, 217, 219, 245, 247, 256, 265, 266, 271, 283, 286, 287, 292, 293, 306, 307, 317) con eliminación de todos los demás canales, y ajuste de dimensiones de los logotipos al tamaño exacto de cada espacio previo (16px en navbar, OSD y splash)."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.2.9"
+        name: "Antena Sur Android TV v1.2.9"
+        body: "Versión 1.2.9: Enumeración consecutiva de los canales seleccionados del 1 al 49 en estricto orden alfabético (CH 01 al CH 49), con eliminación completa de los canales restantes, y ajuste de dimensiones de los logotipos al tamaño de su espacio original (16px)."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
