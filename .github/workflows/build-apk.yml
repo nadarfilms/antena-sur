@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.2.9
+    - name: Publicar Release v1.3.0
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.2.9.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.2.9"
-        name: "Antena Sur Android TV v1.2.9"
-        body: "Versión 1.2.9: Enumeración consecutiva de los canales seleccionados del 1 al 49 en estricto orden alfabético (CH 01 al CH 49), con eliminación completa de los canales restantes, y ajuste de dimensiones de los logotipos al tamaño de su espacio original (16px)."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.0"
+        name: "Antena Sur Android TV v1.3.0"
+        body: "Versión 1.3.0: Incorporación de la señal web oficial en vivo de Canal 13 (https://www.13.cl/en-vivo) como Opción 1 de transmisión, integración del reproductor oficial Rudo como Opción 2, respaldo HLS directo y optimización del proxy inteligente para redirecciones multi-hop."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

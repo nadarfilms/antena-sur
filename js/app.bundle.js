@@ -416,8 +416,8 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-canal13.svg",
-      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/c13/c13.smil/playlist.m3u8",
-      "backupStreamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://www.13.cl/en-vivo",
+      "backupStreamUrl": "https://rudo.video/live/c13",
       "website": "https://www.13.cl",
       "description": "Señal nacional abierta oficial de Canal 13 en alta definición (1080p).",
       "embedUrl": "https://www.13.cl/en-vivo",
@@ -426,23 +426,28 @@ window.STATIONS_DATA = {
       "channelNumber": 15,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/c13/c13.smil/playlist.m3u8",
-          "needsProxy": false
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.13.cl/en-vivo",
+          "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 2 (Reproductor Rudo Oficial)",
+          "url": "https://rudo.video/live/c13",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 3 (M3U Alternativa)",
+          "name": "Fuente 4 (HLS Respaldo HD)",
           "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
           "needsProxy": true
         },
         {
-          "name": "Fuente 4 (M3U Alternativa)",
-          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/13popup/13popup.smil/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 5 (Señal Internacional)",
+          "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
           "needsProxy": false
         }
       ]
@@ -3425,7 +3430,7 @@ class PlayerEngine {
     }
   }
 
-  switchToWebPlayer() {
+  switchToWebPlayer(customUrl = null) {
     if (!this.currentStation) return;
     this.clearConnectionWatchdog();
     if (this.hls) {
@@ -3446,11 +3451,8 @@ class PlayerEngine {
     if (this.dom.tvQualityWrapper) {
       this.dom.tvQualityWrapper.style.display = 'none';
     }
-    if (this.dom.tvSourceWrapper) {
-      this.dom.tvSourceWrapper.style.display = 'none';
-    }
 
-    const targetUrl = this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    const targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
     if (this.dom.tvIframe) {
       this.dom.tvIframe.src = targetUrl;
       this.dom.tvIframe.classList.remove('is-hidden');
@@ -3482,7 +3484,12 @@ class PlayerEngine {
         this.dom.tvSourceWrapper.style.display = 'none';
       }
       if (this.currentStation) {
-        this.playTv(this.currentStation, this.isUsingProxy);
+        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (!s.url.includes('13.cl/en-vivo') && !s.url.includes('rudo.video/live'))));
+        if (nonEmbedIdx >= 0) {
+          this.switchTvSource(nonEmbedIdx);
+        } else {
+          this.playTv(this.currentStation, this.isUsingProxy);
+        }
       }
     } else {
       this.switchToWebPlayer();
@@ -3733,6 +3740,35 @@ class PlayerEngine {
     const station = this.currentStation;
     const targetUrl = source.url;
 
+    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, rudo.video/live)
+    const isEmbedSource = source.isEmbed ||
+      (targetUrl && (
+        targetUrl.includes('13.cl/en-vivo') ||
+        targetUrl.includes('rudo.video/live') ||
+        targetUrl.includes('/live/c13')
+      ));
+
+    if (isEmbedSource) {
+      this.switchToWebPlayer(targetUrl);
+      return;
+    }
+
+    // Si veníamos de modo reproductor web incrustado, restaurar superficie de video nativa
+    if (this.isWebMode) {
+      this.isWebMode = false;
+      if (this.dom.tvIframe) {
+        this.dom.tvIframe.src = 'about:blank';
+        this.dom.tvIframe.classList.add('is-hidden');
+      }
+      if (this.dom.tvVideo) {
+        this.dom.tvVideo.style.display = 'block';
+      }
+      if (this.dom.tvToggleWebBtn) {
+        this.dom.tvToggleWebBtn.classList.remove('is-active');
+        this.dom.tvToggleWebBtn.title = 'Cambiar a Reproductor Web Oficial';
+      }
+    }
+
     const needsAutoProxy = forceProxy || source.needsProxy ||
       (targetUrl && (
         targetUrl.includes('dpsgo.com') ||
@@ -3742,7 +3778,6 @@ class PlayerEngine {
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
       )) ||
-      station.id === 'cl-tv-canal13' ||
       station.id === 'cl-tv-tvn';
 
     this.isUsingProxy = needsAutoProxy;

@@ -403,8 +403,8 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-canal13.svg",
-      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/c13/c13.smil/playlist.m3u8",
-      "backupStreamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://www.13.cl/en-vivo",
+      "backupStreamUrl": "https://rudo.video/live/c13",
       "website": "https://www.13.cl",
       "description": "Señal nacional abierta oficial de Canal 13 en alta definición (1080p).",
       "embedUrl": "https://www.13.cl/en-vivo",
@@ -413,23 +413,28 @@ window.STATIONS_DATA = {
       "channelNumber": 15,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/c13/c13.smil/playlist.m3u8",
-          "needsProxy": false
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.13.cl/en-vivo",
+          "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 2 (Reproductor Rudo Oficial)",
+          "url": "https://rudo.video/live/c13",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 3 (M3U Alternativa)",
+          "name": "Fuente 4 (HLS Respaldo HD)",
           "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
           "needsProxy": true
         },
         {
-          "name": "Fuente 4 (M3U Alternativa)",
-          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/13popup/13popup.smil/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 5 (Señal Internacional)",
+          "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
           "needsProxy": false
         }
       ]

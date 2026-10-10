@@ -221,17 +221,23 @@ public class MainActivity extends AppCompatActivity {
                 conn.setRequestProperty("Range", range);
             }
 
-            int responseCode = conn.getResponseCode();
-            if (responseCode >= 300 && responseCode < 400) {
-                String loc = conn.getHeaderField("Location");
-                if (loc != null) {
-                    targetUrl = loc;
-                    url = new URL(loc);
+            int redirects = 0;
+            while (redirects < 5) {
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 300 && responseCode < 400) {
+                    String loc = conn.getHeaderField("Location");
+                    if (loc == null || loc.isEmpty()) break;
+                    URL nextUrl = new URL(url, loc);
+                    targetUrl = nextUrl.toString();
+                    url = nextUrl;
                     conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
                     conn.setRequestProperty("Referer", ref);
                     conn.setConnectTimeout(8000);
                     conn.setReadTimeout(10000);
+                    redirects++;
+                } else {
+                    break;
                 }
             }
 
@@ -244,11 +250,24 @@ public class MainActivity extends AppCompatActivity {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder sb = new StringBuilder();
                 String line;
+                Pattern uriPattern = Pattern.compile("URI=\"([^\"]+)\"");
                 while ((line = reader.readLine()) != null) {
                     String trimmed = line.trim();
                     if (trimmed.startsWith("#") && trimmed.contains("URI=\"")) {
-                        line = line.replaceAll("URI=\"([^\"]+)\"", "URI=\"/api/proxy?url=" + Uri.encode(targetUrl) + "\"");
-                        sb.append(line).append("\n");
+                        Matcher m = uriPattern.matcher(line);
+                        StringBuffer sbLine = new StringBuffer();
+                        while (m.find()) {
+                            String uriStr = m.group(1);
+                            try {
+                                URL resolvedKey = new URL(url, uriStr);
+                                String proxyKey = "/api/proxy?url=" + Uri.encode(resolvedKey.toString()) + "&ref=" + Uri.encode(ref);
+                                m.appendReplacement(sbLine, "URI=\"" + proxyKey + "\"");
+                            } catch (Exception ignored) {
+                                m.appendReplacement(sbLine, "URI=\"" + uriStr + "\"");
+                            }
+                        }
+                        m.appendTail(sbLine);
+                        sb.append(sbLine.toString()).append("\n");
                     } else if (!trimmed.isEmpty() && !trimmed.startsWith("#")) {
                         URL resolved = new URL(url, trimmed);
                         String proxySegment = "/api/proxy?url=" + Uri.encode(resolved.toString()) + "&ref=" + Uri.encode(ref);

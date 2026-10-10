@@ -1337,7 +1337,7 @@ export class PlayerEngine {
     }
   }
 
-  switchToWebPlayer() {
+  switchToWebPlayer(customUrl = null) {
     if (!this.currentStation) return;
     this.clearConnectionWatchdog();
     if (this.hls) {
@@ -1358,11 +1358,8 @@ export class PlayerEngine {
     if (this.dom.tvQualityWrapper) {
       this.dom.tvQualityWrapper.style.display = 'none';
     }
-    if (this.dom.tvSourceWrapper) {
-      this.dom.tvSourceWrapper.style.display = 'none';
-    }
 
-    const targetUrl = this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    const targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
     if (this.dom.tvIframe) {
       this.dom.tvIframe.src = targetUrl;
       this.dom.tvIframe.classList.remove('is-hidden');
@@ -1394,7 +1391,12 @@ export class PlayerEngine {
         this.dom.tvSourceWrapper.style.display = 'none';
       }
       if (this.currentStation) {
-        this.playTv(this.currentStation, this.isUsingProxy);
+        const nonEmbedIdx = (this.currentStation.sources || []).findIndex(s => !s.isEmbed && (!s.url || (!s.url.includes('13.cl/en-vivo') && !s.url.includes('rudo.video/live'))));
+        if (nonEmbedIdx >= 0) {
+          this.switchTvSource(nonEmbedIdx);
+        } else {
+          this.playTv(this.currentStation, this.isUsingProxy);
+        }
       }
     } else {
       this.switchToWebPlayer();
@@ -1645,6 +1647,35 @@ export class PlayerEngine {
     const station = this.currentStation;
     const targetUrl = source.url;
 
+    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, rudo.video/live)
+    const isEmbedSource = source.isEmbed ||
+      (targetUrl && (
+        targetUrl.includes('13.cl/en-vivo') ||
+        targetUrl.includes('rudo.video/live') ||
+        targetUrl.includes('/live/c13')
+      ));
+
+    if (isEmbedSource) {
+      this.switchToWebPlayer(targetUrl);
+      return;
+    }
+
+    // Si veníamos de modo reproductor web incrustado, restaurar superficie de video nativa
+    if (this.isWebMode) {
+      this.isWebMode = false;
+      if (this.dom.tvIframe) {
+        this.dom.tvIframe.src = 'about:blank';
+        this.dom.tvIframe.classList.add('is-hidden');
+      }
+      if (this.dom.tvVideo) {
+        this.dom.tvVideo.style.display = 'block';
+      }
+      if (this.dom.tvToggleWebBtn) {
+        this.dom.tvToggleWebBtn.classList.remove('is-active');
+        this.dom.tvToggleWebBtn.title = 'Cambiar a Reproductor Web Oficial';
+      }
+    }
+
     const needsAutoProxy = forceProxy || source.needsProxy ||
       (targetUrl && (
         targetUrl.includes('dpsgo.com') ||
@@ -1654,7 +1685,6 @@ export class PlayerEngine {
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
       )) ||
-      station.id === 'cl-tv-canal13' ||
       station.id === 'cl-tv-tvn';
 
     this.isUsingProxy = needsAutoProxy;
