@@ -431,24 +431,29 @@ window.STATIONS_DATA = {
           "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Reproductor Rudo Oficial)",
+          "name": "Fuente 2 (Señal Alternativa HLS)",
+          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (Reproductor Rudo Oficial)",
           "url": "https://rudo.video/live/c13",
           "isEmbed": true
         },
         {
-          "name": "Fuente 3 (Señal HLS Directa)",
+          "name": "Fuente 4 (Señal HLS Directa DPS)",
           "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 4 (HLS Respaldo HD)",
-          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
-          "needsProxy": true
-        },
-        {
-          "name": "Fuente 5 (Señal Internacional)",
+          "name": "Fuente 5 (Señal Internacional 13)",
           "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
           "needsProxy": false
+        },
+        {
+          "name": "Fuente 6 (HLS Respaldo HD)",
+          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
+          "needsProxy": true
         }
       ]
     },
@@ -1165,8 +1170,8 @@ window.STATIONS_DATA = {
       "genre": "General / Noticias / Cultura",
       "description": "Señal internacional oficial de Televisión Nacional de Chile para todo el mundo.",
       "logo": "./img/logos/cl-tv-tvchile.svg",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
+      "streamUrl": "https://www.tvn.cl/tvchile",
+      "backupStreamUrl": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
       "embedUrl": "https://www.tvn.cl/tvchile",
       "website": "https://www.tvn.cl/tvchile",
       "status": "online",
@@ -1175,12 +1180,22 @@ window.STATIONS_DATA = {
       "channelNumber": 41,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/tvchile",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Reproductor Mediastream)",
+          "url": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 4 (HLS Respaldo Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
           "needsProxy": false
         }
@@ -3468,8 +3483,8 @@ class PlayerEngine {
     }
 
     let targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
-    if (targetUrl && targetUrl.includes('live.tvn.cl') && !targetUrl.includes('ads=false')) {
-      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&controls=true';
+    if (targetUrl && (targetUrl.includes('live.tvn.cl') || targetUrl.includes('mdstrm.com')) && !targetUrl.includes('ads=false')) {
+      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&autoplay=true&controls=true';
     }
 
     if (this.dom.tvIframe) {
@@ -3478,13 +3493,21 @@ class PlayerEngine {
       try {
         this.dom.tvIframe.onload = () => {
           try {
-            const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
-            if (ifrDoc) {
-              const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton');
-              skipBtns.forEach(b => { try { b.click(); } catch(e){} });
-              const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"]');
-              ads.forEach(a => a.style.display = 'none');
-            }
+            if (this._iframeAdInterval) clearInterval(this._iframeAdInterval);
+            this._iframeAdInterval = setInterval(() => {
+              try {
+                const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
+                if (ifrDoc) {
+                  const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton, [class*="ad-skip"], [class*="advertisement-skip"]');
+                  skipBtns.forEach(b => { try { b.click(); } catch(e){} });
+                  const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"], [class*="preroll"], [id*="preroll"]');
+                  ads.forEach(a => a.style.display = 'none');
+                }
+              } catch(e) {
+                clearInterval(this._iframeAdInterval);
+              }
+            }, 600);
+            setTimeout(() => { if (this._iframeAdInterval) clearInterval(this._iframeAdInterval); }, 15000);
           } catch (e) {
             // Protección contra cross-origin: la intercepción nativa de MainActivity neutraliza las redes publicitarias
           }
@@ -3525,6 +3548,7 @@ class PlayerEngine {
           !s.url.includes('tvn.cl/ntv') &&
           !s.url.includes('tvn.cl/en-vivo') &&
           !s.url.includes('tvn.cl/envivo') &&
+          !s.url.includes('tvn.cl/tvchile') &&
           !s.url.includes('live.tvn.cl') &&
           !s.url.includes('mdstrm.com/live-stream/')
         )));
@@ -3792,6 +3816,7 @@ class PlayerEngine {
         targetUrl.includes('tvn.cl/ntv') ||
         targetUrl.includes('tvn.cl/en-vivo') ||
         targetUrl.includes('tvn.cl/envivo') ||
+        targetUrl.includes('tvn.cl/tvchile') ||
         targetUrl.includes('live.tvn.cl') ||
         targetUrl.includes('mdstrm.com/live-stream/')
       ));

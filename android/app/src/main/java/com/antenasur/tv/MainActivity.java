@@ -189,12 +189,12 @@ public class MainActivity extends AppCompatActivity {
                     "(function() {" +
                     "  setInterval(function() {" +
                     "    try {" +
-                    "      var btns = document.querySelectorAll('.cerrar, [onclick*=\"ads13PrestitialTrigger\"], [class*=\"skip\"], [class*=\"saltar\"], button[aria-label*=\"Skip\"], .videoAdUiSkipButton');" +
+                    "      var btns = document.querySelectorAll('.cerrar, [onclick*=\"ads13PrestitialTrigger\"], [class*=\"skip\"], [class*=\"saltar\"], button[aria-label*=\"Skip\"], .videoAdUiSkipButton, [class*=\"ad-skip\"], [class*=\"advertisement-skip\"]');" +
                     "      for (var i = 0; i < btns.length; i++) { btns[i].click(); }" +
-                    "      var ads = document.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*=\"google_ads\"], [class*=\"ad-container\"]');" +
+                    "      var ads = document.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*=\"google_ads\"], [class*=\"ad-container\"], [class*=\"preroll\"], [id*=\"preroll\"]');" +
                     "      for (var j = 0; j < ads.length; j++) { ads[j].style.display = 'none'; }" +
                     "    } catch(e) {}" +
-                    "  }, 800);" +
+                    "  }, 600);" +
                     "})();", null
                 );
                 mWebView.postDelayed(() -> {
@@ -322,11 +322,26 @@ public class MainActivity extends AppCompatActivity {
                low.contains("googleads.g.doubleclick.net") ||
                low.contains("pagead2.googlesyndication.com") ||
                low.contains("imasdk.googleapis.com") ||
+               low.contains("gpt.js") ||
                low.contains("/gampad/ads") ||
                low.contains("vad_type=linear") ||
                low.contains("output=vast") ||
                low.contains("output=vmap") ||
                low.contains("ads13.js") ||
+               low.contains("retargetly.com") ||
+               low.contains("smartadserver.com") ||
+               low.contains("aniview.com") ||
+               low.contains("teads.tv") ||
+               low.contains("teads.com") ||
+               low.contains("seedtag.com") ||
+               low.contains("rubiconproject.com") ||
+               low.contains("openx.net") ||
+               low.contains("pubmatic.com") ||
+               low.contains("criteo.com") ||
+               low.contains("criteo.net") ||
+               low.contains("spotxchange.com") ||
+               low.contains("spotx.tv") ||
+               low.contains("flashtalking.com") ||
                low.contains("adnxs.com") ||
                low.contains("scorecardresearch.com") ||
                low.contains("outbrain.com") ||

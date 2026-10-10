@@ -418,24 +418,29 @@ window.STATIONS_DATA = {
           "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Reproductor Rudo Oficial)",
+          "name": "Fuente 2 (Señal Alternativa HLS)",
+          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (Reproductor Rudo Oficial)",
           "url": "https://rudo.video/live/c13",
           "isEmbed": true
         },
         {
-          "name": "Fuente 3 (Señal HLS Directa)",
+          "name": "Fuente 4 (Señal HLS Directa DPS)",
           "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 4 (HLS Respaldo HD)",
-          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
-          "needsProxy": true
-        },
-        {
-          "name": "Fuente 5 (Señal Internacional)",
+          "name": "Fuente 5 (Señal Internacional 13)",
           "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
           "needsProxy": false
+        },
+        {
+          "name": "Fuente 6 (HLS Respaldo HD)",
+          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
+          "needsProxy": true
         }
       ]
     },
@@ -1152,8 +1157,8 @@ window.STATIONS_DATA = {
       "genre": "General / Noticias / Cultura",
       "description": "Señal internacional oficial de Televisión Nacional de Chile para todo el mundo.",
       "logo": "./img/logos/cl-tv-tvchile.svg",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
-      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
+      "streamUrl": "https://www.tvn.cl/tvchile",
+      "backupStreamUrl": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
       "embedUrl": "https://www.tvn.cl/tvchile",
       "website": "https://www.tvn.cl/tvchile",
       "status": "online",
@@ -1162,12 +1167,22 @@ window.STATIONS_DATA = {
       "channelNumber": 41,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/tvchile",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Reproductor Mediastream)",
+          "url": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (Respaldo Oficial)",
+          "name": "Fuente 4 (HLS Respaldo Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
           "needsProxy": false
         }

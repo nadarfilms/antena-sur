@@ -1360,8 +1360,8 @@ export class PlayerEngine {
     }
 
     let targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
-    if (targetUrl && targetUrl.includes('live.tvn.cl') && !targetUrl.includes('ads=false')) {
-      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&controls=true';
+    if (targetUrl && (targetUrl.includes('live.tvn.cl') || targetUrl.includes('mdstrm.com')) && !targetUrl.includes('ads=false')) {
+      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&autoplay=true&controls=true';
     }
 
     if (this.dom.tvIframe) {
@@ -1370,13 +1370,21 @@ export class PlayerEngine {
       try {
         this.dom.tvIframe.onload = () => {
           try {
-            const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
-            if (ifrDoc) {
-              const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton');
-              skipBtns.forEach(b => { try { b.click(); } catch(e){} });
-              const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"]');
-              ads.forEach(a => a.style.display = 'none');
-            }
+            if (this._iframeAdInterval) clearInterval(this._iframeAdInterval);
+            this._iframeAdInterval = setInterval(() => {
+              try {
+                const ifrDoc = this.dom.tvIframe.contentDocument || this.dom.tvIframe.contentWindow.document;
+                if (ifrDoc) {
+                  const skipBtns = ifrDoc.querySelectorAll('.cerrar, [onclick*="ads13PrestitialTrigger"], [class*="skip"], [class*="saltar"], button[aria-label*="Skip"], .videoAdUiSkipButton, [class*="ad-skip"], [class*="advertisement-skip"]');
+                  skipBtns.forEach(b => { try { b.click(); } catch(e){} });
+                  const ads = ifrDoc.querySelectorAll('#ittmobile, .ads13, .banner-top, [id*="google_ads"], [class*="ad-container"], [class*="preroll"], [id*="preroll"]');
+                  ads.forEach(a => a.style.display = 'none');
+                }
+              } catch(e) {
+                clearInterval(this._iframeAdInterval);
+              }
+            }, 600);
+            setTimeout(() => { if (this._iframeAdInterval) clearInterval(this._iframeAdInterval); }, 15000);
           } catch (e) {
             // Protección contra cross-origin: la intercepción nativa de MainActivity neutraliza las redes publicitarias
           }
@@ -1417,6 +1425,7 @@ export class PlayerEngine {
           !s.url.includes('tvn.cl/ntv') &&
           !s.url.includes('tvn.cl/en-vivo') &&
           !s.url.includes('tvn.cl/envivo') &&
+          !s.url.includes('tvn.cl/tvchile') &&
           !s.url.includes('live.tvn.cl') &&
           !s.url.includes('mdstrm.com/live-stream/')
         )));
@@ -1684,6 +1693,7 @@ export class PlayerEngine {
         targetUrl.includes('tvn.cl/ntv') ||
         targetUrl.includes('tvn.cl/en-vivo') ||
         targetUrl.includes('tvn.cl/envivo') ||
+        targetUrl.includes('tvn.cl/tvchile') ||
         targetUrl.includes('live.tvn.cl') ||
         targetUrl.includes('mdstrm.com/live-stream/')
       ));
