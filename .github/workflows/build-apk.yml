@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.4
+    - name: Publicar Release v1.3.5
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.4"
-        name: "Antena Sur Android TV v1.3.4"
-        body: "Versión 1.3.4: Canal 13 señal HLS DPS establecida como Fuente 1; incorporación de señal oficial en vivo de La Red (rudo.video/live/lared) como Fuente 1; depuración de TV Chile dejando exclusivamente la señal HLS directa funcional; depuración de TVN dejando exclusivamente la señal HLS HD funcional; en pantalla completa el botón izquierdo abre el menú lateral de canales y el botón OK abre los ajustes de canal y señal."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.5"
+        name: "Antena Sur Android TV v1.3.5"
+        body: "Versión 1.3.5: Menú flotante de canales en pantalla completa configurado con el tamaño idéntico al menú en modo zapping (260px) y restauración completa de la altura original de los rectángulos de cada canal (padding 9px 12px, logos 34px y tipografía 0.88rem)."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
