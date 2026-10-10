@@ -1151,6 +1151,9 @@ export class PlayerEngine {
     if (!this.dom.tvOptionsOsd) return;
     this.dom.tvOptionsOsd.classList.add('is-hidden');
     this.isOptionsOsdOpen = false;
+    if (this.isFullscreenActive()) {
+      this.resetFsControlsInactivityTimer();
+    }
   }
 
   toggleTvOptionsMenu() {
@@ -2037,10 +2040,11 @@ export class PlayerEngine {
 
     if (!this.isFullscreenActive()) return;
     if (this.isGuideOverlayVisible) return;
+    if (this.isOptionsOsdOpen) return;
 
     this.fsControlsTimer = setTimeout(() => {
       this.hideFsControls();
-    }, 5000);
+    }, 3000);
   }
 
   clearFsControlsInactivityTimer() {
@@ -2053,6 +2057,7 @@ export class PlayerEngine {
   hideFsControls() {
     if (!this.isFullscreenActive()) return;
     if (this.isGuideOverlayVisible) return;
+    if (this.isOptionsOsdOpen) return;
     if (this.dom.zappingPlayerArea) {
       this.dom.zappingPlayerArea.classList.add('is-fullscreen-idle');
     }
@@ -2289,14 +2294,15 @@ export class PlayerEngine {
       const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
       // Caso B: Flecha Izquierda (ArrowLeft)
-      // "al apretar el boton izquierdo debe aparecer el menu lateral con el listado de canales, y me debe dejar navegar en el, manteniendo el video o señal en pantalla completa."
+      // "en pantalla completa, al apretar el boton izquierdo, ahora no saldra el menu lateral (solo con el boton ok) este boton ahora nos hara acceder a los ajustes de señal y calidad."
       if (action === 'ArrowLeft') {
         if (isFullscreen) {
-          this.toggleFullscreenSidebar(true);
-          this.focusCurrentSidebarItem();
+          if (isFsSidebarOpen) {
+            this.toggleFullscreenSidebar(false);
+          }
+          this.openTvOptionsMenu();
         } else {
-          this.toggleSidebar(true);
-          this.focusCurrentSidebarItem();
+          this.openTvOptionsMenu();
         }
         return true;
       }

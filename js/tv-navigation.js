@@ -296,14 +296,11 @@ export function initTvNavigation() {
         return;
       }
       if (action === 'ArrowLeft') {
-        if (isFullscreen) {
-          if (typeof player.toggleFullscreenSidebar === 'function') {
-            player.toggleFullscreenSidebar(true);
-            player.focusCurrentSidebarItem();
+        if (typeof player.openTvOptionsMenu === 'function') {
+          if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(false);
           }
-        } else {
-          player.toggleSidebar(true);
-          player.focusCurrentSidebarItem();
+          player.openTvOptionsMenu();
         }
         return;
       }

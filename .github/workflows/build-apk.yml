@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.2.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.2.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.2
+    - name: Publicar Release v1.3.3
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.2"
-        name: "Antena Sur Android TV v1.3.2"
-        body: "Versión 1.3.2: Eliminación de chips de categorías en TV (lista limpia de 49 canales), menú lateral zapping reducido un 25% en ancho para no obstruir pantalla, señal oficial de TV Chile (tvn.cl/tvchile) con bypass de anuncios y Canal 13 señal alternativa HLS agregada como Opción 2."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.3"
+        name: "Antena Sur Android TV v1.3.3"
+        body: "Versión 1.3.3: En pantalla completa, el botón izquierdo (D-Pad Left) ahora abre directamente los ajustes de señal y calidad de transmisión (el menú lateral de canales se abre exclusivamente con el botón OK/Enter). Además, el banner/layout informativo al cambiar de canal ahora se oculta automáticamente a los 3 segundos (antes 5 segundos)."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
