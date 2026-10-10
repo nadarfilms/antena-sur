@@ -2293,16 +2293,14 @@ export class PlayerEngine {
       const isFsSidebarOpen = this.isFsSidebarOpen();
       const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
-      // Caso B: Flecha Izquierda (ArrowLeft)
-      // "en pantalla completa, al apretar el boton izquierdo, ahora no saldra el menu lateral (solo con el boton ok) este boton ahora nos hara acceder a los ajustes de señal y calidad."
+      // Caso B: Flecha Izquierda (ArrowLeft) -> Abre el menú lateral de canales en pantalla completa
       if (action === 'ArrowLeft') {
         if (isFullscreen) {
-          if (isFsSidebarOpen) {
-            this.toggleFullscreenSidebar(false);
-          }
-          this.openTvOptionsMenu();
+          this.toggleFullscreenSidebar(true);
+          this.focusCurrentSidebarItem();
         } else {
-          this.openTvOptionsMenu();
+          this.toggleSidebar(true);
+          this.focusCurrentSidebarItem();
         }
         return true;
       }
@@ -2338,16 +2336,14 @@ export class PlayerEngine {
         return true;
       }
 
-      // Caso F: Botón Central (Enter / OK)
-      // "al estar en pantalla completa en canales de tv, al apretar el boton del lado izquierdo y el boton del centro o ok, tiene que aparecer el menu de la lista de canales en el lado izquerdo de la pantalla, sin salir del modo pantalla completa, y sin achicar la señal de video. teniendo la capacidad de navegar los canales, con un click puedo cambiar de canal y desaparecera ese menu de canales al lado izquierdo, se vera solo la señal de video q aprete"
+      // Caso F: Botón Central (Enter / OK) -> Abre ajustes del canal y señal (o cambia canal si menú lateral está abierto)
       if (action === 'Enter') {
         if (isFullscreen) {
           if (isFsSidebarOpen) {
             this.selectFocusedSidebarChannel();
             this.toggleFullscreenSidebar(false);
           } else {
-            this.toggleFullscreenSidebar(true);
-            this.focusCurrentSidebarItem();
+            this.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           this.selectFocusedSidebarChannel();

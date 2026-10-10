@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.3
+    - name: Publicar Release v1.3.4
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.3"
-        name: "Antena Sur Android TV v1.3.3"
-        body: "Versión 1.3.3: En pantalla completa, el botón izquierdo (D-Pad Left) ahora abre directamente los ajustes de señal y calidad de transmisión (el menú lateral de canales se abre exclusivamente con el botón OK/Enter). Además, el banner/layout informativo al cambiar de canal ahora se oculta automáticamente a los 3 segundos (antes 5 segundos)."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.4"
+        name: "Antena Sur Android TV v1.3.4"
+        body: "Versión 1.3.4: Canal 13 señal HLS DPS establecida como Fuente 1; incorporación de señal oficial en vivo de La Red (rudo.video/live/lared) como Fuente 1; depuración de TV Chile dejando exclusivamente la señal HLS directa funcional; depuración de TVN dejando exclusivamente la señal HLS HD funcional; en pantalla completa el botón izquierdo abre el menú lateral de canales y el botón OK abre los ajustes de canal y señal."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

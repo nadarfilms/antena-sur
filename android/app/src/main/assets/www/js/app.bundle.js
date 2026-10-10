@@ -11,6 +11,9 @@
      SOURCE MODULE: stations-data.js
      ======================================================================== */
 
+/**
+ * ANTENA SUR - Catálogo de Canales y Emisoras
+ */
 window.STATIONS_DATA = {
   "lastUpdated": "2026-09-22",
   "version": "2.0.0",
@@ -416,34 +419,34 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-canal13.svg",
-      "streamUrl": "https://www.13.cl/en-vivo",
+      "streamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
       "backupStreamUrl": "https://rudo.video/live/c13",
       "website": "https://www.13.cl",
       "description": "Señal nacional abierta oficial de Canal 13 en alta definición (1080p).",
       "embedUrl": "https://www.13.cl/en-vivo",
-      "needsProxy": false,
+      "needsProxy": true,
       "status": "online",
       "channelNumber": 15,
       "sources": [
         {
-          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "name": "Fuente 1 (Señal HLS Directa DPS)",
+          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
+          "needsProxy": true
+        },
+        {
+          "name": "Fuente 2 (Web Oficial En Vivo)",
           "url": "https://www.13.cl/en-vivo",
           "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Señal Alternativa HLS)",
+          "name": "Fuente 3 (Señal Alternativa HLS)",
           "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 3 (Reproductor Rudo Oficial)",
+          "name": "Fuente 4 (Reproductor Rudo Oficial)",
           "url": "https://rudo.video/live/c13",
           "isEmbed": true
-        },
-        {
-          "name": "Fuente 4 (Señal HLS Directa DPS)",
-          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
-          "needsProxy": true
         },
         {
           "name": "Fuente 5 (Señal Internacional 13)",
@@ -720,22 +723,32 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-lared.svg",
-      "streamUrl": "https://live.getcirca.run/3969875408/ts:abr.m3u8",
+      "streamUrl": "https://rudo.video/live/lared",
       "backupStreamUrl": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
       "website": "https://www.lared.cl",
       "description": "Canal nacional de televisión abierta chileno con programación miscelánea e informativa.",
-      "embedUrl": "https://www.lared.cl/senal-online",
+      "embedUrl": "https://rudo.video/live/lared",
       "channelNumber": 25,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Reproductor Rudo Oficial)",
+          "url": "https://rudo.video/live/lared",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Señal Alternativa HD)",
           "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (M3U Alternativa)",
+          "name": "Fuente 3 (M3U Alternativa)",
           "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
           "needsProxy": false
+        },
+        {
+          "name": "Fuente 4 (Web Oficial En Vivo)",
+          "url": "https://www.lared.cl/senal-online",
+          "isEmbed": true
         }
       ]
     },
@@ -1170,8 +1183,8 @@ window.STATIONS_DATA = {
       "genre": "General / Noticias / Cultura",
       "description": "Señal internacional oficial de Televisión Nacional de Chile para todo el mundo.",
       "logo": "./img/logos/cl-tv-tvchile.svg",
-      "streamUrl": "https://www.tvn.cl/tvchile",
-      "backupStreamUrl": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
+      "streamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
       "embedUrl": "https://www.tvn.cl/tvchile",
       "website": "https://www.tvn.cl/tvchile",
       "status": "online",
@@ -1180,26 +1193,12 @@ window.STATIONS_DATA = {
       "channelNumber": 41,
       "sources": [
         {
-          "name": "Fuente 1 (Web Oficial En Vivo)",
-          "url": "https://www.tvn.cl/tvchile",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 2 (Reproductor Mediastream)",
-          "url": "https://mdstrm.com/live-stream/533adcc949386ce765657d7c",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 3 (Señal HLS Directa)",
+          "name": "Fuente 1 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
           "needsProxy": false
-        },
-        {
-          "name": "Fuente 4 (HLS Respaldo Oficial)",
-          "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
-          "needsProxy": false
         }
-      ]
+      ],
+      "needsProxy": false
     },
     {
       "id": "cl-tv-tvmas",
@@ -1252,38 +1251,18 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-tvn.svg",
-      "streamUrl": "https://www.tvn.cl/en-vivo",
-      "backupStreamUrl": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
+      "streamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+      "backupStreamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
       "website": "https://www.tvn.cl/en-vivo",
       "description": "Señal abierta nacional en directo de Televisión Nacional de Chile en Full HD (1080p).",
       "embedUrl": "https://www.tvn.cl/en-vivo",
       "status": "online",
-      "needsProxy": false,
+      "needsProxy": true,
       "channelNumber": 43,
       "sources": [
         {
-          "name": "Fuente 1 (Web Oficial En Vivo)",
-          "url": "https://www.tvn.cl/en-vivo",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 2 (Reproductor TVN En Vivo)",
-          "url": "https://live.tvn.cl/?ads=false&autostart=true&controls=true",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 3 (Señal Internacional TV Chile)",
-          "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 4 (HLS Alternativa HD)",
+          "name": "Fuente 1 (HLS HD Principal)",
           "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-          "needsProxy": true
-        },
-        {
-          "name": "Fuente 5 (HLS Respaldo DPS)",
-          "url": "https://redirector.dps.live/hls/tvn/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         }
       ]
@@ -4416,16 +4395,14 @@ class PlayerEngine {
       const isFsSidebarOpen = this.isFsSidebarOpen();
       const isSidebarVisible = isFsSidebarOpen || (this.dom.zappingSidebar && !this.dom.zappingSidebar.classList.contains('is-collapsed'));
 
-      // Caso B: Flecha Izquierda (ArrowLeft)
-      // "en pantalla completa, al apretar el boton izquierdo, ahora no saldra el menu lateral (solo con el boton ok) este boton ahora nos hara acceder a los ajustes de señal y calidad."
+      // Caso B: Flecha Izquierda (ArrowLeft) -> Abre el menú lateral de canales en pantalla completa
       if (action === 'ArrowLeft') {
         if (isFullscreen) {
-          if (isFsSidebarOpen) {
-            this.toggleFullscreenSidebar(false);
-          }
-          this.openTvOptionsMenu();
+          this.toggleFullscreenSidebar(true);
+          this.focusCurrentSidebarItem();
         } else {
-          this.openTvOptionsMenu();
+          this.toggleSidebar(true);
+          this.focusCurrentSidebarItem();
         }
         return true;
       }
@@ -4461,16 +4438,14 @@ class PlayerEngine {
         return true;
       }
 
-      // Caso F: Botón Central (Enter / OK)
-      // "al estar en pantalla completa en canales de tv, al apretar el boton del lado izquierdo y el boton del centro o ok, tiene que aparecer el menu de la lista de canales en el lado izquerdo de la pantalla, sin salir del modo pantalla completa, y sin achicar la señal de video. teniendo la capacidad de navegar los canales, con un click puedo cambiar de canal y desaparecera ese menu de canales al lado izquierdo, se vera solo la señal de video q aprete"
+      // Caso F: Botón Central (Enter / OK) -> Abre ajustes del canal y señal (o cambia canal si menú lateral está abierto)
       if (action === 'Enter') {
         if (isFullscreen) {
           if (isFsSidebarOpen) {
             this.selectFocusedSidebarChannel();
             this.toggleFullscreenSidebar(false);
           } else {
-            this.toggleFullscreenSidebar(true);
-            this.focusCurrentSidebarItem();
+            this.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           this.selectFocusedSidebarChannel();
@@ -6518,11 +6493,14 @@ function initTvNavigation() {
         return;
       }
       if (action === 'ArrowLeft') {
-        if (typeof player.openTvOptionsMenu === 'function') {
-          if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
-            player.toggleFullscreenSidebar(false);
+        if (isFullscreen) {
+          if (typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(true);
+            player.focusCurrentSidebarItem();
           }
-          player.openTvOptionsMenu();
+        } else {
+          player.toggleSidebar(true);
+          player.focusCurrentSidebarItem();
         }
         return;
       }
@@ -6542,9 +6520,8 @@ function initTvNavigation() {
           if (isFsSidebarOpen) {
             player.selectFocusedSidebarChannel();
             player.toggleFullscreenSidebar(false);
-          } else if (typeof player.toggleFullscreenSidebar === 'function') {
-            player.toggleFullscreenSidebar(true);
-            player.focusCurrentSidebarItem();
+          } else if (typeof player.openTvOptionsMenu === 'function') {
+            player.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();

@@ -296,11 +296,14 @@ export function initTvNavigation() {
         return;
       }
       if (action === 'ArrowLeft') {
-        if (typeof player.openTvOptionsMenu === 'function') {
-          if (isFsSidebarOpen && typeof player.toggleFullscreenSidebar === 'function') {
-            player.toggleFullscreenSidebar(false);
+        if (isFullscreen) {
+          if (typeof player.toggleFullscreenSidebar === 'function') {
+            player.toggleFullscreenSidebar(true);
+            player.focusCurrentSidebarItem();
           }
-          player.openTvOptionsMenu();
+        } else {
+          player.toggleSidebar(true);
+          player.focusCurrentSidebarItem();
         }
         return;
       }
@@ -320,9 +323,8 @@ export function initTvNavigation() {
           if (isFsSidebarOpen) {
             player.selectFocusedSidebarChannel();
             player.toggleFullscreenSidebar(false);
-          } else if (typeof player.toggleFullscreenSidebar === 'function') {
-            player.toggleFullscreenSidebar(true);
-            player.focusCurrentSidebarItem();
+          } else if (typeof player.openTvOptionsMenu === 'function') {
+            player.openTvOptionsMenu();
           }
         } else if (isSidebarVisible) {
           player.selectFocusedSidebarChannel();
