@@ -296,7 +296,7 @@ window.STATIONS_DATA = {
       "website": "https://www.adnradio.cl",
       "description": "Canal de video de ADN Radio Chile con Los Tenores, noticias y análisis en directo.",
       "embedUrl": "https://www.adnradio.cl",
-      "channelNumber": 11,
+      "channelNumber": 13,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -327,7 +327,7 @@ window.STATIONS_DATA = {
       "website": "https://www.biobiochile.cl/biobiotv",
       "description": "Canal de televisión de Radio Bío Bío con debate, reportajes y noticias en vivo.",
       "embedUrl": "https://www.biobiochile.cl/biobiotv/",
-      "channelNumber": 12,
+      "channelNumber": 21,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -365,7 +365,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Bombi TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 13
+      "channelNumber": 22
     },
     {
       "id": "cl-tv-c-y-g-tv",
@@ -390,7 +390,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión C y G TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 14
+      "channelNumber": 23
     },
     {
       "id": "cl-tv-canal13",
@@ -410,7 +410,7 @@ window.STATIONS_DATA = {
       "embedUrl": "https://www.13.cl/en-vivo",
       "needsProxy": false,
       "status": "online",
-      "channelNumber": 15,
+      "channelNumber": 30,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -457,7 +457,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Canal 5 Puerto Montt disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 16
+      "channelNumber": 34
     },
     {
       "id": "cl-tv-chv",
@@ -475,7 +475,7 @@ window.STATIONS_DATA = {
       "website": "https://www.chilevision.cl",
       "description": "Canal de televisión abierta chileno con programación matinal, noticias, deportes y entretenimiento familiar.",
       "embedUrl": "https://www.chilevision.cl/senal-online",
-      "channelNumber": 17,
+      "channelNumber": 50,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -506,7 +506,7 @@ window.STATIONS_DATA = {
       "embedUrl": "https://www.chilevision.cl/deportes",
       "website": "https://www.chilevision.cl",
       "description": "Señal deportiva 24/7 de Chilevisión con fútbol chileno, Conmebol Libertadores, eventos olímpicos y debates.",
-      "channelNumber": 18,
+      "channelNumber": 51,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -541,7 +541,7 @@ window.STATIONS_DATA = {
       "website": "https://www.chvnoticias.cl",
       "description": "Canal dedicado a la información continua y reportajes en profundidad de Chilevisión Noticias.",
       "embedUrl": "https://www.chvnoticias.cl/senal-online",
-      "channelNumber": 19,
+      "channelNumber": 52,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -578,7 +578,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Cooperativa Ciencia disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 20
+      "channelNumber": 59
     },
     {
       "id": "cl-tv-cooperativatv",
@@ -596,7 +596,7 @@ window.STATIONS_DATA = {
       "website": "https://www.cooperativa.cl",
       "description": "Transmisión televisada en directo de los estudios y programas de Radio Cooperativa.",
       "embedUrl": "https://www.cooperativa.cl",
-      "channelNumber": 21,
+      "channelNumber": 60,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -634,7 +634,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión EnerGeek disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 22
+      "channelNumber": 81
     },
     {
       "id": "cl-tv-energeek-fan",
@@ -659,7 +659,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión EnerGeek FAN disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 23
+      "channelNumber": 82
     },
     {
       "id": "cl-tv-epa-tv",
@@ -684,7 +684,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión EPA! TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 24
+      "channelNumber": 86
     },
     {
       "id": "cl-tv-lared",
@@ -702,7 +702,7 @@ window.STATIONS_DATA = {
       "website": "https://www.lared.cl",
       "description": "Canal nacional de televisión abierta chileno con programación miscelánea e informativa.",
       "embedUrl": "https://www.lared.cl/senal-online",
-      "channelNumber": 25,
+      "channelNumber": 108,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -739,7 +739,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión LCR Televisión disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 26
+      "channelNumber": 109
     },
     {
       "id": "cl-tv-mega",
@@ -757,7 +757,7 @@ window.STATIONS_DATA = {
       "website": "https://www.mega.cl",
       "description": "Red televisiva privada líder en ficción nacional, producción propia y noticieros.",
       "embedUrl": "https://www.mega.cl/senal-en-vivo/",
-      "channelNumber": 27,
+      "channelNumber": 118,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -797,7 +797,7 @@ window.STATIONS_DATA = {
       "website": "https://www.tvn.cl/ntv",
       "description": "Señal pública cultural y familiar de Televisión Nacional de Chile con contenidos educativos e infantiles.",
       "embedUrl": "https://www.tvn.cl/ntv",
-      "channelNumber": 28,
+      "channelNumber": 124,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -839,7 +839,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Patagonia Radio TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 29
+      "channelNumber": 131
     },
     {
       "id": "cl-tv-pautatv",
@@ -857,7 +857,7 @@ window.STATIONS_DATA = {
       "website": "https://www.pauta.cl",
       "description": "Medio de comunicación chileno multiplataforma enfocado en actualidad, negocios, economía y opinión.",
       "embedUrl": "https://www.pauta.cl",
-      "channelNumber": 30,
+      "channelNumber": 132,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -894,7 +894,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Radio Romantica disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 31
+      "channelNumber": 197
     },
     {
       "id": "cl-tv-retro-plus-tv",
@@ -919,7 +919,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Retro Plus TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 32
+      "channelNumber": 215
     },
     {
       "id": "cl-tv-retro-plus-tv-se-al-2",
@@ -944,7 +944,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Retro Plus TV Señal 2 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 33
+      "channelNumber": 216
     },
     {
       "id": "cl-tv-retro-plus-tv-se-al-3",
@@ -969,7 +969,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Retro Plus TV Señal 3 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 34
+      "channelNumber": 217
     },
     {
       "id": "cl-tv-rewind",
@@ -994,7 +994,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Rewind disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 35
+      "channelNumber": 219
     },
     {
       "id": "cl-tv-suyai-tv",
@@ -1019,7 +1019,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Suyai TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 36
+      "channelNumber": 245
     },
     {
       "id": "cl-tv-t13envivo",
@@ -1037,7 +1037,7 @@ window.STATIONS_DATA = {
       "website": "https://www.t13.cl",
       "description": "Señal informativa 24/7 de Teletrece con noticias de Chile y el mundo al instante.",
       "embedUrl": "https://www.t13.cl/en-vivo",
-      "channelNumber": 37,
+      "channelNumber": 247,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -1079,7 +1079,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TeleZeta Tropical disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 38
+      "channelNumber": 256
     },
     {
       "id": "cl-tv-turismo-travel-tv",
@@ -1104,7 +1104,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Turismo Travel TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 39
+      "channelNumber": 265
     },
     {
       "id": "cl-tv-turnoenvivo",
@@ -1129,7 +1129,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TurnoEnVivo disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 40
+      "channelNumber": 266
     },
     {
       "id": "cl-tv-tvchile",
@@ -1149,7 +1149,7 @@ window.STATIONS_DATA = {
       "status": "online",
       "isHd": true,
       "featured": true,
-      "channelNumber": 41,
+      "channelNumber": 271,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -1179,7 +1179,7 @@ window.STATIONS_DATA = {
       "website": "https://www.tvmas.tv",
       "description": "Canal enfocado en programas de conversación, actualidad y entretenimiento.",
       "embedUrl": "https://tvmas.tv/senal-en-vivo/",
-      "channelNumber": 42,
+      "channelNumber": 283,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -1221,7 +1221,7 @@ window.STATIONS_DATA = {
       "embedUrl": "https://www.tvn.cl/envivo",
       "status": "online",
       "needsProxy": true,
-      "channelNumber": 43,
+      "channelNumber": 286,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -1263,7 +1263,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TVN3 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 44
+      "channelNumber": 287
     },
     {
       "id": "cl-tv-uchile",
@@ -1281,7 +1281,7 @@ window.STATIONS_DATA = {
       "embedUrl": "https://rudo.video/live/uchiletv",
       "website": "https://tv.uchile.cl",
       "description": "Canal público de televisión de la Universidad de Chile con contenidos culturales, educativos, científicos y de debate ciudadano.",
-      "channelNumber": 45,
+      "channelNumber": 292,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
@@ -1323,7 +1323,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión UCV 2 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 46
+      "channelNumber": 293
     },
     {
       "id": "cl-tv-vclassictv",
@@ -1348,7 +1348,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión VClassicTV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 47
+      "channelNumber": 306
     },
     {
       "id": "cl-tv-vclassictv-tropical",
@@ -1373,7 +1373,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión VClassicTV Tropical disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 48
+      "channelNumber": 307
     },
     {
       "id": "cl-tv-wapptv",
@@ -1398,7 +1398,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión WappTV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 49
+      "channelNumber": 317
     },
     {
       "id": "cl-rad-biobiosantiago",
