@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.5
+    - name: Publicar Release v1.3.6
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.5.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.5"
-        name: "Antena Sur Android TV v1.3.5"
-        body: "Versión 1.3.5: Menú flotante de canales en pantalla completa configurado con el tamaño idéntico al menú en modo zapping (260px) y restauración completa de la altura original de los rectángulos de cada canal (padding 9px 12px, logos 34px y tipografía 0.88rem)."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.3.6"
+        name: "Antena Sur Android TV & Mobile v1.3.6"
+        body: "Versión 1.3.6: Soporte adaptativo para celulares y tablets Android con inicio en formato vertical y rotación dinámica mediante sensor, manteniendo Smart TV y Google TV en horizontal 16:9."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

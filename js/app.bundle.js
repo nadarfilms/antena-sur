@@ -4035,6 +4035,10 @@ class PlayerEngine {
       this.exitFullscreenCrossBrowser();
     }
 
+    if (window.AndroidNative && typeof window.AndroidNative.setOrientation === 'function') {
+      window.AndroidNative.setOrientation('user');
+    }
+
     const closedStation = this.currentStation;
     this.currentStation = null;
     this.isPlaying = false;
@@ -4222,6 +4226,10 @@ class PlayerEngine {
       }
     }
 
+    if (window.AndroidNative && typeof window.AndroidNative.setOrientation === 'function') {
+      window.AndroidNative.setOrientation('landscape');
+    }
+
     this.resetFsControlsInactivityTimer();
     this.updateFullscreenIcon();
   }
@@ -4239,6 +4247,10 @@ class PlayerEngine {
     this._exitFsGraceTimer = setTimeout(() => {
       this._isExitingFullscreen = false;
     }, 1500);
+
+    if (window.AndroidNative && typeof window.AndroidNative.setOrientation === 'function') {
+      window.AndroidNative.setOrientation('user');
+    }
 
     this.clearFsControlsInactivityTimer();
     this.showFsControls();

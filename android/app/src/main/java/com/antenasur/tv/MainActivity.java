@@ -1,6 +1,10 @@
 package com.antenasur.tv;
 
 import android.annotation.SuppressLint;
+import android.app.UiModeManager;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -9,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -40,11 +45,36 @@ public class MainActivity extends AppCompatActivity {
     private long mLastBackPressTime = 0;
     private long mLastNavTime = 0;
 
+    public boolean isTvDevice() {
+        UiModeManager uiModeManager = (UiModeManager) getSystemService(UI_MODE_SERVICE);
+        if (uiModeManager != null && uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            return true;
+        }
+        PackageManager pm = getPackageManager();
+        if (pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)) {
+            return true;
+        }
+        // Dispositivos sin pantalla táctil ni telefonía (ej. TV Box Android AOSP estándar)
+        if (!pm.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN) && !pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Pantalla completa inmersiva para Smart TV
+        // Adaptación de orientación:
+        // En Smart TV / Android TV / TV Box: fija en horizontal (landscape)
+        // En Smartphones y Tablets: orientación dinámica del sensor (comienza en vertical si se sostiene vertical)
+        if (isTvDevice()) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+        }
+
+        // Pantalla completa inmersiva
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -107,9 +137,39 @@ public class MainActivity extends AppCompatActivity {
             settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
-        // Identificador de Android TV para que la app web auto-inicie en modo televisión
-        String customUA = "Mozilla/5.0 (Linux; Android 12; Android TV Build/STT1.220610.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 AntenaSurTV/1.0";
-        settings.setUserAgentString(customUA);
+        // Identificador User Agent: Android TV para Smart TVs y Mobile para celulares
+        if (isTvDevice()) {
+            String customUA = "Mozilla/5.0 (Linux; Android 12; Android TV Build/STT1.220610.001) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 AntenaSurTV/1.0";
+            settings.setUserAgentString(customUA);
+        } else {
+            String defaultUA = settings.getUserAgentString();
+            if (defaultUA != null) {
+                settings.setUserAgentString(defaultUA + " AntenaSurMobile/1.0");
+            }
+        }
+
+        // Interfaz JavaScript nativa para control de orientación y detección de plataforma
+        mWebView.addJavascriptInterface(new Object() {
+            @JavascriptInterface
+            public boolean isTv() {
+                return isTvDevice();
+            }
+
+            @JavascriptInterface
+            public void setOrientation(String mode) {
+                runOnUiThread(() -> {
+                    if (!isTvDevice()) {
+                        if ("landscape".equalsIgnoreCase(mode)) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                        } else if ("portrait".equalsIgnoreCase(mode)) {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT);
+                        } else {
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+                        }
+                    }
+                });
+            }
+        }, "AndroidNative");
 
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -669,6 +729,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setupImmersiveMode();
+        if (mWebView != null) {
+            mWebView.postDelayed(this::setupImmersiveMode, 300);
+        }
     }
 
     @Override
