@@ -128,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
+        settings.setSupportMultipleWindows(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             settings.setOffscreenPreRaster(true);
@@ -173,6 +175,12 @@ public class MainActivity extends AppCompatActivity {
 
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
+            public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
+                // Bloquea por completo cualquier ventana emergente o popup publicitario
+                return false;
+            }
+
+            @Override
             public boolean onConsoleMessage(android.webkit.ConsoleMessage consoleMessage) {
                 android.util.Log.d("AntenaSurTV_JS", consoleMessage.message() + " [" + consoleMessage.sourceId() + ":" + consoleMessage.lineNumber() + "]");
                 return true;
@@ -180,6 +188,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String urlStr = request.getUrl() != null ? request.getUrl().toString() : "";
+                if (isAdRequest(urlStr)) {
+                    return true; // Bloquea redirección o apertura externa de publicidad
+                }
+                return false;
+            }
+
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 try {

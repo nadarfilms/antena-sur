@@ -1,0 +1,881 @@
+{
+  "users": {
+    "helmuth": {
+      "username": "helmuth",
+      "displayName": "Helmuth",
+      "passwordHash": "225db23b951b5467334a7c74b99f50662d487eaae943b77ee1be276ed46f27e2",
+      "salt": "antena_default_salt",
+      "avatarColor": "#00e5ff",
+      "createdAt": 1792804712.9331598,
+      "favorites": [
+        {
+          "id": "series_93792",
+          "media_id": "series_93792",
+          "type": "series",
+          "media_type": "series",
+          "title": "Youth",
+          "poster": "https://static.tvmaze.com/uploads/images/original_untouched/642/1605681.jpg",
+          "year": "2026",
+          "rating": 6.3,
+          "imdb_rating": 6.3,
+          "genres": [
+            "Comedy"
+          ],
+          "rotten_tomatoes": {
+            "critics": 74,
+            "audience": 78,
+            "certified_fresh": false,
+            "freshness": "fresh",
+            "icon": "🍅"
+          },
+          "addedAt": 1792812108.470484
+        },
+        {
+          "id": "series_618",
+          "media_id": "series_618",
+          "type": "series",
+          "media_type": "series",
+          "title": "Better Call Saul",
+          "poster": "https://static.tvmaze.com/uploads/images/original_untouched/501/1253515.jpg",
+          "year": "2015",
+          "rating": 8.6,
+          "imdb_rating": 8.6,
+          "genres": [
+            "Drama",
+            "Crime",
+            "Legal"
+          ],
+          "rotten_tomatoes": {
+            "critics": 74,
+            "audience": 78,
+            "certified_fresh": false,
+            "freshness": "fresh",
+            "icon": "🍅"
+          },
+          "addedAt": 1792812092.3053372
+        },
+        {
+          "id": "movie_555",
+          "media_id": "movie_555",
+          "type": "movie",
+          "media_type": "movie",
+          "title": "Interstellar",
+          "poster": "https://yts.mx/cover.jpg",
+          "year": "2014",
+          "rating": 8.7,
+          "imdb_rating": 8.7,
+          "genres": [],
+          "rotten_tomatoes": {
+            "critics": 74,
+            "audience": 78,
+            "certified_fresh": false,
+            "freshness": "fresh",
+            "icon": "🍅"
+          },
+          "addedAt": 1792806084.969453
+        },
+        {
+          "id": "",
+          "type": "movie",
+          "title": "Avengers: Infinity War",
+          "poster": "",
+          "year": "",
+          "rating": "7.5",
+          "genres": [
+            "Action"
+          ],
+          "rotten_tomatoes": {
+            "critics": 74,
+            "audience": 78,
+            "certified_fresh": false,
+            "freshness": "fresh",
+            "icon": "🍅"
+          },
+          "addedAt": 1792805939.9464571
+        }
+      ],
+      "watchHistory": [
+        {
+          "id": "movie_2934",
+          "title": "Superbad",
+          "type": "movie",
+          "season": null,
+          "episode": null,
+          "watchedAt": 1792812045.044553
+        },
+        {
+          "id": "series_44458_s4e7",
+          "title": "Ted Lasso - S04E07 • Yes & Baby",
+          "type": "series",
+          "season": 4,
+          "episode": 7,
+          "watchedAt": 1792810829.018477
+        },
+        {
+          "id": "movie_6339",
+          "title": "Moana",
+          "type": "movie",
+          "season": null,
+          "episode": null,
+          "watchedAt": 1792809031.112382
+        },
+        {
+          "id": "movie_6792",
+          "title": "Spider-Man: Homecoming",
+          "type": "movie",
+          "season": null,
+          "episode": null,
+          "watchedAt": 1792808846.341172
+        },
+        {
+          "id": "movie_5385",
+          "title": "The Revenant",
+          "type": "movie",
+          "season": null,
+          "episode": null,
+          "watchedAt": 1792807994.7712169
+        },
+        {
+          "id": "series_44458_s4e10",
+          "title": "Ted Lasso - S04E10 • Being Alive",
+          "type": "series",
+          "season": 4,
+          "episode": 10,
+          "watchedAt": 1792807603.410304
+        },
+        {
+          "id": "movie_555",
+          "title": "Interstellar",
+          "type": "movie",
+          "season": null,
+          "episode": null,
+          "watchedAt": 1792806084.9925492
+        }
+      ],
+      "inProgress": {
+        "movie_5385": {
+          "itemKey": "movie_5385",
+          "id": "movie_5385",
+          "media_id": "movie_5385",
+          "type": "movie",
+          "media_type": "movie",
+          "title": "The Revenant",
+          "episodeTitle": "",
+          "season": null,
+          "episode": null,
+          "episode_info": null,
+          "poster": "https://yts.gg/assets/images/movies/the_revenant_2015/large-cover.jpg",
+          "currentTime": 303.783886,
+          "current_time": 303.783886,
+          "progress_seconds": 303.783886,
+          "duration": 9381.461,
+          "progress": 3.2,
+          "torrentId": "magnet:?xt=urn:btih:2f6491e7decee8aebb34c0078c6a0e4fbd174a17&dn=The%20Revenant%202015%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+          "fileIdx": 0,
+          "torrent_data": {
+            "torrentId": "magnet:?xt=urn:btih:2f6491e7decee8aebb34c0078c6a0e4fbd174a17&dn=The%20Revenant%202015%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+            "fileIdx": 0,
+            "parentMedia": {
+              "id": 5385,
+              "url": "https://yts.gg/movies/the-revenant-2015",
+              "imdb_code": "tt1663202",
+              "title": "The Revenant",
+              "title_english": "The Revenant",
+              "title_long": "The Revenant (2015)",
+              "slug": "the-revenant-2015",
+              "year": 2015,
+              "rating": 8,
+              "runtime": 156,
+              "genres": [
+                "Action",
+                "Adventure",
+                "Biography",
+                "Drama",
+                "History",
+                "Thriller",
+                "Western"
+              ],
+              "like_count": 1001,
+              "description_intro": "A frontiersman on a fur trading expedition in the 1820s fights for survival after being mauled by a bear and left for dead by members of his own hunting team.",
+              "description_full": "Revenant es una serie de televisión surcoreana dirigida por Lee Jung-rim y protagonizada por Kim Tae-ri, Oh Jung-se y Hong Kyung. Se emitió por el canal SBS desde el 23 de junio hasta el 29 de julio de 2023, los viernes y sábados a las 21:50.",
+              "yt_trailer_code": "EhffABvfAW0",
+              "language": "en",
+              "mpa_rating": "R",
+              "background_image": "https://yts.gg/assets/images/movies/the_revenant_2015/background.jpg",
+              "background_image_original": "https://yts.gg/assets/images/movies/the_revenant_2015/background.jpg",
+              "small_cover_image": "https://yts.gg/assets/images/movies/the_revenant_2015/small-cover.jpg",
+              "medium_cover_image": "https://yts.gg/assets/images/movies/the_revenant_2015/medium-cover.jpg",
+              "large_cover_image": "https://yts.gg/assets/images/movies/the_revenant_2015/large-cover.jpg",
+              "medium_screenshot_image1": "https://yts.gg/assets/images/movies/the_revenant_2015/medium-screenshot1.jpg",
+              "medium_screenshot_image2": "https://yts.gg/assets/images/movies/the_revenant_2015/medium-screenshot2.jpg",
+              "medium_screenshot_image3": "https://yts.gg/assets/images/movies/the_revenant_2015/medium-screenshot3.jpg",
+              "large_screenshot_image1": "https://yts.gg/assets/images/movies/the_revenant_2015/large-screenshot1.jpg",
+              "large_screenshot_image2": "https://yts.gg/assets/images/movies/the_revenant_2015/large-screenshot2.jpg",
+              "large_screenshot_image3": "https://yts.gg/assets/images/movies/the_revenant_2015/large-screenshot3.jpg",
+              "cast": [
+                {
+                  "name": "Tom Hardy",
+                  "character_name": "John Fitzgerald",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0362766.jpg",
+                  "imdb_code": "0362766"
+                },
+                {
+                  "name": "Leonardo DiCaprio",
+                  "character_name": "Hugh Glass",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0000138.jpg",
+                  "imdb_code": "0000138"
+                },
+                {
+                  "name": "Will Poulter",
+                  "character_name": "Bridger",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm2401020.jpg",
+                  "imdb_code": "2401020"
+                },
+                {
+                  "name": "Lukas Haas",
+                  "character_name": "Jones",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0001305.jpg",
+                  "imdb_code": "0001305"
+                }
+              ],
+              "torrents": [
+                {
+                  "quality": "4K",
+                  "title": "The Revenant 2015 2160p BluRay",
+                  "size": "7.11 GB",
+                  "seeds": 177,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "2f6491e7decee8aebb34c0078c6a0e4fbd174a17",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:2f6491e7decee8aebb34c0078c6a0e4fbd174a17&dn=The%20Revenant%202015%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "Выживший / The Revenant [2015 UHD BDRemux 2160p HDR10 HDR10+] Dub + 2x AVO + Ukr + Original (Eng) + Sub (Rus Ukr Eng)",
+                  "size": "56.46 GB",
+                  "seeds": 69,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "c3c49439420b686bbecb3be41e3d2e7bc73a0fe4",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:c3c49439420b686bbecb3be41e3d2e7bc73a0fe4&dn=%D0%92%D1%8B%D0%B6%D0%B8%D0%B2%D1%88%D0%B8%D0%B9%20/%20The%20Revenant%20%5B2015%20UHD%20BDRemux%202160p%20HDR10%20HDR10%2B%5D%20Dub%20%2B%202x%20AVO%20%2B%20Ukr%20%2B%20Original%20%28Eng%29%20%2B%20Sub%20%28Rus%20Ukr%20Eng%29&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "The Revenant PROPER 2015 Bluray 2160p AV1 HDR10 DV TrueHD 7.1-UH [UserHEVC]",
+                  "size": "19.33 GB",
+                  "seeds": 61,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "c76c3d5b20c4fd9a795440e6bd26cd1a1c772258",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:c76c3d5b20c4fd9a795440e6bd26cd1a1c772258&dn=The%20Revenant%20PROPER%202015%20Bluray%202160p%20AV1%20HDR10%20DV%20TrueHD%207.1-UH%20%5BUserHEVC%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "The.Revenant.2015.1080p.REMUX.ENG.RUS.UKR.ITA.LATINO.DTS-HD.Master.DDP5.1.MKV-BEN.THE.MEN",
+                  "size": "38.1 GB",
+                  "seeds": 26,
+                  "flags": [
+                    "🇲🇽",
+                    "🇺🇸"
+                  ],
+                  "audio": "🇲🇽 🇺🇸 Dual Latino",
+                  "hash": "cb076aed75fc2d8590558b4b44a272910453c9f5",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:cb076aed75fc2d8590558b4b44a272910453c9f5&dn=The.Revenant.2015.1080p.REMUX.ENG.RUS.UKR.ITA.LATINO.DTS-HD.Master.DDP5.1.MKV-BEN.THE.MEN&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "The Revenant 2015 1080p BluRay",
+                  "size": "2.39 GB",
+                  "seeds": 209,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "931a5bc5ce3767168d00f92a2e4cffe472b9ce54",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:931a5bc5ce3767168d00f92a2e4cffe472b9ce54&dn=The%20Revenant%202015%201080p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "The.Revenant.2015.1080p.AMZN.WEBRip.1600MB.DD5.1.x264-GalaxyRG",
+                  "size": "1.6 GB",
+                  "seeds": 140,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "27099b026480ee2a24513b7bff4a9748cd576828",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:27099b026480ee2a24513b7bff4a9748cd576828&dn=The.Revenant.2015.1080p.AMZN.WEBRip.1600MB.DD5.1.x264-GalaxyRG&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "The Revenant 2015 720p BluRay",
+                  "size": "1.13 GB",
+                  "seeds": 77,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "cbd21c97a839851a53cf1230e968ff373fe9a63e",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:cbd21c97a839851a53cf1230e968ff373fe9a63e&dn=The%20Revenant%202015%20720p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Leonardo DiCaprio Filmografi 2002 - 2021 Part II Packs - iCMAL [TGx]",
+                  "size": "80.23 MB",
+                  "seeds": 53,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "34c47794632aa156d54d01a950b2bba0b368528c",
+                  "fileIdx": 138,
+                  "magnet_url": "magnet:?xt=urn:btih:34c47794632aa156d54d01a950b2bba0b368528c&dn=Leonardo%20DiCaprio%20Filmografi%202002%20-%202021%20Part%20II%20Packs%20-%20iCMAL%20%5BTGx%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Выживший / The Revenant [2015 BDRip 720p] Dub + VO (Дмитрий Есарев) + Sub Rus Eng + Original Eng",
+                  "size": "10.92 GB",
+                  "seeds": 12,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "ed032d3497bab13f874381095dd959ae50553103",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:ed032d3497bab13f874381095dd959ae50553103&dn=%D0%92%D1%8B%D0%B6%D0%B8%D0%B2%D1%88%D0%B8%D0%B9%20/%20The%20Revenant%20%5B2015%20BDRip%20720p%5D%20Dub%20%2B%20VO%20%28%D0%94%D0%BC%D0%B8%D1%82%D1%80%D0%B8%D0%B9%20%D0%95%D1%81%D0%B0%D1%80%D0%B5%D0%B2%29%20%2B%20Sub%20Rus%20Eng%20%2B%20Original%20Eng&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                }
+              ],
+              "date_uploaded": "2016-04-09 18:37:27",
+              "date_uploaded_unix": 1460219847,
+              "synopsis_es": "Revenant es una serie de televisión surcoreana dirigida por Lee Jung-rim y protagonizada por Kim Tae-ri, Oh Jung-se y Hong Kyung. Se emitió por el canal SBS desde el 23 de junio hasta el 29 de julio de 2023, los viernes y sábados a las 21:50.",
+              "summary": "Revenant es una serie de televisión surcoreana dirigida por Lee Jung-rim y protagonizada por Kim Tae-ri, Oh Jung-se y Hong Kyung. Se emitió por el canal SBS desde el 23 de junio hasta el 29 de julio de 2023, los viernes y sábados a las 21:50."
+            }
+          },
+          "quality": "1080p",
+          "genres": [],
+          "updatedAt": 1792807994.77121
+        },
+        "movie_6792": {
+          "itemKey": "movie_6792",
+          "id": "movie_6792",
+          "media_id": "movie_6792",
+          "type": "movie",
+          "media_type": "movie",
+          "title": "Spider-Man: Homecoming",
+          "episodeTitle": "",
+          "season": null,
+          "episode": null,
+          "episode_info": null,
+          "poster": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/large-cover.jpg",
+          "currentTime": 81.030665,
+          "current_time": 81.030665,
+          "progress_seconds": 81.030665,
+          "duration": 8008.0,
+          "progress": 1.0,
+          "torrentId": "magnet:?xt=urn:btih:4415109a20908d55cd42eaf24df9aaf89f7b0f7b&dn=Spider-Man%3A%20Homecoming%202017%201080p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+          "fileIdx": 1,
+          "torrent_data": {
+            "torrentId": "magnet:?xt=urn:btih:4415109a20908d55cd42eaf24df9aaf89f7b0f7b&dn=Spider-Man%3A%20Homecoming%202017%201080p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+            "fileIdx": 1,
+            "parentMedia": {
+              "id": 6792,
+              "url": "https://yts.gg/movies/spider-man-homecoming-2017",
+              "imdb_code": "tt2250912",
+              "title": "Spider-Man: Homecoming",
+              "title_english": "Spider-Man: Homecoming",
+              "title_long": "Spider-Man: Homecoming (2017)",
+              "slug": "spider-man-homecoming-2017",
+              "year": 2017,
+              "rating": 7.4,
+              "runtime": 133,
+              "genres": [
+                "Action",
+                "Adventure",
+                "Sci-Fi"
+              ],
+              "like_count": 1719,
+              "description_intro": "Peter Parker tries to stop Adrian 'The Vulture' Toomes from selling weapons made with advanced Chitauri technology while trying to balance his life as an ordinary high school student.",
+              "description_full": "La tetralogía de Spider-Man es una serie de películas ambientadas en el Universo cinematográfico de Marvel, basada en el personaje ficticio Spider-Man de Marvel Comics, Todas son producidas en una alianza entre Marvel Studios y Sony Pictures. La tetralogía incluye a Spider-Man: Homecoming (2017), Spider-Man: Lejos de casa (2019), Spider-Man: No Way Home (2021) y Spider-Man: Brand New Day (2026). También como parte del acuerdo, el personaje ha participado en otras producciones del UCM, incluyendo Capitan America: Civil War, Avengers: Infinity War y Avengers: Endgame.",
+              "yt_trailer_code": "xEvV3OsE2WM",
+              "language": "en",
+              "mpa_rating": "TV-14",
+              "background_image": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/background.jpg",
+              "background_image_original": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/background.jpg",
+              "small_cover_image": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/small-cover.jpg",
+              "medium_cover_image": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/medium-cover.jpg",
+              "large_cover_image": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/large-cover.jpg",
+              "medium_screenshot_image1": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/medium-screenshot1.jpg",
+              "medium_screenshot_image2": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/medium-screenshot2.jpg",
+              "medium_screenshot_image3": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/medium-screenshot3.jpg",
+              "large_screenshot_image1": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/large-screenshot1.jpg",
+              "large_screenshot_image2": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/large-screenshot2.jpg",
+              "large_screenshot_image3": "https://yts.gg/assets/images/movies/spider_man_homecoming_2017/large-screenshot3.jpg",
+              "cast": [
+                {
+                  "name": "Zendaya",
+                  "character_name": "Michelle",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm3918035.jpg",
+                  "imdb_code": "3918035"
+                },
+                {
+                  "name": "Robert Downey Jr.",
+                  "character_name": "Tony Stark / Iron Man",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0000375.jpg",
+                  "imdb_code": "0000375"
+                },
+                {
+                  "name": "Jennifer Connelly",
+                  "character_name": "Karen / Suit Lady",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0000124.jpg",
+                  "imdb_code": "0000124"
+                },
+                {
+                  "name": "Chris Evans",
+                  "character_name": "Steve Rogers / Captain America",
+                  "imdb_code": "0262635"
+                }
+              ],
+              "torrents": [
+                {
+                  "quality": "4K",
+                  "title": "Spider-Man.Homecoming.2017.2160p.UHD.BluRay.x265.10bit.HDR.TrueHD.7.1.Atmos-TERMiNAL",
+                  "size": "19.34 GB",
+                  "seeds": 221,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "6c03246b63b207577a21952e55966df8673f66d5",
+                  "fileIdx": 2,
+                  "magnet_url": "magnet:?xt=urn:btih:6c03246b63b207577a21952e55966df8673f66d5&dn=Spider-Man.Homecoming.2017.2160p.UHD.BluRay.x265.10bit.HDR.TrueHD.7.1.Atmos-TERMiNAL&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "Spider-Man: Homecoming (2017) [2160p] [4K] [BluRay] [5.1] [YTS] [YIFY]",
+                  "size": "6.36 GB",
+                  "seeds": 187,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "9c692f0b305fce04660e97054ae5758d8e8f3805",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:9c692f0b305fce04660e97054ae5758d8e8f3805&dn=Spider-Man%3A%20Homecoming%20%282017%29%20%5B2160p%5D%20%5B4K%5D%20%5BBluRay%5D%20%5B5.1%5D%20%5BYTS%5D%20%5BYIFY%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "Spider-Man.Homecoming.2017.2160p.UHD.BluRay.REMUX.DV.P7.HDR.MULTi.H265-BTM",
+                  "size": "62.06 GB",
+                  "seeds": 116,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "713fa8bcff88c4dbc2df7573ececbb92568531e5",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:713fa8bcff88c4dbc2df7573ececbb92568531e5&dn=Spider-Man.Homecoming.2017.2160p.UHD.BluRay.REMUX.DV.P7.HDR.MULTi.H265-BTM&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Spider-Man.Homecoming.2017.1080p.BluRay.DDP5.1.x265.10bit-GalaxyRG265",
+                  "size": "2.4 GB",
+                  "seeds": 603,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "0a40958131d1591247c2fe9822bd689b513c73d7",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:0a40958131d1591247c2fe9822bd689b513c73d7&dn=Spider-Man.Homecoming.2017.1080p.BluRay.DDP5.1.x265.10bit-GalaxyRG265&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Spider-Man: Homecoming 2017 1080p BluRay",
+                  "size": "2.03 GB",
+                  "seeds": 339,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "4415109a20908d55cd42eaf24df9aaf89f7b0f7b",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:4415109a20908d55cd42eaf24df9aaf89f7b0f7b&dn=Spider-Man%3A%20Homecoming%202017%201080p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Spider-Man Homecoming 2017 1080p NF WEB-DL AAC5 1 AV1-Saon",
+                  "size": "2.41 GB",
+                  "seeds": 19,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "3658dafc4c3579dc46f5c08406fb5dc978805fe6",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:3658dafc4c3579dc46f5c08406fb5dc978805fe6&dn=Spider-Man%20Homecoming%202017%201080p%20NF%20WEB-DL%20AAC5%201%20AV1-Saon&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Spider Man Homecoming (2017) [BluRay 720p X264 MKV][AC3 5.1 Castellano][www.maxitorrent.com]",
+                  "size": "7.71 GB",
+                  "seeds": 14,
+                  "flags": [
+                    "🇪🇸"
+                  ],
+                  "audio": "🇪🇸 Castellano",
+                  "hash": "4eddf49119c636acb88274d0180928821688b685",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:4eddf49119c636acb88274d0180928821688b685&dn=Spider%20Man%20Homecoming%20%282017%29%20%5BBluRay%20720p%20X264%20MKV%5D%5BAC3%205.1%20Castellano%5D%5Bwww.maxitorrent.com%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Spider-Man: Homecoming 2017 720p BluRay",
+                  "size": "985.13 MB",
+                  "seeds": 77,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "d64db6c8aeae8d2ac53e88b83de8c54fedc45317",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:d64db6c8aeae8d2ac53e88b83de8c54fedc45317&dn=Spider-Man%3A%20Homecoming%202017%20720p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Marvel Cinematic Universe Collection (2008-2021) 720p BluRay x265 HEVC [Hindi English] ESub ~ Immortal",
+                  "size": "898.48 MB",
+                  "seeds": 46,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "8f2192f04aacd6a44a89b0200ddf4c961bd72c18",
+                  "fileIdx": 18,
+                  "magnet_url": "magnet:?xt=urn:btih:8f2192f04aacd6a44a89b0200ddf4c961bd72c18&dn=Marvel%20Cinematic%20Universe%20Collection%20%282008-2021%29%20720p%20BluRay%20x265%20HEVC%20%5BHindi%20English%5D%20ESub%20~%20Immortal&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                }
+              ],
+              "date_uploaded": "2017-10-03 03:31:11",
+              "date_uploaded_unix": 1506994271,
+              "synopsis_es": "La tetralogía de Spider-Man es una serie de películas ambientadas en el Universo cinematográfico de Marvel, basada en el personaje ficticio Spider-Man de Marvel Comics, Todas son producidas en una alianza entre Marvel Studios y Sony Pictures. La tetralogía incluye a Spider-Man: Homecoming (2017), Spider-Man: Lejos de casa (2019), Spider-Man: No Way Home (2021) y Spider-Man: Brand New Day (2026). También como parte del acuerdo, el personaje ha participado en otras producciones del UCM, incluyendo Capitan America: Civil War, Avengers: Infinity War y Avengers: Endgame.",
+              "summary": "La tetralogía de Spider-Man es una serie de películas ambientadas en el Universo cinematográfico de Marvel, basada en el personaje ficticio Spider-Man de Marvel Comics, Todas son producidas en una alianza entre Marvel Studios y Sony Pictures. La tetralogía incluye a Spider-Man: Homecoming (2017), Spider-Man: Lejos de casa (2019), Spider-Man: No Way Home (2021) y Spider-Man: Brand New Day (2026). También como parte del acuerdo, el personaje ha participado en otras producciones del UCM, incluyendo Capitan America: Civil War, Avengers: Infinity War y Avengers: Endgame."
+            }
+          },
+          "quality": "1080p",
+          "genres": [],
+          "updatedAt": 1792808846.3411672
+        },
+        "movie_2934": {
+          "itemKey": "movie_2934",
+          "id": "movie_2934",
+          "media_id": "movie_2934",
+          "type": "movie",
+          "media_type": "movie",
+          "title": "Superbad",
+          "episodeTitle": "",
+          "season": null,
+          "episode": null,
+          "episode_info": null,
+          "poster": "https://yts.gg/assets/images/movies/Superbad_2007/large-cover.jpg",
+          "currentTime": 159.121777,
+          "current_time": 159.121777,
+          "progress_seconds": 159.121777,
+          "duration": 6784.875,
+          "progress": 2.3,
+          "torrentId": "magnet:?xt=urn:btih:cad6996965c31f8ae11e8496c12cf8c5100dd1f7&dn=Superbad%202007%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+          "fileIdx": 0,
+          "torrent_data": {
+            "torrentId": "magnet:?xt=urn:btih:cad6996965c31f8ae11e8496c12cf8c5100dd1f7&dn=Superbad%202007%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+            "fileIdx": 0,
+            "parentMedia": {
+              "id": 2934,
+              "url": "https://yts.gg/movies/superbad-2007",
+              "imdb_code": "tt0829482",
+              "title": "Superbad",
+              "title_english": "Superbad",
+              "title_long": "Superbad (2007)",
+              "slug": "superbad-2007",
+              "year": 2007,
+              "rating": 7.6,
+              "runtime": 113,
+              "genres": [
+                "Action",
+                "Comedy"
+              ],
+              "like_count": 309,
+              "description_intro": "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
+              "description_full": "Evan Goldberg es un director, productor y guionista cinematográfico canadiense.\nComenzó su carrera en el mundo del cine junto a su amigo de la infancia Seth Rogen, con el que ha producido y escrito numerosas películas y diversas series de televisión de gran prestigio internacional. Como director comenzó en 2013 con la película This Is the End.\nÉl y Rogen, han sido nominados en numerosos premios como los Premios Emmy, los Globo de Oro, Premios Independent Spirit, etc.",
+              "yt_trailer_code": "MuhWxdD0qno",
+              "language": "en",
+              "mpa_rating": "TV-14",
+              "background_image": "https://yts.gg/assets/images/movies/Superbad_2007/background.jpg",
+              "background_image_original": "https://yts.gg/assets/images/movies/Superbad_2007/background.jpg",
+              "small_cover_image": "https://yts.gg/assets/images/movies/Superbad_2007/small-cover.jpg",
+              "medium_cover_image": "https://yts.gg/assets/images/movies/Superbad_2007/medium-cover.jpg",
+              "large_cover_image": "https://yts.gg/assets/images/movies/Superbad_2007/large-cover.jpg",
+              "medium_screenshot_image1": "https://yts.gg/assets/images/movies/Superbad_2007/medium-screenshot1.jpg",
+              "medium_screenshot_image2": "https://yts.gg/assets/images/movies/Superbad_2007/medium-screenshot2.jpg",
+              "medium_screenshot_image3": "https://yts.gg/assets/images/movies/Superbad_2007/medium-screenshot3.jpg",
+              "large_screenshot_image1": "https://yts.gg/assets/images/movies/Superbad_2007/large-screenshot1.jpg",
+              "large_screenshot_image2": "https://yts.gg/assets/images/movies/Superbad_2007/large-screenshot2.jpg",
+              "large_screenshot_image3": "https://yts.gg/assets/images/movies/Superbad_2007/large-screenshot3.jpg",
+              "cast": [
+                {
+                  "name": "Kevin Corrigan",
+                  "character_name": "Mark",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0180984.jpg",
+                  "imdb_code": "0180984"
+                },
+                {
+                  "name": "Emma Stone",
+                  "character_name": "Jules",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm1297015.jpg",
+                  "imdb_code": "1297015"
+                },
+                {
+                  "name": "Dave Franco",
+                  "character_name": "Greg the Soccer Player",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm2002649.jpg",
+                  "imdb_code": "2002649"
+                },
+                {
+                  "name": "Seth Rogen",
+                  "character_name": "Officer Michaels",
+                  "url_small_image": "https://yts.gg/assets/images/actors/thumb/nm0736622.jpg",
+                  "imdb_code": "0736622"
+                }
+              ],
+              "torrents": [
+                {
+                  "quality": "4K",
+                  "title": "Superbad 2007 2160p BluRay",
+                  "size": "5.05 GB",
+                  "seeds": 201,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "cad6996965c31f8ae11e8496c12cf8c5100dd1f7",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:cad6996965c31f8ae11e8496c12cf8c5100dd1f7&dn=Superbad%202007%202160p%20BluRay&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "Superbad.2007.Theatrical.2160p.MA.WEB-DL.DDP5.1.DV.HDR10+H.265-CRFW",
+                  "size": "20.07 GB",
+                  "seeds": 41,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "93564fd9a911aeb4c1a0a026fa6737016f1e6556",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:93564fd9a911aeb4c1a0a026fa6737016f1e6556&dn=Superbad.2007.Theatrical.2160p.MA.WEB-DL.DDP5.1.DV.HDR10%2BH.265-CRFW&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "4K",
+                  "title": "Superbad.2007.2160p.WEBRip.3500MB.DDP5.1.x264-GalaxyRG",
+                  "size": "3.47 GB",
+                  "seeds": 15,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "1f7d1f3ffc4a0ec78583fe38aaeb3a11ee9c31e4",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:1f7d1f3ffc4a0ec78583fe38aaeb3a11ee9c31e4&dn=Superbad.2007.2160p.WEBRip.3500MB.DDP5.1.x264-GalaxyRG&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Superbad.2007.1080p.REMUX.Unrated.ENG.RUS.CZE.ITA.HUN.POL.HINDI.LATINO.TrueHD.DDP5.1.MKV-BEN.THE.MEN",
+                  "size": "30.93 GB",
+                  "seeds": 18,
+                  "flags": [
+                    "🇲🇽",
+                    "🇺🇸"
+                  ],
+                  "audio": "🇲🇽 🇺🇸 Dual Latino",
+                  "hash": "f9c0ce519410078ab14360425e4ad1b5a70a962e",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:f9c0ce519410078ab14360425e4ad1b5a70a962e&dn=Superbad.2007.1080p.REMUX.Unrated.ENG.RUS.CZE.ITA.HUN.POL.HINDI.LATINO.TrueHD.DDP5.1.MKV-BEN.THE.MEN&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Super.Cool.2007.1080pl-lat",
+                  "size": "1.92 GB",
+                  "seeds": 4,
+                  "flags": [
+                    "🇲🇽"
+                  ],
+                  "audio": "🇲🇽 Español Latino",
+                  "hash": "3fd6e2e8c50e1468ee51487e28f230bcce5b12d9",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:3fd6e2e8c50e1468ee51487e28f230bcce5b12d9&dn=Super.Cool.2007.1080pl-lat&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "1080p",
+                  "title": "Superbad 2007 Unrated 1080p BluRay (Multi Audio) HEVC H265 BONE",
+                  "size": "2.09 GB",
+                  "seeds": 266,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "0be4ffd5c71e0d365aadaef80d87924a89fd5f6b",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:0be4ffd5c71e0d365aadaef80d87924a89fd5f6b&dn=Superbad%202007%20Unrated%201080p%20BluRay%20%28Multi%20Audio%29%20HEVC%20H265%20BONE&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Superbad Unrated (2007) 720p BrRip x264 - 700mb - YIFY",
+                  "size": "698.46 MB",
+                  "seeds": 103,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "ecb51f617bd95e42c294d0c6961b12b3ca4f8d44",
+                  "fileIdx": 2,
+                  "magnet_url": "magnet:?xt=urn:btih:ecb51f617bd95e42c294d0c6961b12b3ca4f8d44&dn=Superbad%20Unrated%20%282007%29%20720p%20BrRip%20x264%20-%20700mb%20-%20YIFY&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "SuperПерцы / Superbad [2007 BDRip 720p] [Расширенная версия / Unrated Extended Edition]",
+                  "size": "4.27 GB",
+                  "seeds": 8,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "879299396234fa5105733c2dd8f6207f1b911882",
+                  "fileIdx": 1,
+                  "magnet_url": "magnet:?xt=urn:btih:879299396234fa5105733c2dd8f6207f1b911882&dn=Super%D0%9F%D0%B5%D1%80%D1%86%D1%8B%20/%20Superbad%20%5B2007%20BDRip%20720p%5D%20%5B%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F%20%D0%B2%D0%B5%D1%80%D1%81%D0%B8%D1%8F%20/%20Unrated%20Extended%20Edition%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "720p",
+                  "title": "Superbad.2007.THEATRICAL.720p.WEB.H264-FLAME",
+                  "size": "4.97 GB",
+                  "seeds": 4,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Inglés (V.O.)",
+                  "hash": "f296cd34439f46b2a91a03914d5de63ed019bf3f",
+                  "fileIdx": 4,
+                  "magnet_url": "magnet:?xt=urn:btih:f296cd34439f46b2a91a03914d5de63ed019bf3f&dn=Superbad.2007.THEATRICAL.720p.WEB.H264-FLAME&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "480p",
+                  "title": "SuperПерцы / Superbad [2007 DVDRip]",
+                  "size": "2.05 GB",
+                  "seeds": 6,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "81f09acbab3db74b5e3842f9afbf8c8934360caa",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:81f09acbab3db74b5e3842f9afbf8c8934360caa&dn=Super%D0%9F%D0%B5%D1%80%D1%86%D1%8B%20/%20Superbad%20%5B2007%20DVDRip%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "480p",
+                  "title": "Superbad - É Hoje 2008 DVDRip Dublado By Bozano",
+                  "size": "699.87 MB",
+                  "seeds": 3,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "867995b2d4e01dd263460510c57482bc990aea26",
+                  "fileIdx": 0,
+                  "magnet_url": "magnet:?xt=urn:btih:867995b2d4e01dd263460510c57482bc990aea26&dn=Superbad%20-%20%C3%89%20Hoje%202008%20DVDRip%20Dublado%20By%20Bozano&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                },
+                {
+                  "quality": "480p",
+                  "title": "Сборник трейлеров и тизеров с DVD [2005-2010 DVDRip]",
+                  "size": "50.14 MB",
+                  "seeds": 2,
+                  "flags": [
+                    "🇺🇸"
+                  ],
+                  "audio": "🇺🇸 Multi Audio",
+                  "hash": "36702ead25237572fef220ed8a926db06d509b20",
+                  "fileIdx": 725,
+                  "magnet_url": "magnet:?xt=urn:btih:36702ead25237572fef220ed8a926db06d509b20&dn=%D0%A1%D0%B1%D0%BE%D1%80%D0%BD%D0%B8%D0%BA%20%D1%82%D1%80%D0%B5%D0%B9%D0%BB%D0%B5%D1%80%D0%BE%D0%B2%20%D0%B8%20%D1%82%D0%B8%D0%B7%D0%B5%D1%80%D0%BE%D0%B2%20%D1%81%20DVD%20%5B2005-2010%20DVDRip%5D&tr=udp%3A//tracker.opentrackr.org%3A1337/announce&tr=udp%3A//open.tracker.cl%3A1337/announce&tr=udp%3A//open.demonii.com%3A1337/announce&tr=udp%3A//open.stealth.si%3A80/announce&tr=udp%3A//tracker.torrent.eu.org%3A451/announce&tr=udp%3A//tracker.skynetcloud.site%3A6969/announce&tr=udp%3A//tracker.openbittorrent.com%3A80/announce&tr=udp%3A//tracker.dler.org%3A6969/announce&tr=udp%3A//explodie.org%3A6969/announce&tr=udp%3A//p4p.arenabg.com%3A1337/announce&tr=udp%3A//tracker.qu.ax%3A6969/announce&tr=udp%3A//tracker.moeking.me%3A6969/announce&tr=wss%3A//tracker.btorrent.xyz&tr=wss%3A//tracker.openwebtorrent.com",
+                  "type": "torrent"
+                }
+              ],
+              "date_uploaded": "2015-11-01 01:49:44",
+              "date_uploaded_unix": 1446338984,
+              "synopsis_es": "Evan Goldberg es un director, productor y guionista cinematográfico canadiense.\nComenzó su carrera en el mundo del cine junto a su amigo de la infancia Seth Rogen, con el que ha producido y escrito numerosas películas y diversas series de televisión de gran prestigio internacional. Como director comenzó en 2013 con la película This Is the End.\nÉl y Rogen, han sido nominados en numerosos premios como los Premios Emmy, los Globo de Oro, Premios Independent Spirit, etc.",
+              "summary": "Evan Goldberg es un director, productor y guionista cinematográfico canadiense.\nComenzó su carrera en el mundo del cine junto a su amigo de la infancia Seth Rogen, con el que ha producido y escrito numerosas películas y diversas series de televisión de gran prestigio internacional. Como director comenzó en 2013 con la película This Is the End.\nÉl y Rogen, han sido nominados en numerosos premios como los Premios Emmy, los Globo de Oro, Premios Independent Spirit, etc."
+            }
+          },
+          "quality": "1080p",
+          "genres": [],
+          "updatedAt": 1792812045.04454
+        }
+      },
+      "watched": {
+        "movie_555": true,
+        "series_44458_s4e10_s4e10": true,
+        "movie_6792": true,
+        "movie_6339": true,
+        "series_44458_s4e7_s4e7": true
+      }
+    },
+    "familia": {
+      "username": "familia",
+      "displayName": "Familia",
+      "passwordHash": "bf45057b810a055f92ef9efeb390d3199244d515b240c6ac90555930b94a5bd4",
+      "salt": "antena_1792806097876",
+      "avatarColor": "#ff007f",
+      "createdAt": 1792806097.8762062,
+      "favorites": [],
+      "watchHistory": [],
+      "inProgress": {},
+      "watched": {}
+    }
+  }
+}

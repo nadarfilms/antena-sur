@@ -1,0 +1,3530 @@
+/* ==========================================================================
+   ANTENA SUR - CINEMA & SERIES VOD STYLES
+   Estilo Industrial Dark HUD / Blackmagic Camera OS
+   Cartelera HD, Buscador, Filtro por Género, Modales y Gestor Magnet/Torrent
+   ========================================================================== */
+
+.cinema-vod-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #060911;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
+}
+
+.cinema-vod-view.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: none !important;
+}
+
+/* Regla Universal de Ocultamiento Inmediato */
+.is-hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   HEADER HUD SUPERIOR CINEMA
+   ========================================================================== */
+
+.cinema-header {
+  background: rgba(13, 18, 29, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 10px 24px;
+  padding-top: max(10px, env(safe-area-inset-top, 10px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.cinema-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.cinema-back-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #c5d4e6;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.cinema-back-btn:hover,
+.cinema-back-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
+  color: #ffffff;
+  outline: none;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.cinema-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cinema-brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-brand-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+/* Buscador Central */
+.cinema-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 460px;
+}
+
+.cinema-search-input {
+  width: 100%;
+  background: rgba(8, 12, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-size: 0.88rem;
+  padding: 8px 36px 8px 36px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.cinema-search-input:focus {
+  border-color: #00e5ff;
+  background: rgba(12, 18, 30, 0.95);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+}
+
+.cinema-search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  display: flex;
+}
+
+.cinema-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #8fa0b5;
+  cursor: pointer;
+  padding: 4px;
+  display: none;
+  border-radius: 50%;
+}
+
+.cinema-search-clear:hover {
+  color: #ffffff;
+}
+
+/* Navegación Principal de Cine Estilo Plex (Centrada, Grande y Ergonómica) */
+.cinema-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 12, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.cinema-tab-btn,
+.cinema-mode-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  font-size: 0.95rem;
+  font-weight: 800;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  user-select: none;
+}
+
+.cinema-tab-btn:hover,
+.cinema-mode-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.cinema-tab-btn.is-active,
+.cinema-tab-btn:focus,
+.cinema-tab-btn.is-tv-focused,
+.cinema-mode-btn.is-active,
+.cinema-mode-btn:focus,
+.cinema-mode-btn.is-tv-focused {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.28) 0%, rgba(0, 149, 255, 0.22) 100%);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4), inset 0 0 12px rgba(0, 229, 255, 0.15);
+  transform: scale(1.04);
+}
+
+.cinema-tab-icon {
+  font-size: 1.15rem;
+}
+
+/* Header Right: Buscador y Botón de Perfil */
+.cinema-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* Botón de Usuario y Biblioteca Plex */
+.cinema-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 30px;
+  padding: 4px 14px 4px 6px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.cinema-user-btn:hover,
+.cinema-user-btn:focus,
+.cinema-user-btn.is-tv-focused {
+  border-color: #00e5ff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+  transform: scale(1.04);
+  background: rgba(0, 229, 255, 0.15);
+}
+
+.cinema-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff 0%, #0077ff 100%);
+  color: #030712;
+  font-weight: 900;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+}
+
+.cinema-user-meta {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.cinema-user-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1.2;
+}
+
+.cinema-user-status {
+  font-size: 0.65rem;
+  color: #00e5ff;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* Chips de Ranking IMDb y Rotten Tomatoes */
+.cinema-ranking-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cinema-rank-chip {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cinema-rank-chip:hover,
+.cinema-rank-chip:focus,
+.cinema-rank-chip.is-tv-focused {
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #ffffff;
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.cinema-rank-chip.is-active {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(0, 149, 255, 0.15) 100%);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+}
+
+/* ==========================================================================
+   BARRA DE GÉNEROS (Chips Horizontales)
+   ========================================================================== */
+
+.cinema-subbar {
+  background: #090d18;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cinema-subbar::-webkit-scrollbar {
+  height: 3px;
+}
+
+.cinema-genres-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.cinema-genre-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #8fa0b5;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.cinema-genre-chip:hover,
+.cinema-genre-chip:focus-visible {
+  color: #ffffff;
+  border-color: rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.08);
+  outline: none;
+}
+
+.cinema-genre-chip.is-active {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  font-weight: 700;
+}
+
+.cinema-results-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   ÁREA PRINCIPAL DE CONTENIDO Y GRID DE PÓSTERS
+   ========================================================================== */
+
+.cinema-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cuadrícula de Pósters: Máximo 5 por fila en pantalla 16:9 con carteles grandes */
+.cinema-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+@media (max-width: 1399px) {
+  .cinema-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .cinema-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cinema-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
+/* Encabezado de la Cartelera */
+.cinema-catalog-header {
+  margin: 16px 0 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cinema-catalog-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f8fafc;
+}
+
+/* Carruseles Horizontales Plex (Continuar Viendo / Recomendados) */
+.cinema-rail-section {
+  margin-bottom: 28px;
+  padding-bottom: 8px;
+}
+
+.cinema-rail-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cinema-rail-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-rail-icon {
+  color: #00e5ff;
+}
+
+.cinema-rail-subtitle {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cinema-rail-carousel {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 4px 4px 14px 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cinema-rail-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+.cinema-rail-carousel::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+.cinema-rail-carousel::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 3px;
+}
+
+/* Tarjeta de Continuar Viendo Plex */
+.cinema-continue-card {
+  flex: 0 0 280px;
+  background: #111726;
+  border: 1px solid #1f2a3f;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.cinema-continue-card:hover,
+.cinema-continue-card:focus,
+.cinema-continue-card.is-tv-focused {
+  border-color: #00e5ff;
+  box-shadow: 0 8px 24px rgba(0, 229, 255, 0.3);
+  transform: translateY(-4px) scale(1.02);
+}
+
+.cinema-continue-thumb-wrap {
+  position: relative;
+  width: 100%;
+  height: 145px;
+  background: #080c16;
+  overflow: hidden;
+}
+
+.cinema-continue-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cinema-continue-play-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 229, 255, 0.88);
+  color: #030712;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.cinema-continue-card:hover .cinema-continue-play-overlay,
+.cinema-continue-card:focus .cinema-continue-play-overlay {
+  transform: translate(-50%, -50%) scale(1.15);
+  opacity: 1;
+}
+
+.cinema-continue-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+.cinema-continue-info {
+  padding: 10px 12px;
+}
+
+.cinema-continue-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cinema-continue-meta {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Tarjeta Individual de Película / Serie (Grandes y Elegantes) */
+.cinema-card {
+  background: #111726;
+  border: 1px solid #1f2a3f;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+  position: relative;
+  user-select: none;
+}
+
+.cinema-card:hover,
+.cinema-card:focus,
+.cinema-card:focus-visible,
+.cinema-card.is-tv-focused {
+  transform: translateY(-6px) scale(1.03);
+  border-color: #00e5ff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 229, 255, 0.35);
+  z-index: 2;
+}
+
+.cinema-card-poster-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: #080c16;
+  overflow: hidden;
+}
+
+.cinema-card-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.cinema-card:hover .cinema-card-poster {
+  transform: scale(1.05);
+}
+
+.cinema-poster-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  font-size: 2rem;
+  background: linear-gradient(180deg, #101625 0%, #080c16 100%);
+  gap: 8px;
+}
+
+.cinema-poster-placeholder span {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: center;
+  padding: 0 10px;
+}
+
+/* Badges sobre el Póster */
+.cinema-badge-quality {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.cinema-badge-watched {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(16, 185, 129, 0.95);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cinema-card-badges-top {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  z-index: 3;
+}
+
+.cinema-badge-imdb {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  color: #fbbf24;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.cinema-badge-rt {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.cinema-badge-rt.is-certified {
+  border-color: rgba(245, 158, 11, 0.7);
+  color: #fde047;
+}
+
+.cinema-badge-rt.is-rotten {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #86efac;
+}
+
+.cinema-card-fav-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 3;
+  outline: none;
+}
+
+.cinema-card-fav-btn:hover,
+.cinema-card-fav-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  transform: scale(1.18);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+}
+
+.cinema-card-fav-btn.is-active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.cinema-badge-rating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.cinema-badge-year {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+/* Info de la Tarjeta */
+.cinema-card-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.cinema-card-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cinema-card-genres {
+  font-size: 0.72rem;
+  color: #7f8f9f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Estados Vacíos y Carga */
+.cinema-loading-state,
+.cinema-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+  text-align: center;
+  color: #8fa0b5;
+}
+
+.cinema-loading-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(0, 229, 255, 0.2);
+  border-top-color: #00e5ff;
+  border-radius: 50%;
+  animation: cinemaSpin 0.8s linear infinite;
+}
+
+@keyframes cinemaSpin {
+  to { transform: rotate(360deg); }
+}
+
+.cinema-load-more-btn {
+  margin: 28px auto 16px auto;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: #00e5ff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+  display: block;
+}
+
+.cinema-load-more-btn:hover,
+.cinema-load-more-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+  outline: none;
+}
+
+/* ==========================================================================
+   MODAL DE DETALLES DE PELÍCULA / SERIE
+/* ==========================================================================
+   VISTA DEDICADA DE DETALLES (MENÚ COMPLETO - NO POP-UP)
+   ========================================================================== */
+
+.cinema-detail-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #060912;
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
+}
+
+.cinema-detail-view.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: none !important;
+}
+
+/* Barra Superior HUD Fija */
+.cinema-detail-topbar {
+  background: rgba(10, 15, 26, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+  padding: 10px 32px;
+  padding-top: max(10px, env(safe-area-inset-top, 10px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.cinema-detail-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cinema-detail-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #c5d4e6;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.cinema-detail-back-btn:hover,
+.cinema-detail-back-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+  outline: none;
+}
+
+.cinema-detail-breadcrumb {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+/* Contenido Scrollable Principal */
+.cinema-detail-scroll-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+}
+
+.cinema-detail-scroll-wrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cinema-detail-scroll-wrap::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Sección Hero con Backdrop Panorámico */
+.cinema-detail-hero {
+  position: relative;
+  padding: 40px 36px 32px 36px;
+  min-height: 400px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.cinema-detail-backdrop-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cinema-detail-backdrop-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.24;
+  filter: blur(3px);
+  transform: scale(1.04);
+}
+
+.cinema-detail-backdrop-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6, 9, 18, 0.3) 0%, rgba(6, 9, 18, 0.85) 65%, #060912 100%);
+}
+
+.cinema-detail-hero-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  gap: 36px;
+  align-items: flex-start;
+}
+
+.cinema-detail-poster-col {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cinema-detail-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.cinema-detail-info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cinema-detail-badge-type {
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 3px;
+  letter-spacing: 0.8px;
+  width: fit-content;
+  text-transform: uppercase;
+}
+
+.cinema-detail-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+.cinema-detail-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.cinema-detail-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Fila de Acciones Plex (Mi Biblioteca y Marcar como Visto) */
+.cinema-detail-actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 8px 0;
+}
+
+.cinema-detail-btn-lib,
+.cinema-detail-btn-watched {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  user-select: none;
+}
+
+.cinema-detail-btn-lib {
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+}
+
+.cinema-detail-btn-lib:hover,
+.cinema-detail-btn-lib:focus-visible {
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.cinema-detail-btn-lib.is-in-library {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #f87171;
+}
+
+.cinema-detail-btn-lib.is-in-library:hover,
+.cinema-detail-btn-lib.is-in-library:focus-visible {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
+.cinema-detail-btn-watched {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+}
+
+.cinema-detail-btn-watched:hover,
+.cinema-detail-btn-watched:focus-visible {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #34d399;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-2px);
+}
+
+.cinema-detail-btn-watched.is-watched {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.cinema-detail-synopsis-box {
+  background: rgba(13, 19, 33, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  padding: 18px 24px;
+  max-width: 950px;
+}
+
+.cinema-detail-section-label {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.cinema-detail-synopsis-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* Banner de Último Capítulo Subido (Exclusivo Series) */
+.cinema-detail-latest-ep-banner.is-hidden {
+  display: none !important;
+}
+
+.cinema-detail-latest-ep-banner {
+  max-width: 1300px;
+  margin: 18px auto 8px auto;
+  padding: 18px 28px;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.16) 0%, rgba(13, 27, 42, 0.94) 100%);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 8px 26px rgba(0, 229, 255, 0.18);
+  box-sizing: border-box;
+}
+
+.cinema-latest-ep-info {
+  flex: 1;
+}
+
+.cinema-latest-ep-tag {
+  color: #00e5ff;
+  font-weight: 800;
+  font-size: 0.74rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.cinema-latest-ep-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  line-height: 1.25;
+}
+
+.cinema-latest-ep-desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Sección de Contenido Principal (Calidades o Temporadas/Capítulos) */
+.cinema-detail-content-section {
+  max-width: 1300px;
+  margin: 24px auto 0 auto;
+  padding: 0 36px;
+  box-sizing: border-box;
+}
+
+.cinema-detail-section-header {
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
+}
+
+.cinema-detail-section-heading {
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cinema-detail-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .cinema-detail-hero {
+    padding: 24px 18px;
+  }
+  .cinema-detail-hero-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .cinema-detail-poster-col {
+    width: 100%;
+    max-width: 180px;
+    align-items: center;
+  }
+  .cinema-detail-title {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+  .cinema-detail-info-col {
+    align-items: center;
+    text-align: center;
+  }
+  .cinema-detail-meta-row,
+  .cinema-detail-genres {
+    justify-content: center;
+  }
+  .cinema-detail-latest-ep-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+  }
+  .cinema-detail-content-section {
+    padding: 0 18px;
+  }
+}
+
+.cinema-meta-pill {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: #c5d4e6;
+  font-weight: 600;
+  font-size: 0.76rem;
+}
+
+.cinema-rating-pill {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.cinema-modal-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cinema-genre-tag {
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.25);
+  color: #00e5ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* Sinopsis */
+.cinema-modal-synopsis-box {
+  background: rgba(8, 12, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 16px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cinema-synopsis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cinema-synopsis-title {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.cinema-synopsis-text {
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* Sección de Fuentes Torrent y Magnets */
+.cinema-torrents-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cinema-torrents-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-torrents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cinema-torrent-item {
+  background: #151d2e;
+  border: 1px solid #283750;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+
+.cinema-torrent-item:hover {
+  background: #1b253b;
+  border-color: rgba(0, 229, 255, 0.4);
+}
+
+.cinema-torrent-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cinema-torrent-filename {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  color: #7dd3fc;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.cinema-torrent-fn-icon {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.cinema-torrent-fn-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cinema-torrent-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cinema-torrent-q {
+  background: #0095ff;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.cinema-torrent-type {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cinema-torrent-size {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+}
+
+.cinema-torrent-seeds {
+  font-size: 0.72rem;
+  color: #10b981;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cinema-torrent-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Botón Único de Play para Reproducción en la Aplicación */
+.cinema-btn-play-action {
+  background: linear-gradient(135deg, #00e5ff 0%, #0088ff 100%);
+  border: 1px solid #00e5ff;
+  color: #050811;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 14px rgba(0, 229, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.cinema-btn-play-action:hover,
+.cinema-btn-play-action:focus,
+.cinema-btn-play-action:focus-visible,
+.cinema-btn-play-action.is-tv-focused {
+  background: #00e5ff;
+  color: #000000;
+  transform: scale(1.05);
+  box-shadow: 0 6px 22px rgba(0, 229, 255, 0.6);
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+}
+
+.cinema-btn-play-action svg {
+  flex-shrink: 0;
+}
+
+/* Trailer button */
+.cinema-btn-trailer {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  width: fit-content;
+  text-decoration: none;
+}
+
+.cinema-btn-trailer:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   NAVEGACIÓN DE SERIES ESTILO STREMIO (TEMPORADAS & EPISODIOS)
+   ========================================================================== */
+
+/* Barra Horizontal de Temporadas */
+.cinema-seasons-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 2px 12px 2px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+.cinema-seasons-bar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.cinema-seasons-bar::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.4);
+  border-radius: 4px;
+}
+
+.cinema-season-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.cinema-season-tab:hover {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #ffffff;
+}
+
+.cinema-season-tab.is-active {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(0, 149, 255, 0.25) 100%);
+  border-color: #00e5ff;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+}
+
+.cinema-season-tab:focus-visible,
+.cinema-season-tab.is-tv-focused {
+  outline: 2px solid #00e5ff;
+  outline-offset: 1px;
+}
+
+/* Contenedor de Episodios Espacioso (Sin límite artificial de 420px) */
+.cinema-episodes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 30px;
+}
+
+/* Tarjeta de Episodio Individual */
+.cinema-episode-card {
+  background: #111726;
+  border: 1px solid #1f2b40;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+}
+
+.cinema-episode-card:hover {
+  background: #151d30;
+  border-color: rgba(0, 229, 255, 0.4);
+}
+
+/* Destacado Especial para el Último Capítulo Subido */
+.cinema-episode-card.is-latest-highlight {
+  border-color: rgba(0, 229, 255, 0.65);
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.08) 0%, rgba(17, 23, 38, 0.98) 100%);
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.18);
+}
+
+.cinema-badge-new-ep {
+  background: #00e5ff;
+  color: #040810;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* Thumbnail del Episodio */
+.cinema-episode-thumb-wrap {
+  position: relative;
+  width: 140px;
+  aspect-ratio: 16 / 9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #090d16;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cinema-episode-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cinema-episode-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #64748b;
+  background: #0d1322;
+}
+
+.cinema-episode-badge-num {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #00e5ff;
+  font-weight: 800;
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  letter-spacing: 0.5px;
+}
+
+.cinema-episode-badge-runtime {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.82);
+  color: #c5d4e6;
+  font-weight: 600;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Contenido del Episodio */
+.cinema-episode-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cinema-episode-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cinema-episode-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.cinema-episode-airdate {
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.cinema-episode-summary {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Lista de Fuentes/Streams dentro del Episodio */
+.cinema-ep-streams-list {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cinema-ep-stream-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 0.15s ease;
+}
+
+.cinema-ep-stream-item:hover {
+  background: rgba(0, 229, 255, 0.05);
+  border-color: rgba(0, 229, 255, 0.25);
+}
+
+.cinema-ep-stream-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cinema-ep-stream-title {
+  font-size: 0.76rem;
+  color: #cbd5e1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.cinema-ep-stream-size {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+}
+
+.cinema-ep-stream-seeds {
+  font-size: 0.7rem;
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Etiquetas de idioma de audio y banderas */
+.cinema-torrent-lang,
+.cinema-ep-lang-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
+  vertical-align: middle;
+}
+
+.cinema-torrent-lang.is-latino,
+.cinema-ep-lang-tag.is-latino {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.cinema-torrent-lang.is-dual,
+.cinema-ep-lang-tag.is-dual {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+.cinema-lang-flags,
+.cinema-flags-icon {
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .cinema-episode-card {
+    flex-direction: column;
+  }
+  .cinema-episode-thumb-wrap {
+    width: 100%;
+    max-width: 220px;
+  }
+}
+
+/* ==========================================================================
+   REPRODUCTOR DE CINE INTEGRADO EN LA APLICACIÓN (IN-APP CINEMA PLAYER)
+   ========================================================================== */
+
+.cinema-player-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000000;
+  z-index: 4000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease;
+}
+
+.cinema-player-view.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  display: none !important;
+}
+
+.cinema-player-hud-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px 24px;
+  padding-top: max(14px, env(safe-area-inset-top, 14px));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  z-index: 20;
+  pointer-events: auto;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease;
+}
+
+.cinema-player-hud-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cinema-player-back-btn {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+  transition: all 0.15s ease;
+}
+
+.cinema-player-back-btn:hover,
+.cinema-player-back-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.cinema-player-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  flex: 1;
+  max-width: 600px;
+  overflow: hidden;
+}
+
+.cinema-player-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cinema-player-subtitle {
+  font-size: 0.72rem;
+  color: #00e5ff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cinema-player-hud-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  max-width: 65%;
+  overflow: hidden;
+}
+
+/* Selector Rápido de Servidores Directos (Pills) */
+.cinema-player-servers-tray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 0;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cinema-player-servers-tray::-webkit-scrollbar {
+  height: 3px;
+}
+
+.cinema-player-servers-tray::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.3);
+  border-radius: 3px;
+}
+
+.cinema-server-pill-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.cinema-server-pill-btn:hover {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: rgba(0, 229, 255, 0.4);
+  color: #ffffff;
+}
+
+.cinema-server-pill-btn.is-active {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(0, 149, 255, 0.25) 100%);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.35);
+}
+
+.cinema-player-server-hint {
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-top: 8px;
+  text-align: center;
+  max-width: 480px;
+  line-height: 1.4;
+}
+
+.cinema-player-status-badge {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono, monospace);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cinema-player-stats-badge {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cinema-player-progress-bar {
+  width: 100%;
+  max-width: 380px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.cinema-player-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00e5ff 0%, #00ff88 100%);
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+.cinema-player-loading-tip {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.cinema-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.cinema-player-engine-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.4px;
+  transition: all 0.15s ease;
+}
+
+.cinema-player-engine-btn:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #ffffff;
+}
+
+.cinema-player-video-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  position: relative;
+  overflow: hidden;
+}
+
+.cinema-player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000000;
+  outline: none;
+}
+
+.cinema-player-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000000;
+}
+
+.cinema-player-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 8, 17, 0.94);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 15;
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.cinema-player-loading-overlay.is-hidden {
+  display: none !important;
+}
+
+.cinema-player-loading-spinner {
+  width: 52px;
+  height: 52px;
+  border: 4px solid rgba(0, 229, 255, 0.15);
+  border-top-color: #00e5ff;
+  border-radius: 50%;
+  animation: cinemaSpin 0.8s linear infinite;
+}
+
+.cinema-player-loading-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.cinema-player-loading-stats {
+  font-size: 0.82rem;
+  color: #00e5ff;
+  font-family: var(--font-mono, monospace);
+  margin: 0;
+  max-width: 450px;
+  line-height: 1.5;
+}
+
+.cinema-player-skip-wait-btn {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  transition: all 0.15s ease;
+}
+
+.cinema-player-skip-wait-btn:hover {
+  background: #00e5ff;
+  color: #000000;
+}
+
+.cinema-btn-load-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.cinema-btn-load-cancel:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.cinema-btn-load-cancel:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   ESTILOS COMPLETOS DEL REPRODUCTOR TORRENT (OSD HUD, CONTROLES, MENÚS)
+   ========================================================================== */
+
+/* Comportamiento de Ocultación Automática del HUD (Auto-Hide) */
+.cinema-player-hud-top,
+.cinema-player-hud-bottom {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+
+.cinema-player-view.hud-hidden .cinema-player-hud-top {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+.cinema-player-view.hud-hidden .cinema-player-hud-bottom {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+
+.cinema-player-view.hud-hidden {
+  cursor: none;
+}
+
+/* Zonas de Doble Tap / Clic para Salto de 10s */
+.cinema-touch-zone {
+  position: absolute;
+  top: 15%;
+  bottom: 20%;
+  width: 35%;
+  z-index: 10;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cinema-touch-left { left: 0; }
+.cinema-touch-right { right: 0; }
+
+/* Feedback Central (Play/Pausa/Seek) */
+.cinema-center-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(10, 15, 28, 0.85);
+  border: 2px solid #00e5ff;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 25;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.cinema-feedback-icon {
+  font-size: 1.8rem;
+  color: #00e5ff;
+  line-height: 1;
+}
+
+.cinema-feedback-text {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  font-family: var(--font-mono, monospace);
+}
+
+/* Subtítulos en Pantalla (Custom Overlay y Renderizado Nítido estilo Netflix) */
+.cinema-subtitle-display-overlay {
+  position: absolute;
+  bottom: 9.5%;
+  left: 4%;
+  right: 4%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 18;
+  display: flex;
+  justify-content: center;
+  transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cinema-player-view:not(.hud-hidden) .cinema-subtitle-display-overlay {
+  bottom: 15.5%;
+}
+
+.cinema-subtitle-display-overlay.pos-alta {
+  bottom: 14.5%;
+}
+
+.cinema-player-view:not(.hud-hidden) .cinema-subtitle-display-overlay.pos-alta {
+  bottom: 20.5%;
+}
+
+.cinema-subtitle-text {
+  display: inline-block;
+  background: transparent !important;
+  color: #ffffff;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: var(--cinema-sub-size, clamp(1.5rem, 3.0vw, 2.2rem));
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  padding: 0;
+  border-radius: 0;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow: 
+    0 0 4px #000000,
+    0 0 7px #000000,
+    -1px -1px 0 #000000,
+    1px -1px 0 #000000,
+    -1px 1px 0 #000000,
+    1px 1px 0 #000000,
+    0 2px 4px rgba(0, 0, 0, 0.95),
+    0 4px 8px rgba(0, 0, 0, 0.8);
+  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.85);
+  max-width: 90%;
+  word-break: break-word;
+  user-select: none;
+}
+
+/* Estilo para <track> nativo WebVTT */
+::cue {
+  background-color: transparent !important;
+  color: #ffffff !important;
+  font-size: var(--cinema-sub-size, clamp(1.5rem, 3.0vw, 2.2rem)) !important;
+  font-weight: 700 !important;
+  font-family: 'Netflix Sans', 'Helvetica Neue', Helvetica, Arial, Roboto, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow: 
+    0 0 4px #000000,
+    0 0 7px #000000,
+    -1px -1px 0 #000000,
+    1px -1px 0 #000000,
+    -1px 1px 0 #000000,
+    1px 1px 0 #000000,
+    0 2px 4px rgba(0, 0, 0, 0.95),
+    0 4px 8px rgba(0, 0, 0, 0.8) !important;
+  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.85) !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* HUD Inferior */
+.cinema-player-hud-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 24px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
+/* Barra de Tiempo y Scrubbing */
+.cinema-scrub-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.cinema-time-current,
+.cinema-time-total {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  font-family: var(--font-mono, monospace);
+  min-width: 52px;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+
+.cinema-time-total {
+  text-align: right;
+  cursor: pointer;
+}
+
+.cinema-scrub-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+  transition: height 0.15s ease;
+  outline: none;
+}
+
+.cinema-scrub-track:hover,
+.cinema-scrub-track:focus-visible {
+  height: 9px;
+}
+
+.cinema-scrub-buffer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 3px;
+  pointer-events: none;
+  transition: width 0.2s ease;
+}
+
+.cinema-scrub-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #00e5ff 0%, #00ff88 100%);
+  border-radius: 3px;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.cinema-scrub-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px #00e5ff;
+  pointer-events: none;
+  transition: transform 0.1s ease;
+}
+
+.cinema-scrub-track:hover .cinema-scrub-thumb {
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+.cinema-scrub-tooltip {
+  position: absolute;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: rgba(10, 15, 28, 0.95);
+  color: #00e5ff;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Fila de Controles */
+.cinema-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.cinema-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-controls-left {
+  flex-shrink: 0;
+}
+
+.cinema-controls-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.cinema-ctrl-stream-tag {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cinema-controls-right {
+  flex-shrink: 0;
+}
+
+/* Botones de Control */
+.cinema-ctrl-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 7px 11px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  transition: all 0.15s ease;
+  user-select: none;
+  backdrop-filter: blur(8px);
+  position: relative;
+}
+
+.cinema-ctrl-btn:hover,
+.cinema-ctrl-btn:focus-visible {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.cinema-ctrl-play {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #00e5ff;
+  color: #000000;
+  border: none;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.5);
+  padding: 0;
+}
+
+.cinema-ctrl-play:hover,
+.cinema-ctrl-play:focus-visible {
+  background: #38bdf8;
+  color: #000000;
+  transform: scale(1.08);
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.8);
+}
+
+.cinema-btn-mini-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  position: absolute;
+  bottom: 3px;
+  font-family: var(--font-mono, monospace);
+}
+
+.cinema-ctrl-pill {
+  padding: 6px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.4px;
+}
+
+.cinema-ctrl-pill.is-active {
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+/* Control de Volumen */
+.cinema-volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 2px 6px 2px 2px;
+}
+
+.cinema-volume-slider {
+  width: 70px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.15s ease;
+}
+
+.cinema-volume-slider:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.cinema-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00e5ff;
+  cursor: pointer;
+  box-shadow: 0 0 6px #00e5ff;
+}
+
+/* Menús Flotantes Popover (Subtítulos, Audio, Velocidad) */
+.cinema-player-popover.is-hidden {
+  display: none !important;
+}
+
+.cinema-player-popover {
+  position: absolute;
+  bottom: 80px;
+  right: 24px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  max-height: 72vh;
+  background: rgba(10, 15, 28, 0.97);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 8px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 229, 255, 0.2);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: popoverFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cinema-popover-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cinema-popover-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-popover-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.cinema-popover-close-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cinema-popover-body {
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Controles de Tamaño y Posición de Subtítulos */
+.cinema-sub-size-row,
+.cinema-sub-pos-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 10px;
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.cinema-sub-size-pills,
+.cinema-sub-pos-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cinema-sub-size-pill,
+.cinema-sub-pos-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #cbd5e1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.cinema-sub-size-pill:hover,
+.cinema-sub-pos-pill:hover,
+.cinema-sub-size-pill:focus-visible,
+.cinema-sub-pos-pill:focus-visible {
+  border-color: #00e5ff;
+  color: #00e5ff;
+  background: rgba(0, 229, 255, 0.12);
+}
+
+.cinema-sub-size-pill.is-active,
+.cinema-sub-pos-pill.is-active {
+  background: rgba(0, 229, 255, 0.22);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.cinema-sub-size-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Sincronización de Subtítulos */
+.cinema-sub-sync-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.cinema-sub-sync-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cinema-btn-sync {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cinema-btn-sync:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.cinema-sync-val {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #00e5ff;
+  min-width: 42px;
+  text-align: center;
+}
+
+/* Lista de Opciones de Subtítulos y Audio */
+.cinema-sub-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.cinema-audio-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.cinema-sub-torrent-indicator {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 6px;
+  border: 1px dashed rgba(0, 229, 255, 0.35);
+  font-size: 0.72rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cinema-sub-torrent-indicator-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cinema-sub-torrent-indicator-val {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.74rem;
+  color: #00e5ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.cinema-sub-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.cinema-sub-primary-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cinema-sub-lang-text {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.cinema-sub-release-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.68rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 95%;
+}
+
+.cinema-sub-release-tag span {
+  color: #cbd5e1;
+}
+
+.cinema-sub-option.is-rip-match {
+  border-color: rgba(0, 229, 255, 0.5) !important;
+  background: rgba(0, 229, 255, 0.1) !important;
+}
+
+.cinema-sub-badge-match {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(0, 229, 255, 0.25);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  letter-spacing: 0.3px;
+}
+
+.cinema-sub-badge-fps {
+  font-size: 0.62rem;
+  font-family: var(--font-mono, monospace);
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.cinema-sub-option,
+.cinema-audio-option {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.15s ease;
+}
+
+.cinema-sub-option:hover,
+.cinema-audio-option:hover {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.35);
+  color: #ffffff;
+}
+
+.cinema-sub-option.is-active,
+.cinema-audio-option.is-active {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(0, 149, 255, 0.2) 100%);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+}
+
+.cinema-sub-loading {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  padding: 8px 4px;
+  text-align: center;
+  font-style: italic;
+}
+
+.cinema-audio-toggle-btn {
+  transition: all 0.2s ease;
+}
+.cinema-audio-toggle-btn:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.cinema-btn-upload-sub {
+  display: block;
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px dashed rgba(0, 229, 255, 0.4);
+  color: #00e5ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cinema-btn-upload-sub:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+}
+
+.cinema-audio-info-tip {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Opciones de Velocidad */
+.cinema-speed-options-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.cinema-speed-opt {
+  padding: 8px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.cinema-speed-opt:hover {
+  background: rgba(0, 229, 255, 0.2);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.cinema-speed-opt.is-active {
+  background: #00e5ff;
+  border-color: #00e5ff;
+  color: #000000;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* Modo Ajuste de Pantalla (Object-Fit) */
+.cinema-player-video.fit-cover {
+  object-fit: cover !important;
+}
+
+/* ==========================================================================
+   OPCIONES DE RESOLUCIÓN Y CALIDAD POR CAPÍTULO DE SERIES (4K, 1080p, 720p)
+   ========================================================================== */
+.cinema-episode-streams-block {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cinema-ep-streams-header {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cinema-ep-streams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cinema-ep-stream-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cinema-ep-stream-btn-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.cinema-ep-stream-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cinema-ep-stream-btn:hover {
+  background: rgba(0, 229, 255, 0.18);
+  border-color: #00e5ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 229, 255, 0.28);
+}
+
+.cinema-ep-q-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.cinema-ep-q-tag.q-4k {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  color: #000000;
+}
+
+.cinema-ep-q-tag.q-1080p {
+  background: #00e5ff;
+  color: #0a0f1c;
+}
+
+.cinema-ep-q-tag.q-720p,
+.cinema-ep-q-tag.q-hd {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.cinema-ep-q-tag.q-480p {
+  background: rgba(255, 255, 255, 0.16);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.cinema-ep-size-tag {
+  color: #cbd5e1;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+}
+
+.cinema-ep-seeds-tag {
+  color: #10b981;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.cinema-ep-play-text {
+  color: #00e5ff;
+  font-weight: 800;
+  margin-left: 2px;
+}
+
+.cinema-btn-load-ep-streams {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 6px;
+  color: #00e5ff;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cinema-btn-load-ep-streams:hover {
+  background: rgba(0, 229, 255, 0.25);
+  border-color: #00e5ff;
+  color: #ffffff;
+}
+
+.cinema-ep-streams-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: #00e5ff;
+  font-weight: 600;
+  padding: 6px 0;
+}
+
+
+.cinema-player-video.fit-fill {
+  object-fit: fill !important;
+}
+
+/* ==========================================================================
+   MODAL DE USUARIO Y BIBLIOTECA PLEX
+   ========================================================================== */
+
+.cinema-user-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.cinema-user-modal-overlay.is-hidden {
+  display: none !important;
+}
+
+.cinema-user-modal-card {
+  width: 100%;
+  max-width: 520px;
+  background: #0f172a;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 229, 255, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: cinemaModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cinemaModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.cinema-modal-header {
+  padding: 18px 24px;
+  background: #0a0f1d;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cinema-modal-title {
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cinema-modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.cinema-modal-close-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.cinema-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Vista de Perfil Activo */
+.cinema-profile-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.cinema-profile-avatar-large {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff 0%, #3b82f6 100%);
+  color: #030712;
+  font-size: 1.6rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.cinema-profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cinema-profile-name {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.cinema-profile-stats {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-family: var(--font-mono, monospace);
+}
+
+.cinema-profiles-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cinema-modal-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.cinema-profiles-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cinema-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.cinema-profile-pill:hover,
+.cinema-profile-pill:focus-visible {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+  transform: translateY(-2px);
+}
+
+.cinema-profile-pill.is-active {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+.cinema-profile-pill-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00e5ff;
+}
+
+.cinema-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.cinema-btn-action {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  transition: all 0.2s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cinema-btn-action:hover,
+.cinema-btn-action:focus-visible {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: #00e5ff;
+  color: #00e5ff;
+}
+
+.cinema-btn-action.cinema-btn-primary {
+  background: linear-gradient(135deg, #00e5ff 0%, #2563eb 100%);
+  border-color: transparent;
+  color: #030712;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(0, 229, 255, 0.3);
+}
+
+.cinema-btn-action.cinema-btn-primary:hover,
+.cinema-btn-action.cinema-btn-primary:focus-visible {
+  box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Formulario Auth */
+.cinema-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cinema-auth-form.is-hidden {
+  display: none !important;
+}
+
+.cinema-auth-form-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.cinema-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cinema-input-group label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.cinema-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #080d1a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cinema-form-input:focus {
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
+}
+
+.cinema-auth-error-msg {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  border-radius: 6px;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.cinema-auth-error-msg.is-hidden {
+  display: none !important;
+}
+
+.cinema-auth-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+

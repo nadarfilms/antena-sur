@@ -2,15 +2,15 @@
 #EXTINF:-1 tvg-id="cl-rad-biobiosantiago" tvg-name="Radio Bío Bío (Santiago 99.7 FM)" tvg-logo="./img/logos/cl-rad-biobiosantiago.svg" group-title="Noticias",Radio Bío Bío (Santiago 99.7 FM)
 https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobioconcepcion" tvg-name="Radio Bío Bío (Concepción 98.1 FM)" tvg-logo="./img/logos/cl-rad-biobioconcepcion.svg" group-title="Noticias",Radio Bío Bío (Concepción 98.1 FM)
-https://unlimited3-cl.dps.live/biobioconcepcion/mp3/icecast.audio
+https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobiovalparaiso" tvg-name="Radio Bío Bío (Valparaíso 94.5 FM)" tvg-logo="./img/logos/cl-rad-biobiovalparaiso.svg" group-title="Noticias",Radio Bío Bío (Valparaíso 94.5 FM)
 https://unlimited3-cl.dps.live/biobiovalparaiso/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobiopuertomontt" tvg-name="Radio Bío Bío (Puerto Montt 94.9 FM)" tvg-logo="./img/logos/cl-rad-biobiopuertomontt.svg" group-title="Noticias",Radio Bío Bío (Puerto Montt 94.9 FM)
-https://unlimited3-cl.dps.live/biobiopuertomontt/mp3/icecast.audio
+https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobiotemuco" tvg-name="Radio Bío Bío (Temuco 88.1 FM)" tvg-logo="./img/logos/cl-rad-biobiotemuco.svg" group-title="Noticias / Opinión",Radio Bío Bío (Temuco 88.1 FM)
 https://unlimited3-cl.dps.live/biobiotemuco/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobiovaldivia" tvg-name="Radio Bío Bío (Valdivia 88.9 FM)" tvg-logo="./img/logos/cl-rad-biobiovaldivia.svg" group-title="Noticias / Opinión",Radio Bío Bío (Valdivia 88.9 FM)
-https://unlimited3-cl.dps.live/biobiovaldivia/mp3/icecast.audio
+https://unlimited3-cl.dps.live/biobiosantiago/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-biobioosorno" tvg-name="Radio Bío Bío (Osorno 106.5 FM)" tvg-logo="./img/logos/cl-rad-biobioosorno.svg" group-title="Noticias / Opinión",Radio Bío Bío (Osorno 106.5 FM)
 https://unlimited3-cl.dps.live/biobioosorno/mp3/icecast.audio
 #EXTINF:-1 tvg-id="cl-rad-cooperativa" tvg-name="Radio Cooperativa (93.3 FM)" tvg-logo="./img/logos/cl-rad-cooperativa.svg" group-title="Noticias",Radio Cooperativa (93.3 FM)

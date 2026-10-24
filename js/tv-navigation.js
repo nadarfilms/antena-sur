@@ -9,8 +9,17 @@ export function initTvNavigation() {
     const selectors = [
       '#heroCardTv',
       '#heroCardRadio',
+      '#heroCardCinema',
       '.section-nav-tab',
-      '.station-card'
+      '.station-card',
+      '.cinema-card',
+      '.cinema-genre-chip',
+      '.cinema-mode-btn',
+      '.cinema-btn-play-action',
+      '.cinema-load-more-btn',
+      '#cinemaBackBtn',
+      '#cinemaPlayerBackBtn',
+      '#cinemaPlayerEngineBtn'
     ];
     return Array.from(document.querySelectorAll(selectors.join(',')))
       .filter(el => {
@@ -50,14 +59,15 @@ export function initTvNavigation() {
 
     const heroTv = document.getElementById('heroCardTv');
     const heroRadio = document.getElementById('heroCardRadio');
+    const heroCinema = document.getElementById('heroCardCinema');
 
     if (!current) {
-      setFocus(heroTv || heroRadio);
+      setFocus(heroTv || heroRadio || heroCinema);
       return;
     }
 
     // ========================================================================
-    // NAVEGACIÓN DETERMINISTA EN LOS 2 GRANDES BOTONES PRINCIPALES (HERO)
+    // NAVEGACIÓN DETERMINISTA EN LOS 3 GRANDES BOTONES PRINCIPALES (HERO)
     // ========================================================================
     if (current === heroTv || current.id === 'heroCardTv') {
       if (direction === 'ArrowRight' || direction === 'ArrowDown') {
@@ -69,6 +79,17 @@ export function initTvNavigation() {
     if (current === heroRadio || current.id === 'heroCardRadio') {
       if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
         setFocus(heroTv);
+        return;
+      }
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        setFocus(heroCinema);
+        return;
+      }
+      return;
+    }
+    if (current === heroCinema || current.id === 'heroCardCinema') {
+      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
+        setFocus(heroRadio);
         return;
       }
       return;
@@ -243,6 +264,57 @@ export function initTvNavigation() {
   window.onTvNav = function(action) {
     const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
+
+    // 0. Navegación en Reproductor Cinema en Pantalla Completa
+    const cinemaPlayerView = document.getElementById('cinemaPlayerView');
+    const isCinemaPlayerOpen = cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden');
+    if (isCinemaPlayerOpen) {
+      if (action === 'Back') {
+        if (window.AntenaSurCinema) window.AntenaSurCinema.closeCinemaPlayer();
+        return;
+      }
+      if (action === 'Enter') {
+        const vid = document.getElementById('cinemaVideoElement');
+        if (vid && vid.style.display !== 'none') {
+          if (vid.paused) vid.play(); else vid.pause();
+        }
+        return;
+      }
+      if (action === 'ArrowLeft') {
+        const vid = document.getElementById('cinemaVideoElement');
+        if (vid && vid.style.display !== 'none') {
+          vid.currentTime = Math.max(0, vid.currentTime - 10);
+        }
+        return;
+      }
+      if (action === 'ArrowRight') {
+        const vid = document.getElementById('cinemaVideoElement');
+        if (vid && vid.style.display !== 'none') {
+          vid.currentTime = Math.min(vid.duration || 0, vid.currentTime + 10);
+        }
+        return;
+      }
+      return;
+    }
+
+    // Navegación en Cartelera Cinema & Series VOD
+    const cinemaView = document.getElementById('cinemaVodView');
+    const isCinemaOpen = cinemaView && !cinemaView.classList.contains('is-hidden');
+    if (isCinemaOpen) {
+      const cinemaModal = document.getElementById('cinemaDetailModal');
+      const isModalOpen = cinemaModal && !cinemaModal.classList.contains('is-hidden');
+
+      if (action === 'Back') {
+        if (isModalOpen) {
+          if (window.AntenaSurCinema) window.AntenaSurCinema.closeDetail();
+        } else {
+          if (window.AntenaSurCinema) window.AntenaSurCinema.close();
+          const heroCinema = document.getElementById('heroCardCinema');
+          if (heroCinema) setFocus(heroCinema);
+        }
+        return;
+      }
+    }
 
     // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
     const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));

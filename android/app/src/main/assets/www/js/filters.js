@@ -178,14 +178,16 @@ export class FiltersEngine {
         }
       }
 
-      // 3. Filtro Búsqueda por Texto (Nombre, género o frecuencia)
+      // 3. Filtro Búsqueda por Texto (Nombre, género, frecuencia, país o ciudad)
       if (this.state.search) {
         const q = this.state.search;
         const nameMatch = (station.name || '').toLowerCase().includes(q);
         const freqMatch = (station.frequency || '').toLowerCase().includes(q);
         const genreMatch = (station.genre || '').toLowerCase().includes(q);
+        const countryMatch = (station.countryName || '').toLowerCase().includes(q) || (station.country || '').toLowerCase().includes(q);
+        const geoMatch = (station.city || '').toLowerCase().includes(q) || (station.region || '').toLowerCase().includes(q);
 
-        if (!nameMatch && !freqMatch && !genreMatch) {
+        if (!nameMatch && !freqMatch && !genreMatch && !countryMatch && !geoMatch) {
           return false;
         }
       }

@@ -17,7 +17,7 @@ def generate_m3u():
     stations = data.get('stations', [])
 
     # 1. Canales de TV
-    tv_lines = ['#EXTM3U name="Antena Sur - Canales de Chile"']
+    tv_lines = ['#EXTM3U name="Antena Sur - Canales de Chile y Sudamérica"']
     for s in stations:
         if s.get('type') != 'tv':
             continue
@@ -28,11 +28,12 @@ def generate_m3u():
 
         ch_num = s.get('channelNumber', '')
         genre = s.get('genre', 'General')
+        country_name = s.get('countryName', 'Chile')
         logo = s.get('logo', '')
         station_id = s.get('id', '')
 
         # Metadatos IPTV para Android TV (TiviMate / OTT Navigator)
-        tvg_info = f'tvg-id="{station_id}" tvg-name="{name}" tvg-logo="{logo}" tvg-chno="{ch_num}" group-title="{genre}"'
+        tvg_info = f'tvg-id="{station_id}" tvg-name="{name}" tvg-logo="{logo}" tvg-chno="{ch_num}" group-title="{country_name} • {genre}"'
         tv_lines.append(f'#EXTINF:-1 {tvg_info},{name}')
 
         # Si el stream requiere referer de Canal 13 o similar

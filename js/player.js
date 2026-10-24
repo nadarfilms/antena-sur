@@ -18,6 +18,7 @@ export class PlayerEngine {
     this.isUsingProxy = false;
     this.connectionWatchdogTimer = null;
     this.nowPlayingTimer = null;
+    this.sourceLatencies = {};
 
     // Listas de estaciones para Zapping
     this.tvStations = [];
@@ -31,8 +32,6 @@ export class PlayerEngine {
     this.isGuideOverlayVisible = false;
     this.fsOverlayTimeout = null;
 
-    // Filtros internos de la guía Zapping
-    this.currentZappingGenre = 'all';
     this.currentZappingQuery = '';
 
     // Audio Element para Radios (optimizado para Android TV, iOS y Navegadores Móviles)
@@ -85,7 +84,6 @@ export class PlayerEngine {
       zappingOpenGuideBtn: document.getElementById('zappingOpenGuideBtn'),
       zappingChannelList: document.getElementById('zappingChannelList'),
       zappingSearchInput: document.getElementById('zappingSearchInput'),
-      zappingCategoryChips: document.getElementById('zappingCategoryChips'),
       zappingChCount: document.getElementById('zappingChCount'),
 
       // Área Principal del Reproductor TV
@@ -94,6 +92,8 @@ export class PlayerEngine {
       tvVideo: document.getElementById('tvVideo'),
       tvIframe: document.getElementById('tvIframe'),
       tvLoading: document.getElementById('tvLoading'),
+      tvSpeedBadge: document.getElementById('tvSpeedBadge'),
+      tvSpeedBadgeText: document.getElementById('tvSpeedBadgeText'),
       tvFallbackOverlay: document.getElementById('tvFallbackOverlay'),
       tvFallbackMsg: document.getElementById('tvFallbackMsg'),
       tvRetryBtn: document.getElementById('tvRetryBtn'),
@@ -244,6 +244,7 @@ export class PlayerEngine {
     this.initFullscreenRadioEvents();
     this.initSystemInterruptionListeners();
     this.initHlsLibrary();
+    window.AntenaSurPlayer = this;
   }
 
   async initHlsLibrary() {
@@ -478,23 +479,6 @@ export class PlayerEngine {
       });
     }
 
-    // Chips de categoría de TV (Sincronizados entre Sidebar y Guía Pantalla Completa)
-    const chipContainers = [this.dom.zappingCategoryChips, document.getElementById('zappingFsCategoryChips')].filter(Boolean);
-    chipContainers.forEach(container => {
-      container.querySelectorAll('.zapping-chip').forEach(chip => {
-        chip.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const targetGenre = chip.getAttribute('data-genre') || 'all';
-          this.currentZappingGenre = targetGenre;
-          chipContainers.forEach(cGroup => {
-            cGroup.querySelectorAll('.zapping-chip').forEach(c => {
-              c.classList.toggle('active', (c.getAttribute('data-genre') || 'all') === targetGenre);
-            });
-          });
-          this.renderTvGuide();
-        });
-      });
-    });
   }
 
   toggleSidebar(forceState = null) {
@@ -563,19 +547,6 @@ export class PlayerEngine {
 
     let filtered = this.tvStations;
 
-    if (this.currentZappingGenre && this.currentZappingGenre !== 'all') {
-      const g = this.currentZappingGenre.toLowerCase();
-      filtered = filtered.filter(s => {
-        const genre = (s.genre || '').toLowerCase();
-        if (g === 'general' && (genre.includes('general') || genre.includes('nacional'))) return true;
-        if (g === 'noticias' && genre.includes('noticia')) return true;
-        if (g === 'regional' && (s.region !== 'Región Metropolitana' || genre.includes('regional'))) return true;
-        if (g === 'cultura' && (genre.includes('cultura') || genre.includes('educacion') || genre.includes('arte'))) return true;
-        if ((g === 'musica' || g === 'música') && (genre.includes('music') || genre.includes('músic') || genre.includes('musical'))) return true;
-        return genre.includes(g);
-      });
-    }
-
     if (this.currentZappingQuery) {
       const q = this.currentZappingQuery;
       filtered = filtered.filter(s => {
@@ -600,20 +571,22 @@ export class PlayerEngine {
       const sourcesPill = (station.sources && station.sources.length > 1)
         ? `<span class="zapping-sources-pill" title="${station.sources.length} fuentes de reproducción disponibles">${station.sources.length} Fts</span>`
         : '';
+      const subText = station.city ? `${station.city} • Chile` : 'Chile';
+
       sidebarHtml += `
         <button class="zapping-ch-item ${isPlaying ? 'is-playing is-active is-dpad-focused' : ''}" data-id="${station.id}" data-index="${idx}" tabindex="0">
           <span class="zapping-ch-num">${chNum}</span>
-          <img class="zapping-ch-logo" src="${station.logo || './img/logos/cl-tv-tvn.svg'}" alt="${station.name}" loading="lazy" onerror="this.src='./img/logos/cl-tv-tvn.svg'">
+          <img class="zapping-ch-logo" src="${station.logo || './img/logos/default-channel.svg'}" alt="${station.name}" loading="lazy" onerror="this.onerror=null; this.src='./img/logos/default-channel.svg';">
           <div class="zapping-ch-text">
             <span class="zapping-ch-title">${station.name} ${sourcesPill}</span>
-            <span class="zapping-ch-sub">${station.city || 'Chile'} • ${station.genre || 'General'}</span>
+            <span class="zapping-ch-sub">${subText}</span>
           </div>
           <span class="zapping-live-pill"><span class="pulse-dot"></span> EN VIVO</span>
         </button>
       `;
     });
 
-    this.dom.zappingChannelList.innerHTML = sidebarHtml || `<div style="padding: 20px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">No hay canales en este filtro</div>`;
+    this.dom.zappingChannelList.innerHTML = sidebarHtml || `<div style="padding: 20px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">No se encontraron canales</div>`;
 
     // Renderizar en Overlay de Pantalla Completa
     if (this.dom.zappingFsChannelList) {
@@ -628,6 +601,11 @@ export class PlayerEngine {
       try {
         activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       } catch (e) {}
+    } else {
+      this.dom.zappingChannelList.scrollTop = 0;
+      if (this.dom.zappingFsChannelList) {
+        this.dom.zappingFsChannelList.scrollTop = 0;
+      }
     }
   }
 
@@ -1122,6 +1100,135 @@ export class PlayerEngine {
         this.exitFullscreenCrossBrowser();
       });
     }
+
+    // Gesto de Aceleración Rápida 2x / 3x (Estilo LibreTV / ArtPlayer)
+    this.setupQuickSpeedGesture();
+  }
+
+  /**
+   * Configura el gesto de aceleración rápida (Long-Press 2x / 3x estilo LibreTV / ArtPlayer)
+   * En móviles mantiene presionado para acelerar a 3x; en PC acelera a 2x con clic sostenido.
+   */
+  setupQuickSpeedGesture() {
+    if (!this.dom.zappingVideoContainer || !this.dom.tvVideo) return;
+
+    let speedHoldTimer = null;
+    let isSpeedBoosted = false;
+    let originalRate = 1.0;
+    const targetVideo = this.dom.tvVideo;
+    const badge = this.dom.tvSpeedBadge || document.getElementById('tvSpeedBadge');
+    const badgeText = this.dom.tvSpeedBadgeText || document.getElementById('tvSpeedBadgeText');
+
+    const startSpeedBoost = (rate = 2.0) => {
+      if (!this.isPlaying || !targetVideo || targetVideo.paused) return;
+      isSpeedBoosted = true;
+      originalRate = targetVideo.playbackRate || 1.0;
+      targetVideo.playbackRate = rate;
+      if (badge) {
+        if (badgeText) badgeText.textContent = `⚡ ${rate}x Rápido`;
+        badge.classList.remove('is-hidden');
+      }
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(25); } catch (e) {}
+      }
+    };
+
+    const stopSpeedBoost = () => {
+      if (speedHoldTimer) {
+        clearTimeout(speedHoldTimer);
+        speedHoldTimer = null;
+      }
+      if (isSpeedBoosted && targetVideo) {
+        targetVideo.playbackRate = originalRate || 1.0;
+        isSpeedBoosted = false;
+        if (badge) {
+          badge.classList.add('is-hidden');
+        }
+      }
+    };
+
+    // Gestos táctiles en pantalla (móviles / tablets)
+    this.dom.zappingVideoContainer.addEventListener('touchstart', (e) => {
+      if (e.target.closest('button, select, a, input, .zapping-hud-btn, .zapping-hud-icon-btn, .zapping-btn, .zapping-ch-item')) return;
+      stopSpeedBoost();
+      speedHoldTimer = setTimeout(() => {
+        startSpeedBoost(3.0); // 3x en móvil estilo LibreTV / ArtPlayer
+      }, 400);
+    }, { passive: true });
+
+    this.dom.zappingVideoContainer.addEventListener('touchend', stopSpeedBoost, { passive: true });
+    this.dom.zappingVideoContainer.addEventListener('touchcancel', stopSpeedBoost, { passive: true });
+
+    // Gestos con ratón en PC
+    this.dom.zappingVideoContainer.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Solo clic primario
+      if (e.target.closest('button, select, a, input, .zapping-hud-btn, .zapping-hud-icon-btn, .zapping-btn, .zapping-ch-item')) return;
+      stopSpeedBoost();
+      speedHoldTimer = setTimeout(() => {
+        startSpeedBoost(2.0); // 2x en escritorio
+      }, 450);
+    });
+
+    this.dom.zappingVideoContainer.addEventListener('mouseup', stopSpeedBoost);
+    this.dom.zappingVideoContainer.addEventListener('mouseleave', stopSpeedBoost);
+  }
+
+  /**
+   * Sonda de latencia y estado multiorigen en vivo (Inspirado en LibreTV /api/live/probe).
+   * Mide la latencia de cada fuente disponible y muestra el ping en tiempo real.
+   */
+  probeTvSources(station) {
+    if (!station || !station.sources || station.sources.length <= 1) return;
+    const sources = station.sources;
+
+    sources.forEach((src, idx) => {
+      if (!src.url) return;
+      const ref = encodeURIComponent(station.website || (station.id === 'cl-tv-canal13' ? 'https://www.13.cl/' : ''));
+      const probeUrl = `/api/live/probe?url=${encodeURIComponent(src.url)}&ref=${ref}`;
+
+      fetch(probeUrl)
+        .then(res => res.json())
+        .then(data => {
+          if (!this.sourceLatencies) this.sourceLatencies = {};
+          this.sourceLatencies[src.url] = data;
+
+          if (this.currentStation && this.currentStation.id === station.id) {
+            // Actualizar <option> en selector nativo
+            if (this.dom.tvSourceSelect) {
+              const opt = this.dom.tvSourceSelect.querySelector(`option[value="${idx}"]`);
+              if (opt) {
+                const baseName = src.name || `Fuente ${idx + 1}`;
+                if (data.ok && data.latencyMs > 0) {
+                  const badge = data.latencyMs < 350 ? '🟢' : (data.latencyMs < 800 ? '🟡' : '🟠');
+                  opt.textContent = `📡 ${baseName} • ${badge} ${data.latencyMs}ms`;
+                } else {
+                  opt.textContent = `📡 ${baseName} • 🔴 Desconectada`;
+                }
+              }
+            }
+
+            // Actualizar botón en menú OSD de Ajustes si está abierto
+            if (this.isOptionsOsdOpen && this.dom.tvOptSourcesTray) {
+              const btn = this.dom.tvOptSourcesTray.querySelector(`button[data-index="${idx}"]`);
+              if (btn) {
+                let pingSpan = btn.querySelector('.source-ping-badge');
+                const badge = data.ok ? (data.latencyMs < 350 ? '🟢' : (data.latencyMs < 800 ? '🟡' : '🟠')) : '🔴';
+                const pingText = data.ok ? `${data.latencyMs}ms` : 'Offline';
+                if (!pingSpan) {
+                  pingSpan = document.createElement('span');
+                  pingSpan.className = 'source-ping-badge';
+                  pingSpan.style.fontSize = '0.78rem';
+                  pingSpan.style.opacity = '0.85';
+                  pingSpan.style.marginLeft = '6px';
+                  btn.appendChild(pingSpan);
+                }
+                pingSpan.textContent = `${badge} ${pingText}`;
+              }
+            }
+          }
+        })
+        .catch(() => {});
+    });
   }
 
   /* ========================================================================
@@ -1181,9 +1288,17 @@ export class PlayerEngine {
     sources.forEach((src, idx) => {
       const isActive = idx === this.currentSourceIndex;
       const label = src.name || `Fuente ${idx + 1}`;
+      const latData = this.sourceLatencies ? this.sourceLatencies[src.url] : null;
+      let pingHtml = '';
+      if (latData) {
+        const badge = latData.ok ? (latData.latencyMs < 350 ? '🟢' : (latData.latencyMs < 800 ? '🟡' : '🟠')) : '🔴';
+        const pingText = latData.ok ? `${latData.latencyMs}ms` : 'Offline';
+        pingHtml = `<span class="source-ping-badge" style="font-size:0.78rem; opacity:0.85; margin-left:6px;">${badge} ${pingText}</span>`;
+      }
       html += `
         <button class="tv-opt-btn ${isActive ? 'is-active' : ''}" data-type="source" data-index="${idx}">
           <span>📡 ${label}</span>
+          ${pingHtml}
           ${isActive ? '<span style="color:var(--bm-cyan,#0095ff)">● ACTIVA</span>' : ''}
         </button>
       `;
@@ -1310,22 +1425,28 @@ export class PlayerEngine {
     }
   }
 
+  getVisibleTvStations() {
+    return this.tvStations;
+  }
+
   zapPrevious() {
-    if (!this.tvStations || this.tvStations.length === 0) return;
+    const list = this.getVisibleTvStations();
+    if (!list || list.length === 0) return;
     const curId = this.currentStation ? this.currentStation.id : null;
-    let idx = this.tvStations.findIndex(s => s.id === curId);
+    let idx = list.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
-    idx = (idx - 1 + this.tvStations.length) % this.tvStations.length;
-    this.playTv(this.tvStations[idx]);
+    idx = (idx - 1 + list.length) % list.length;
+    this.playTv(list[idx]);
   }
 
   zapNext() {
-    if (!this.tvStations || this.tvStations.length === 0) return;
+    const list = this.getVisibleTvStations();
+    if (!list || list.length === 0) return;
     const curId = this.currentStation ? this.currentStation.id : null;
-    let idx = this.tvStations.findIndex(s => s.id === curId);
+    let idx = list.findIndex(s => s.id === curId);
     if (idx === -1) idx = 0;
-    idx = (idx + 1) % this.tvStations.length;
-    this.playTv(this.tvStations[idx]);
+    idx = (idx + 1) % list.length;
+    this.playTv(list[idx]);
   }
 
   togglePlayPause() {
@@ -1363,6 +1484,9 @@ export class PlayerEngine {
     }
 
     let targetUrl = customUrl || this.currentStation.embedUrl || this.currentStation.website || this.currentStation.streamUrl;
+    if (targetUrl && (targetUrl.includes('youtube.com') || targetUrl.includes('youtu.be')) && !targetUrl.includes('/embed/')) {
+      targetUrl = `/api/youtube/embed?url=${encodeURIComponent(targetUrl)}`;
+    }
     if (targetUrl && (targetUrl.includes('live.tvn.cl') || targetUrl.includes('mdstrm.com')) && !targetUrl.includes('ads=false')) {
       targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'ads=false&autostart=true&autoplay=true&controls=true';
     }
@@ -1488,6 +1612,7 @@ export class PlayerEngine {
     this.currentStation = station;
     this.currentType = 'tv';
 
+
     // 1. RESPUESTA VISUAL INMEDIATA (0 ms de latencia)
     // Ocultar video de inmediato para que nunca se vea ningún cuadro previo ni icono de play nativo
     if (this.dom.tvVideo) {
@@ -1534,8 +1659,13 @@ export class PlayerEngine {
     if (this.dom.tvStationSubtitle) {
       this.dom.tvStationSubtitle.textContent = `${station.countryName || 'Chile'} • ${station.region || 'Región'} • ${station.city || 'Santiago'}`;
     }
+    const defaultTvLogo = './img/logos/default-channel.svg';
     if (this.dom.tvStationLogo) {
-      this.dom.tvStationLogo.src = station.logo || './img/logos/cl-tv-tvn.svg';
+      this.dom.tvStationLogo.src = station.logo || defaultTvLogo;
+      this.dom.tvStationLogo.onerror = function() {
+        this.onerror = null;
+        this.src = defaultTvLogo;
+      };
       this.dom.tvStationLogo.style.display = 'block';
     }
     if (this.dom.tvWebsiteBtn) {
@@ -1590,10 +1720,10 @@ export class PlayerEngine {
         artist: `Canal ${chNum} • ${station.city || 'Chile'} (${station.genre || 'En Vivo'})`,
         album: 'Antena Sur • Televisión Abierta de Chile',
         artwork: [
-          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '96x96', type: 'image/svg+xml' },
-          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '128x128', type: 'image/svg+xml' },
-          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '256x256', type: 'image/svg+xml' },
-          { src: station.logo || './img/logos/cl-tv-tvn.svg', sizes: '512x512', type: 'image/svg+xml' }
+          { src: station.logo || defaultTvLogo, sizes: '96x96', type: 'image/png' },
+          { src: station.logo || defaultTvLogo, sizes: '128x128', type: 'image/png' },
+          { src: station.logo || defaultTvLogo, sizes: '256x256', type: 'image/png' },
+          { src: station.logo || defaultTvLogo, sizes: '512x512', type: 'image/png' }
         ]
       });
     }, 0);
@@ -1635,6 +1765,9 @@ export class PlayerEngine {
         this.dom.tvNextSourceBtn.style.display = 'none';
       }
     }
+
+    // Iniciar prueba de latencia en vivo multiorigen (LibreTV Live Probe)
+    this.probeTvSources(station);
   }
 
   switchTvSource(index) {

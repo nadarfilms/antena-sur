@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.3.6
+    - name: Publicar Release v1.4.0
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.3.6.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.3.6"
-        name: "Antena Sur Android TV & Mobile v1.3.6"
-        body: "Versión 1.3.6: Soporte adaptativo para celulares y tablets Android con inicio en formato vertical y rotación dinámica mediante sensor, manteniendo Smart TV y Google TV en horizontal 16:9."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.0"
+        name: "Antena Sur Android TV & Mobile v1.4.0 - Cine & Series"
+        body: "Versión 1.4.0: Incorporación del módulo Cine & Series (Cinema VOD) con streaming de torrents, selección de pistas de audio y subtítulos en español sincronizados, perfiles de usuario, orden de calidades (4K, 1080p, HD, 480p) y blindaje anti-anuncios/popups."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

@@ -13,6 +13,7 @@ files_order = [
     'favorites.js',
     'player.js',
     'filters.js',
+    'movies-engine.js',
     'tv-navigation.js',
     'app.js'
 ]

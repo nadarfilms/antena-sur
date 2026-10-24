@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/player.css">
+  <link rel="stylesheet" href="./css/movies.css">
 
   <!-- Gestor visual de errores para diagnóstico en Smart TV / Android TV -->
   <script>
@@ -41,6 +42,16 @@
       } catch (e) {}
       return false;
     };
+
+    // Blindaje Global Anti-Publicidad, Anti-Popups y Anti-Redirecciones
+    (function() {
+      try {
+        window.open = function(url, target, features) {
+          console.warn('[Antena Sur AdBlock] Intento de popup publicitario bloqueado con éxito:', url);
+          return null;
+        };
+      } catch(e) {}
+    })();
   </script>
 </head>
 <body>
@@ -108,10 +119,10 @@
           </div>
           <div class="bm-card-body">
             <h2 class="bm-tile-title">CANALES DE TV</h2>
-            <p class="bm-tile-spec">49 SEÑALES SELECCIONADAS • SISTEMA BROADCAST</p>
+            <p class="bm-tile-spec">47 CANALES DE CHILE • SISTEMA BROADCAST</p>
           </div>
           <div class="bm-card-footer">
-            <span class="bm-tile-status" id="heroTvLastStation">49 señales • Sintonización en directo</span>
+            <span class="bm-tile-status" id="heroTvLastStation">47 canales en directo</span>
           </div>
         </button>
 
@@ -127,6 +138,21 @@
           </div>
           <div class="bm-card-footer">
             <span class="bm-tile-status" id="heroRadioLastStation">23 emisoras en directo</span>
+          </div>
+        </button>
+
+        <!-- Botón 3: Cine & Series -->
+        <button class="hero-action-card bm-card bm-card-cinema" id="heroCardCinema" tabindex="0" title="Entrar a Cartelera de Películas y Series">
+          <div class="bm-card-top-strip">
+            <span class="bm-tile-num">03</span>
+            <span class="bm-tile-badge">CINEMA VOD</span>
+          </div>
+          <div class="bm-card-body">
+            <h2 class="bm-tile-title">CINE & SERIES</h2>
+            <p class="bm-tile-spec">CARTELERA HD • TORRENTS & MAGNETS</p>
+          </div>
+          <div class="bm-card-footer">
+            <span class="bm-tile-status" id="heroCinemaStatus">Películas y series en cartelera</span>
           </div>
         </button>
       </div>
@@ -159,6 +185,7 @@
           </svg>
           <input type="text" id="zappingSearchInput" placeholder="Buscar canal o número...">
         </div>
+
 
         <!-- Lista Vertical de Canales Zapping -->
         <div class="zapping-channel-list" id="zappingChannelList" tabindex="0">
@@ -233,6 +260,12 @@
         <div class="zapping-video-container" id="zappingVideoContainer">
           <video id="tvVideo" class="zapping-video" playsinline webkit-playsinline x5-playsinline poster="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiMwNTA4MTEiLz48L3N2Zz4="></video>
           <iframe id="tvIframe" class="zapping-iframe is-hidden" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+
+          <!-- Badge Flotante de Velocidad Rápida estilo LibreTV (Long-press 2x / 3x) -->
+          <div class="zapping-speed-badge is-hidden" id="tvSpeedBadge">
+            <span class="speed-icon">⚡</span>
+            <span class="speed-text" id="tvSpeedBadgeText">2x Rápido</span>
+          </div>
 
           <!-- Spinner de Carga de Transmisión -->
           <div class="video-loading-indicator" id="tvLoading" style="display:none;">
@@ -380,6 +413,7 @@
               </svg>
               <input type="text" id="fsOverlaySearchInput" placeholder="Buscar canal o número...">
             </div>
+
           </div>
           <div class="fs-overlay-channel-list" id="zappingFsChannelList" tabindex="0">
             <!-- Clones interactivos para zapping en pantalla completa -->
@@ -473,6 +507,567 @@
   </section>
 
   <!-- ========================================================================
+       EXPERIENCIA CINEMA & SERIES VOD (Cartelera HD • Torrents & Magnets)
+       ======================================================================== -->
+  <section class="cinema-vod-view is-hidden" id="cinemaVodView">
+    <!-- Header HUD Superior de Cine (Plex Style Navigation) -->
+    <header class="cinema-header">
+      <div class="cinema-header-left">
+        <button class="cinema-back-btn" id="cinemaBackBtn" title="Volver al Menú Principal (Escape)" tabindex="0">
+          ◀ ATRÁS
+        </button>
+        <div class="cinema-brand">
+          <h2 class="cinema-brand-title">
+            ANTENA CINEMA
+            <span class="cinema-brand-badge">PLEX VOD</span>
+          </h2>
+        </div>
+      </div>
+
+      <!-- Selector Central Gigante de Modo: Películas / Series / Mi Biblioteca -->
+      <nav class="cinema-nav-tabs" aria-label="Secciones de Cine">
+        <button class="cinema-tab-btn is-active" id="cinemaModeMoviesBtn" tabindex="0">
+          <span class="cinema-tab-icon">🎬</span> PELÍCULAS
+        </button>
+        <button class="cinema-tab-btn" id="cinemaModeSeriesBtn" tabindex="0">
+          <span class="cinema-tab-icon">📺</span> SERIES
+        </button>
+        <button class="cinema-tab-btn" id="cinemaModeLibraryBtn" tabindex="0">
+          <span class="cinema-tab-icon">⭐</span> MI BIBLIOTECA
+        </button>
+      </nav>
+
+      <!-- Buscador y Perfil de Usuario Plex -->
+      <div class="cinema-header-right">
+        <div class="cinema-search-wrap">
+          <svg class="cinema-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" class="cinema-search-input" id="cinemaSearchInput" placeholder="Buscar película, serie..." tabindex="0">
+          <button class="cinema-search-clear" id="cinemaSearchClearBtn" title="Limpiar búsqueda">✕</button>
+        </div>
+
+        <button class="cinema-user-btn" id="cinemaUserBtn" tabindex="0" title="Perfil y Biblioteca Plex">
+          <div class="cinema-user-avatar" id="cinemaUserAvatar">H</div>
+          <div class="cinema-user-meta">
+            <span class="cinema-user-name" id="cinemaUserName">Helmuth</span>
+            <span class="cinema-user-status">Biblioteca</span>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sub-barra: Filtros IMDb & Rotten Tomatoes, Géneros y Contador -->
+    <div class="cinema-subbar">
+      <!-- Filtros de Ranking IMDb y Rotten Tomatoes -->
+      <div class="cinema-ranking-filters" id="cinemaRankingFilters">
+        <button class="cinema-rank-chip is-active" data-sort="imdb_popular" tabindex="0">
+          🔥 Más Populares (IMDb & RT)
+        </button>
+        <button class="cinema-rank-chip" data-sort="imdb_rating" tabindex="0">
+          ⭐ Top Valoradas (IMDb 8+)
+        </button>
+        <button class="cinema-rank-chip" data-sort="rotten_fresh" tabindex="0">
+          🍅 Certified Fresh (Rotten Tomatoes)
+        </button>
+        <button class="cinema-rank-chip" data-sort="latest" tabindex="0">
+          🆕 Estrenos Destacados
+        </button>
+      </div>
+
+      <div class="cinema-genres-list" id="cinemaGenresList">
+        <!-- Renderizado dinámico desde movies-engine.js -->
+      </div>
+      <span class="cinema-results-count" id="cinemaResultsCount">Cargando...</span>
+    </div>
+
+    <!-- Área Principal de Cartelera -->
+    <main class="cinema-content-area" id="cinemaContentArea">
+      <!-- Fila Plex: Continuar Viendo (On Deck) -->
+      <section class="cinema-rail-section" id="cinemaContinueSection" style="display:none;">
+        <div class="cinema-rail-header">
+          <h3 class="cinema-rail-title">
+            <span class="cinema-rail-icon">▶</span> CONTINUAR VIENDO
+          </h3>
+          <span class="cinema-rail-subtitle">Retoma donde lo dejaste</span>
+        </div>
+        <div class="cinema-rail-carousel" id="cinemaContinueCarousel">
+          <!-- Renderizado dinámico de títulos en reproducción -->
+        </div>
+      </section>
+
+      <!-- Fila Plex: Recomendados para ti -->
+      <section class="cinema-rail-section" id="cinemaRecommendedSection" style="display:none;">
+        <div class="cinema-rail-header">
+          <h3 class="cinema-rail-title">
+            <span class="cinema-rail-icon">✨</span> RECOMENDADO PARA TI
+          </h3>
+          <span class="cinema-rail-subtitle" id="cinemaRecommendedSubtitle">Basado en tu biblioteca y gustos</span>
+        </div>
+        <div class="cinema-rail-carousel" id="cinemaRecommendedCarousel">
+          <!-- Renderizado dinámico de sugerencias personalizadas -->
+        </div>
+      </section>
+
+      <!-- Encabezado de la Cartelera Principal -->
+      <div class="cinema-catalog-header" id="cinemaCatalogHeader">
+        <h3 class="cinema-catalog-title" id="cinemaCatalogTitle">EXPLORAR PELÍCULAS</h3>
+      </div>
+
+      <!-- Estado de Carga -->
+      <div class="cinema-loading-state" id="cinemaLoadingState">
+        <div class="cinema-loading-spinner"></div>
+        <p>Conectando con la cartelera HD...</p>
+      </div>
+
+      <!-- Estado Vacío -->
+      <div class="cinema-empty-state" id="cinemaEmptyState" style="display:none;">
+        <div style="font-size: 3rem;">🎬</div>
+        <h3>No se encontraron resultados</h3>
+        <p>Prueba buscando con otro término o seleccionando otro género.</p>
+      </div>
+
+      <!-- Cuadrícula de Pósters (Máximo 5 por fila en 16:9) -->
+      <div class="cinema-grid" id="cinemaGrid"></div>
+
+      <!-- Botón Cargar Más Títulos -->
+      <button class="cinema-load-more-btn" id="cinemaLoadMoreBtn" style="display:none;" tabindex="0">
+        Cargar más títulos...
+      </button>
+    </main>
+
+    <!-- Modal de Usuario y Biblioteca Plex -->
+    <div class="cinema-user-modal-overlay is-hidden" id="cinemaUserModal" style="display:none;">
+      <div class="cinema-user-modal-card">
+        <div class="cinema-modal-header">
+          <div class="cinema-modal-title">
+            <span>👤</span> CUENTA & PERFIL PLEX
+          </div>
+          <button class="cinema-modal-close-btn" id="cinemaCloseUserModalBtn" title="Cerrar">✕</button>
+        </div>
+
+        <div class="cinema-modal-body">
+          <!-- Vista de Perfil Activo -->
+          <div class="cinema-profile-view" id="cinemaProfileView">
+            <div class="cinema-profile-badge-row">
+              <div class="cinema-profile-avatar-large" id="cinemaModalAvatar">H</div>
+              <div class="cinema-profile-details">
+                <h3 class="cinema-profile-name" id="cinemaModalName">Helmuth</h3>
+                <span class="cinema-profile-stats" id="cinemaModalStats">0 favoritos • 0 en progreso</span>
+              </div>
+            </div>
+
+            <div class="cinema-profiles-list-section">
+              <span class="cinema-modal-label">CAMBIAR DE PERFIL / USUARIO:</span>
+              <div class="cinema-profiles-pills" id="cinemaProfilesPills">
+                <!-- Rellenado dinámico con los perfiles registrados -->
+              </div>
+            </div>
+
+            <div class="cinema-modal-actions">
+              <button class="cinema-btn-action" id="cinemaBtnShowLoginForm">
+                🔑 Iniciar Sesión con Otro Usuario
+              </button>
+              <button class="cinema-btn-action" id="cinemaBtnShowRegisterForm">
+                ➕ Crear Nuevo Usuario
+              </button>
+            </div>
+          </div>
+
+          <!-- Formulario de Login / Registro -->
+          <div class="cinema-auth-form is-hidden" id="cinemaAuthForm" style="display:none;">
+            <h4 class="cinema-auth-form-title" id="cinemaAuthFormTitle">Iniciar Sesión</h4>
+            <div class="cinema-input-group">
+              <label for="cinemaAuthUsernameInput">Usuario</label>
+              <input type="text" id="cinemaAuthUsernameInput" placeholder="Ej: helmuth" class="cinema-form-input">
+            </div>
+            <div class="cinema-input-group">
+              <label for="cinemaAuthPasswordInput">Contraseña</label>
+              <input type="password" id="cinemaAuthPasswordInput" placeholder="Tu contraseña" class="cinema-form-input">
+            </div>
+            <div class="cinema-input-group is-hidden" id="cinemaAuthDisplayNameGroup" style="display:none;">
+              <label for="cinemaAuthDisplayNameInput">Nombre para Mostrar</label>
+              <input type="text" id="cinemaAuthDisplayNameInput" placeholder="Ej: Helmuth Bohle" class="cinema-form-input">
+            </div>
+            <div class="cinema-auth-error-msg is-hidden" id="cinemaAuthErrorMsg"></div>
+            <div class="cinema-auth-btn-row">
+              <button class="cinema-btn-action cinema-btn-primary" id="cinemaBtnSubmitAuth">Entrar</button>
+              <button class="cinema-btn-action" id="cinemaBtnCancelAuth">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       VISTA DEDICADA DE DETALLES (MENÚ COMPLETO - NO POP-UP)
+       Pantalla completa con distribución espaciosa de temporadas y episodios
+       ======================================================================== -->
+  <section class="cinema-detail-view is-hidden" id="cinemaDetailView">
+    <!-- Barra Superior Fija / HUD de Navegación -->
+    <header class="cinema-detail-topbar" id="cinemaDetailTopbar">
+      <div class="cinema-detail-topbar-left">
+        <button class="cinema-detail-back-btn" id="cinemaDetailBackBtn" title="Volver a la Cartelera (Escape)">
+          ◀ VOLVER A CARTELERA
+        </button>
+        <span class="cinema-detail-breadcrumb" id="cinemaDetailBreadcrumb">DETALLES</span>
+      </div>
+      <div class="cinema-detail-topbar-right">
+        <button class="cinema-btn-play-action cinema-detail-hero-play" id="cinemaDetailHeroPlayBtn" style="display:none;" title="Reproducir inmediatamente">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          REPRODUCIR
+        </button>
+      </div>
+    </header>
+
+    <!-- Contenido Scrollable Completo -->
+    <div class="cinema-detail-scroll-wrap" id="cinemaDetailScrollWrap">
+      <!-- Sección Hero con Backdrop Panorámico -->
+      <div class="cinema-detail-hero">
+        <div class="cinema-detail-backdrop-wrap">
+          <img src="" alt="" class="cinema-detail-backdrop-img" id="cinemaDetailBackdrop" style="display:none;">
+          <div class="cinema-detail-backdrop-gradient"></div>
+        </div>
+
+        <div class="cinema-detail-hero-content">
+          <!-- Columna Izquierda: Póster HD y Trailer -->
+          <div class="cinema-detail-poster-col">
+            <img src="" alt="Póster" class="cinema-detail-poster" id="cinemaDetailPoster">
+            <a href="#" class="cinema-btn-trailer" id="cinemaDetailTrailerBtn" style="display:none;" target="_blank">
+              ▶ Ver Trailer Oficial
+            </a>
+          </div>
+
+          <!-- Columna Derecha: Título, Metadatos, Sinopsis -->
+          <div class="cinema-detail-info-col">
+            <div class="cinema-detail-badge-type" id="cinemaDetailBadgeType">PELÍCULA</div>
+            <h1 class="cinema-detail-title" id="cinemaDetailTitle">Título del Contenido</h1>
+            <div class="cinema-detail-meta-row" id="cinemaDetailMeta"></div>
+            <div class="cinema-detail-genres" id="cinemaDetailGenres"></div>
+
+            <!-- Botones Plex de Biblioteca y Visto -->
+            <div class="cinema-detail-actions-row">
+              <button class="cinema-detail-btn-lib" id="cinemaDetailFavBtn" tabindex="0">
+                <span class="lib-icon">➕</span> <span class="lib-text">AGREGAR A MI BIBLIOTECA</span>
+              </button>
+              <button class="cinema-detail-btn-watched" id="cinemaDetailWatchedBtn" tabindex="0">
+                <span class="watched-icon">👁️</span> <span class="watched-text">MARCAR COMO VISTO</span>
+              </button>
+            </div>
+
+            <!-- Caja de Sinopsis -->
+            <div class="cinema-detail-synopsis-box">
+              <span class="cinema-detail-section-label">SINOPSIS</span>
+              <p class="cinema-detail-synopsis-text" id="cinemaDetailSynopsis">Cargando sinopsis...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Banner de Último Capítulo Subido (Exclusivo Series) -->
+      <div class="cinema-detail-latest-ep-banner is-hidden" id="cinemaDetailLatestEpBanner" style="display: none !important;">
+        <div class="cinema-latest-ep-info">
+          <span class="cinema-latest-ep-tag">⚡ ÚLTIMO CAPÍTULO DISPONIBLE</span>
+          <h3 class="cinema-latest-ep-title" id="cinemaLatestEpTitle">Cargando último episodio...</h3>
+          <p class="cinema-latest-ep-desc" id="cinemaLatestEpDesc"></p>
+        </div>
+        <div class="cinema-latest-ep-action" id="cinemaLatestEpAction">
+          <!-- Botón de Reproducción rápida -->
+        </div>
+      </div>
+
+      <!-- Sección de Contenido: Calidades (Películas) o Temporadas y Capítulos (Series) -->
+      <div class="cinema-detail-content-section">
+        <div class="cinema-detail-section-header">
+          <h3 class="cinema-detail-section-heading" id="cinemaDetailSectionHeading">
+            🎬 CALIDADES DE REPRODUCCIÓN
+          </h3>
+        </div>
+
+        <div class="cinema-detail-main-content" id="cinemaDetailMainContent">
+          <!-- Renderizado dinámico: Películas o Temporadas/Episodios -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       REPRODUCTOR CINEMA INTEGRADO EN LA APLICACIÓN (WebTorrent P2P Directo)
+       ======================================================================== -->
+  <section class="cinema-player-view is-hidden" id="cinemaPlayerView" tabindex="0">
+    <!-- HUD Superior del Reproductor (Auto-Hide) -->
+    <header class="cinema-player-hud-top" id="cinemaPlayerHudTop">
+      <div class="cinema-player-hud-left">
+        <button class="cinema-player-back-btn" id="cinemaPlayerBackBtn" title="Salir del Reproductor (Escape / Flecha Volver)" tabindex="0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="15 18 9 12 15 6"/>
+          </svg>
+          SALIR
+        </button>
+      </div>
+
+      <div class="cinema-player-title-box">
+        <h2 class="cinema-player-title" id="cinemaPlayerTitle">Cargando Título...</h2>
+        <span class="cinema-player-subtitle" id="cinemaPlayerSubtitle">REPRODUCTOR TORRENT NATIVO • ANTENA SUR</span>
+      </div>
+
+      <div class="cinema-player-hud-right">
+        <span class="cinema-player-status-badge" id="cinemaPlayerStatusBadge">
+          <span class="cinema-pulse-dot"></span> CONECTANDO...
+        </span>
+        <span class="cinema-player-stats-badge" id="cinemaPlayerStatsBadge" title="Estado de la conexión P2P">
+          👥 0 Semillas • 0 KB/s
+        </span>
+      </div>
+    </header>
+
+    <!-- Área de Video y Renderizado Exclusivamente Nativa -->
+    <div class="cinema-player-video-wrap" id="cinemaPlayerVideoWrap">
+      <!-- Elemento de Video Nativo para WebTorrent P2P -->
+      <video id="cinemaVideoElement" class="cinema-player-video" playsinline preload="auto"></video>
+
+      <!-- Subtitle Text Display Overlay (para renderizado nítido y calibración) -->
+      <div class="cinema-subtitle-display-overlay is-hidden" id="cinemaSubtitleDisplayOverlay">
+        <div class="cinema-subtitle-text" id="cinemaSubtitleText"></div>
+      </div>
+
+      <!-- Feedback de Acción Central (Animación Play/Pausa/Seek) -->
+      <div class="cinema-center-feedback is-hidden" id="cinemaCenterFeedback">
+        <div class="cinema-feedback-icon" id="cinemaFeedbackIcon">▶</div>
+        <div class="cinema-feedback-text" id="cinemaFeedbackText">PLAY</div>
+      </div>
+
+      <!-- Zonas de Doble Clic / Doble Tap para Adelantar/Retroceder 10s -->
+      <div class="cinema-touch-zone cinema-touch-left" id="cinemaTouchLeft" title="Doble toque: -10s"></div>
+      <div class="cinema-touch-zone cinema-touch-right" id="cinemaTouchRight" title="Doble toque: +10s"></div>
+
+      <!-- Pantalla de Carga y Buffer con Estadísticas P2P en Tiempo Real -->
+      <div class="cinema-player-loading-overlay" id="cinemaPlayerLoadingOverlay">
+        <div class="cinema-player-loading-spinner"></div>
+        <h3 class="cinema-player-loading-text" id="cinemaPlayerLoadingText">Iniciando reproducción P2P...</h3>
+        <p class="cinema-player-loading-stats" id="cinemaPlayerLoadingStats">Buscando semillas públicas en la red...</p>
+        <div class="cinema-player-progress-bar">
+          <div class="cinema-player-progress-fill" id="cinemaPlayerProgressFill" style="width: 0%;"></div>
+        </div>
+        <span class="cinema-player-loading-tip">🛡️ Reproductor nativo Antena Sur • 0 Publicidad • 1 Clic Directo</span>
+      </div>
+
+      <!-- Menú Flotante: SUBTÍTULOS -->
+      <div class="cinema-player-popover is-hidden" id="cinemaSubtitlesPopover" style="display: none !important;">
+        <div class="cinema-popover-header">
+          <div class="cinema-popover-title">
+            <span>💬</span> SUBTÍTULOS
+          </div>
+          <button class="cinema-popover-close-btn" id="cinemaCloseSubsPopoverBtn" title="Cerrar">✕</button>
+        </div>
+
+        <div class="cinema-popover-body">
+          <!-- Control de Tamaño de Subtítulos -->
+          <div class="cinema-sub-size-row">
+            <span class="cinema-sub-sync-label">Tamaño:</span>
+            <div class="cinema-sub-size-pills" id="cinemaSubSizePills">
+              <button class="cinema-sub-size-pill" data-size="chico" title="Tamaño Chico">Chico</button>
+              <button class="cinema-sub-size-pill is-active" data-size="mediano" title="Tamaño Mediano (Por Defecto)">Mediano</button>
+              <button class="cinema-sub-size-pill" data-size="grande" title="Tamaño Grande">Grande</button>
+              <button class="cinema-sub-size-pill" data-size="extragrande" title="Tamaño Extra Grande">Extra</button>
+            </div>
+            <div class="cinema-sub-size-stepper">
+              <button class="cinema-btn-sync" id="cinemaBtnSubSizeMinus" title="Disminuir tamaño (A-)">A-</button>
+              <button class="cinema-btn-sync" id="cinemaBtnSubSizePlus" title="Aumentar tamaño (A+)">A+</button>
+            </div>
+          </div>
+
+          <!-- Control de Posición de Subtítulos -->
+          <div class="cinema-sub-pos-row">
+            <span class="cinema-sub-sync-label">Posición:</span>
+            <div class="cinema-sub-pos-pills" id="cinemaSubPosPills">
+              <button class="cinema-sub-pos-pill is-active" data-pos="normal" title="Posición Cómoda (Despegada del borde inferior)">Cómoda</button>
+              <button class="cinema-sub-pos-pill" data-pos="alta" title="Posición Alta (Más arriba)">Alta</button>
+            </div>
+          </div>
+
+          <div class="cinema-sub-sync-row">
+            <span class="cinema-sub-sync-label">Sincronización:</span>
+            <button class="cinema-btn-sync" id="cinemaBtnSyncMinus" title="Retrasar subtítulo 0.5s">-0.5s</button>
+            <span class="cinema-sync-val" id="cinemaSyncOffsetVal">0.0s</span>
+            <button class="cinema-btn-sync" id="cinemaBtnSyncPlus" title="Adelantar subtítulo 0.5s">+0.5s</button>
+            <button class="cinema-btn-sync cinema-btn-sync-reset" id="cinemaBtnSyncReset" title="Reiniciar sincronización">Reset</button>
+          </div>
+
+          <div class="cinema-sub-options-list" id="cinemaSubOptionsList">
+            <div class="cinema-sub-option is-active" data-sub-id="off">
+              <span>✕ Desactivar Subtítulos</span>
+            </div>
+            <div class="cinema-sub-loading">Cargando subtítulos en español disponibles...</div>
+          </div>
+
+          <div class="cinema-sub-custom-row">
+            <label class="cinema-btn-upload-sub" for="cinemaLocalSubInput">
+              📁 Cargar subtítulo propio (.srt / .vtt)
+              <input type="file" id="cinemaLocalSubInput" accept=".srt,.vtt" style="display:none;">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menú Flotante: AUDIO -->
+      <div class="cinema-player-popover is-hidden" id="cinemaAudioPopover" style="display: none !important;">
+        <div class="cinema-popover-header">
+          <div class="cinema-popover-title">
+            <span>🔊</span> PISTAS DE AUDIO
+          </div>
+          <button class="cinema-popover-close-btn" id="cinemaCloseAudioPopoverBtn" title="Cerrar">✕</button>
+        </div>
+
+        <div class="cinema-popover-body">
+          <div class="cinema-audio-options-list" id="cinemaAudioOptionsList">
+            <!-- Rellenado dinámico con las pistas detectadas o información de la fuente -->
+          </div>
+          <div class="cinema-audio-info-tip" id="cinemaAudioInfoTip">
+            ℹ️ Si la película cuenta con pistas duales integradas (Español / Inglés), puedes seleccionarlas aquí.
+          </div>
+        </div>
+      </div>
+
+      <!-- Menú Flotante: VELOCIDAD -->
+      <div class="cinema-player-popover is-hidden" id="cinemaSpeedPopover" style="display: none !important;">
+        <div class="cinema-popover-header">
+          <div class="cinema-popover-title">
+            <span>⚡</span> VELOCIDAD DE REPRODUCCIÓN
+          </div>
+          <button class="cinema-popover-close-btn" id="cinemaCloseSpeedPopoverBtn" title="Cerrar">✕</button>
+        </div>
+
+        <div class="cinema-popover-body">
+          <div class="cinema-speed-options-list">
+            <button class="cinema-speed-opt" data-speed="0.5">0.5x (Lenta)</button>
+            <button class="cinema-speed-opt" data-speed="0.75">0.75x</button>
+            <button class="cinema-speed-opt is-active" data-speed="1.0">1.0x (Normal)</button>
+            <button class="cinema-speed-opt" data-speed="1.25">1.25x</button>
+            <button class="cinema-speed-opt" data-speed="1.5">1.5x</button>
+            <button class="cinema-speed-opt" data-speed="2.0">2.0x (Rápida)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HUD Inferior del Reproductor: Controles Completos OSD (Auto-Hide) -->
+    <footer class="cinema-player-hud-bottom" id="cinemaPlayerHudBottom">
+      <!-- Fila 1: Barra de Progreso y Búfer Interactivo -->
+      <div class="cinema-scrub-row">
+        <span class="cinema-time-current" id="cinemaTimeCurrent">00:00</span>
+
+        <div class="cinema-scrub-track" id="cinemaScrubTrack" role="slider" aria-label="Progreso del video" tabindex="0">
+          <div class="cinema-scrub-buffer" id="cinemaScrubBuffer" style="width: 0%;"></div>
+          <div class="cinema-scrub-progress" id="cinemaScrubProgress" style="width: 0%;"></div>
+          <div class="cinema-scrub-thumb" id="cinemaScrubThumb" style="left: 0%;"></div>
+          <div class="cinema-scrub-tooltip is-hidden" id="cinemaScrubTooltip">00:00</div>
+        </div>
+
+        <span class="cinema-time-total" id="cinemaTimeTotal" title="Clic para alternar entre duración total y tiempo restante">--:--</span>
+      </div>
+
+      <!-- Fila 2: Botones de Control Principal, Menús y Pantalla Completa -->
+      <div class="cinema-controls-row">
+        <!-- Grupo Izquierdo: Play/Pausa, -10s, +10s, Volumen -->
+        <div class="cinema-controls-group cinema-controls-left">
+          <!-- Play / Pausa -->
+          <button class="cinema-ctrl-btn cinema-ctrl-play" id="cinemaCtrlPlayBtn" title="Reproducir / Pausar (Espacio)" tabindex="0">
+            <svg id="cinemaPlayIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            <svg id="cinemaPauseIcon" class="is-hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16"/>
+              <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+          </button>
+
+          <!-- Retroceder 10s -->
+          <button class="cinema-ctrl-btn" id="cinemaCtrlRewindBtn" title="Retroceder 10s (Flecha Izquierda / J)" tabindex="0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            <span class="cinema-btn-mini-label">10</span>
+          </button>
+
+          <!-- Adelantar 10s -->
+          <button class="cinema-ctrl-btn" id="cinemaCtrlForwardBtn" title="Adelantar 10s (Flecha Derecha / L)" tabindex="0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            <span class="cinema-btn-mini-label">10</span>
+          </button>
+
+          <!-- Control de Volumen y Silencio -->
+          <div class="cinema-volume-wrap">
+            <button class="cinema-ctrl-btn" id="cinemaCtrlVolumeBtn" title="Silenciar / Activar Sonido (M)" tabindex="0">
+              <span id="cinemaVolumeIcon">🔊</span>
+            </button>
+            <input type="range" class="cinema-volume-slider" id="cinemaVolumeSlider" min="0" max="1" step="0.05" value="1" title="Volumen" tabindex="0">
+          </div>
+        </div>
+
+        <!-- Grupo Central: Info rápida de la emisión -->
+        <div class="cinema-controls-group cinema-controls-center">
+          <span class="cinema-ctrl-stream-tag" id="cinemaCtrlStreamTag">⚡ TORRENT NATIVO • ALTA FIDELIDAD</span>
+        </div>
+
+        <!-- Grupo Derecho: Audio, Subtítulos, Velocidad, Ajuste de Pantalla, Pantalla Completa -->
+        <div class="cinema-controls-group cinema-controls-right">
+          <!-- Menú Audio -->
+          <button class="cinema-ctrl-btn cinema-ctrl-pill" id="cinemaCtrlAudioBtn" title="Seleccionar pista de audio (A)" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13"/>
+              <circle cx="6" cy="18" r="3"/>
+              <circle cx="18" cy="16" r="3"/>
+            </svg>
+            <span>AUDIO</span>
+          </button>
+
+          <!-- Menú Subtítulos -->
+          <button class="cinema-ctrl-btn cinema-ctrl-pill" id="cinemaCtrlSubtitlesBtn" title="Subtítulos en Español (C / S)" tabindex="0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <line x1="7" y1="9" x2="17" y2="9"/>
+              <line x1="7" y1="13" x2="13" y2="13"/>
+            </svg>
+            <span id="cinemaSubtitlesBtnLabel">SUBTÍTULOS</span>
+          </button>
+
+          <!-- Velocidad -->
+          <button class="cinema-ctrl-btn cinema-ctrl-pill" id="cinemaCtrlSpeedBtn" title="Velocidad de reproducción" tabindex="0">
+            <span id="cinemaSpeedBtnLabel">1.0x</span>
+          </button>
+
+          <!-- Ajuste de Proporción (Contain / Cover / 16:9) -->
+          <button class="cinema-ctrl-btn" id="cinemaCtrlAspectBtn" title="Ajuste de pantalla (Ajustar / Llenar)" tabindex="0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <line x1="2" y1="8" x2="22" y2="8"/>
+            </svg>
+          </button>
+
+          <!-- Pantalla Completa -->
+          <button class="cinema-ctrl-btn cinema-ctrl-fullscreen" id="cinemaCtrlFullscreenBtn" title="Pantalla Completa (F)" tabindex="0">
+            <svg id="cinemaFullscreenEnterIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+            <svg id="cinemaFullscreenExitIcon" class="is-hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ========================================================================
        BARRA DE RADIO PERSISTENTE (Reproductor de Audio con Now Playing)
        ======================================================================== -->
   <div class="radio-persistent-bar is-hidden" id="radioPersistentBar">
@@ -521,6 +1116,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
-  <script src="./js/app.bundle.js"></script>
+  <script src="./js/app.bundle.js?v=2.0.2"></script>
 </body>
 </html>

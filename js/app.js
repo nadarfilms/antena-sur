@@ -7,6 +7,7 @@ import { DataManager } from './data-manager.js';
 import { FavoritesManager } from './favorites.js';
 import { FiltersEngine } from './filters.js';
 import { PlayerEngine } from './player.js';
+import { CinemaEngine } from './movies-engine.js';
 import { initTvNavigation } from './tv-navigation.js';
 
 class App {
@@ -15,6 +16,7 @@ class App {
     this.favoritesManager = new FavoritesManager();
     this.player = null;
     this.filters = null;
+    this.cinema = null;
 
     this.dom = {
       stationsGrid: document.getElementById('stationsGrid'),
@@ -93,10 +95,47 @@ class App {
     });
     this.filters.init();
 
+    // 3.1 Sincronización automática de canales chilenos con https://m3u.cl/lista/CL.m3u
+    this._lastM3uSync = Date.now();
+    this.dataManager.syncWithM3UCL((res) => {
+      if (res && res.changedCount > 0) {
+        this.player.setStationsData(this.dataManager.getAllStations());
+        if (this.filters) {
+          const updatedList = this.filters.getFilteredStations();
+          this.renderStations(updatedList);
+        }
+        this.showToast(`📡 ${res.changedCount} canales chilenos actualizados desde m3u.cl`, 'info');
+      }
+    });
+
+    // Re-comprobar cuando la app vuelve a estar visible si han pasado más de 5 minutos
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        if (now - this._lastM3uSync > 300000) {
+          this._lastM3uSync = now;
+          this.dataManager.syncWithM3UCL((res) => {
+            if (res && res.changedCount > 0) {
+              this.player.setStationsData(this.dataManager.getAllStations());
+              if (this.filters) {
+                this.renderStations(this.filters.getFilteredStations());
+              }
+              this.showToast(`📡 ${res.changedCount} canales chilenos actualizados desde m3u.cl`, 'info');
+            }
+          });
+        }
+      }
+    });
+
     // 4. Ocultar estado de carga inicial legacy si existe
     if (this.dom.loadingState) {
       this.dom.loadingState.style.display = 'none';
     }
+
+    // 4.1 Inicializar Motor de Cartelera Cinema & Series VOD
+    this.cinema = new CinemaEngine((msg, type) => this.showToast(msg, type));
+    this.cinema.init();
+    window.AntenaSurCinema = this.cinema;
 
     // 5. Inicializar navegación e interactividad (ahora player y filters YA existen)
     this.initGridEvents();
@@ -249,6 +288,16 @@ class App {
         }
         if (targetRadio) {
           this.player.openFullscreenRadio(targetRadio);
+        }
+      });
+    }
+
+    // Gran Botón 3: Cine & Series -> Cartelera HD de Películas y Series con Torrents
+    const heroCardCinema = document.getElementById('heroCardCinema');
+    if (heroCardCinema) {
+      heroCardCinema.addEventListener('click', () => {
+        if (this.cinema) {
+          this.cinema.open();
         }
       });
     }

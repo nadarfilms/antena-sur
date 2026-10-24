@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 *.apk
+node_modules/
+.venv/
+env/
+*.log
