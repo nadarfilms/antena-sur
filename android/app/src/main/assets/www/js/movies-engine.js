@@ -53,6 +53,7 @@ export class CinemaEngine {
       sortSelect: document.getElementById('cinemaSortSelect'),
       genresList: document.getElementById('cinemaGenresList'),
       resultsCount: document.getElementById('cinemaResultsCount'),
+      contentArea: document.getElementById('cinemaContentArea'),
       grid: document.getElementById('cinemaGrid'),
       loadingState: document.getElementById('cinemaLoadingState'),
       emptyState: document.getElementById('cinemaEmptyState'),
@@ -1093,7 +1094,13 @@ export class CinemaEngine {
   open() {
     if (this.dom.view) {
       this.dom.view.classList.remove('is-hidden');
+      this.dom.view.scrollLeft = 0;
     }
+    if (this.dom.contentArea) {
+      this.dom.contentArea.scrollLeft = 0;
+    }
+    try { window.scrollTo(0, 0); } catch (e) {}
+    try { if (document.body) document.body.scrollLeft = 0; } catch (e) {}
     this.loadUserProfile();
     this.loadContinueWatching();
     this.loadRecommendations();
@@ -1102,7 +1109,7 @@ export class CinemaEngine {
       this.loadCatalog(true);
     }
 
-    // Navegación TV: enfocar primeramente los botones agrandados de Películas/Series
+    // Navegación TV: enfocar primeramente los botones de Películas/Series
     if (this.dom.modeMoviesBtn) {
       setTimeout(() => {
         try { this.dom.modeMoviesBtn.focus(); } catch (e) {}

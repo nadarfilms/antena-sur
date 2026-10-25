@@ -9,12 +9,15 @@
   top: 0;
   left: 0;
   width: 100vw;
+  max-width: 100vw;
   height: 100vh;
+  max-height: 100vh;
   background: #060911;
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden !important;
+  box-sizing: border-box;
   opacity: 1;
   visibility: visible;
   transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
@@ -41,38 +44,44 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-  padding: 10px 24px;
-  padding-top: max(10px, env(safe-area-inset-top, 10px));
+  padding: 8px 18px;
+  padding-top: max(8px, env(safe-area-inset-top, 8px));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   z-index: 10;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .cinema-header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .cinema-back-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #c5d4e6;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  padding: 7px 14px;
+  padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: all 0.15s ease;
   user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cinema-back-btn:hover,
@@ -87,11 +96,12 @@
 .cinema-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .cinema-brand-title {
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: #ffffff;
@@ -99,25 +109,28 @@
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .cinema-brand-badge {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: #00e5ff;
   background: rgba(0, 229, 255, 0.1);
   border: 1px solid rgba(0, 229, 255, 0.3);
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 3px;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 /* Buscador Central */
 .cinema-search-wrap {
   position: relative;
   flex: 1;
-  max-width: 460px;
+  max-width: 320px;
+  min-width: 0;
 }
 
 .cinema-search-input {
@@ -125,8 +138,8 @@
   background: rgba(8, 12, 20, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: #ffffff;
-  font-size: 0.88rem;
-  padding: 8px 36px 8px 36px;
+  font-size: 0.78rem;
+  padding: 6px 28px 6px 28px;
   border-radius: 4px;
   outline: none;
   transition: all 0.2s ease;
@@ -136,12 +149,12 @@
 .cinema-search-input:focus {
   border-color: #00e5ff;
   background: rgba(12, 18, 30, 0.95);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
 }
 
 .cinema-search-icon {
   position: absolute;
-  left: 11px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   color: #64748b;
@@ -151,16 +164,17 @@
 
 .cinema-search-clear {
   position: absolute;
-  right: 8px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   color: #8fa0b5;
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   display: none;
   border-radius: 50%;
+  font-size: 0.75rem;
 }
 
 .cinema-search-clear:hover {
@@ -171,12 +185,13 @@
 .cinema-nav-tabs {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   background: rgba(8, 12, 22, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  padding: 3px 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
 }
 
 .cinema-tab-btn,
@@ -184,18 +199,20 @@
   background: transparent;
   border: 1px solid transparent;
   color: #94a3b8;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  padding: 10px 22px;
-  border-radius: 8px;
+  padding: 6px 14px;
+  border-radius: 6px;
   cursor: pointer;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
   user-select: none;
+  white-space: nowrap;
 }
 
 .cinema-tab-btn:hover,
@@ -214,58 +231,61 @@
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.28) 0%, rgba(0, 149, 255, 0.22) 100%);
   border-color: #00e5ff;
   color: #00e5ff;
-  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4), inset 0 0 12px rgba(0, 229, 255, 0.15);
-  transform: scale(1.04);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35), inset 0 0 8px rgba(0, 229, 255, 0.15);
+  transform: scale(1.02);
 }
 
 .cinema-tab-icon {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
 }
 
 /* Header Right: Buscador y Botón de Perfil */
 .cinema-header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 /* Botón de Usuario y Biblioteca Plex */
 .cinema-user-btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(0, 229, 255, 0.3);
-  border-radius: 30px;
-  padding: 4px 14px 4px 6px;
+  border-radius: 24px;
+  padding: 3px 10px 3px 4px;
   cursor: pointer;
   outline: none;
   transition: all 0.2s ease;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .cinema-user-btn:hover,
 .cinema-user-btn:focus,
 .cinema-user-btn.is-tv-focused {
   border-color: #00e5ff;
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
-  transform: scale(1.04);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+  transform: scale(1.03);
   background: rgba(0, 229, 255, 0.15);
 }
 
 .cinema-user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(135deg, #00e5ff 0%, #0077ff 100%);
   color: #030712;
   font-weight: 900;
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.35);
+  flex-shrink: 0;
 }
 
 .cinema-user-meta {
@@ -275,18 +295,142 @@
 }
 
 .cinema-user-name {
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 800;
   color: #f1f5f9;
-  line-height: 1.2;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .cinema-user-status {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
   color: #00e5ff;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   ADAPTACIÓN RESPONSIVA FORMATO VERTICAL / 9:16 (MÓVILES Y PANTALLAS EN RETRATO)
+   Header HUD de dos niveles: Fila 1 (Atrás, Logo, Buscador, Usuario) +
+   Fila 2 (Tabs Segmentados 100% Ancho: Películas | Series | Mi Biblioteca)
+   ========================================================================== */
+@media (orientation: portrait), (max-width: 768px) and (orientation: portrait) {
+  .cinema-header {
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    padding-top: max(8px, env(safe-area-inset-top, 8px));
+    gap: 8px;
+  }
+
+  .cinema-header-left {
+    order: 1;
+    flex: 1 1 auto;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .cinema-back-btn {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .cinema-brand-title {
+    font-size: 0.84rem;
+    gap: 5px;
+  }
+
+  .cinema-brand-badge {
+    font-size: 0.58rem;
+    padding: 1px 4px;
+  }
+
+  .cinema-header-right {
+    order: 2;
+    flex: 0 0 auto;
+    gap: 6px;
+  }
+
+  .cinema-search-wrap {
+    width: clamp(85px, 24vw, 130px);
+    max-width: 130px;
+  }
+
+  .cinema-search-input {
+    padding: 5px 22px 5px 24px;
+    font-size: 0.72rem;
+  }
+
+  .cinema-user-meta {
+    display: none !important;
+  }
+
+  .cinema-user-btn {
+    padding: 2px;
+    border-radius: 50%;
+  }
+
+  .cinema-user-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .cinema-nav-tabs {
+    order: 3;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 3px;
+    margin-top: 2px;
+    box-sizing: border-box;
+  }
+
+  .cinema-tab-btn,
+  .cinema-mode-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 7px 4px;
+    font-size: clamp(0.68rem, 2.6vw, 0.76rem);
+    gap: 4px;
+    letter-spacing: 0.2px;
+  }
+
+  .cinema-tab-icon {
+    font-size: 0.82rem;
+  }
+
+  .cinema-subbar {
+    padding: 6px 12px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .cinema-rank-chip {
+    padding: 5px 10px;
+    font-size: 0.68rem;
+  }
+
+  .cinema-content-area {
+    padding: 14px 12px;
+  }
+
+  .cinema-catalog-header {
+    margin: 8px 0 12px 0;
+  }
+
+  .cinema-catalog-title {
+    font-size: 0.95rem;
+  }
+
+  .cinema-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding-bottom: 24px;
+  }
 }
 
 /* Chips de Ranking IMDb y Rotten Tomatoes */
@@ -333,14 +477,18 @@
 .cinema-subbar {
   background: #090d18;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 8px 24px;
+  padding: 8px 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   overflow-x: auto;
+  overflow-y: hidden;
   white-space: nowrap;
   flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -350,8 +498,10 @@
 
 .cinema-genres-list {
   display: flex;
+  align-items: center;
   gap: 8px;
   overflow-x: auto;
+  overflow-y: hidden;
   padding-bottom: 2px;
 }
 
@@ -400,10 +550,13 @@
 .cinema-content-area {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  overflow-x: hidden !important;
+  padding: 20px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Cuadrícula de Pósters: Máximo 5 por fila en pantalla 16:9 con carteles grandes */
@@ -412,6 +565,8 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding-bottom: 40px;
 }
 
@@ -3532,6 +3687,104 @@
    OPTIMIZACIÓN DE ESCALADO Y PROPORCIONES PARA ANDROID TV / 16:9 4K LANDSCAPE
    ========================================================================== */
 @media (orientation: landscape) {
+  .cinema-header {
+    flex-wrap: nowrap;
+    padding: 6px 16px;
+    padding-top: max(6px, env(safe-area-inset-top, 6px));
+    gap: 10px;
+    min-height: 48px;
+  }
+
+  .cinema-header-left {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .cinema-back-btn {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .cinema-brand-title {
+    font-size: 0.88rem;
+    gap: 6px;
+  }
+
+  .cinema-brand-badge {
+    font-size: 0.58rem;
+    padding: 1px 5px;
+  }
+
+  .cinema-nav-tabs {
+    gap: 4px;
+    padding: 2px 4px;
+    flex-shrink: 0;
+  }
+
+  .cinema-tab-btn,
+  .cinema-mode-btn {
+    padding: 5px 12px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+
+  .cinema-tab-icon {
+    font-size: 0.85rem;
+  }
+
+  .cinema-header-right {
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .cinema-search-wrap {
+    width: clamp(110px, 15vw, 190px);
+    max-width: 190px;
+  }
+
+  .cinema-search-input {
+    padding: 4px 26px 4px 24px;
+    font-size: 0.74rem;
+  }
+
+  .cinema-user-btn {
+    padding: 3px 8px 3px 4px;
+    gap: 6px;
+  }
+
+  .cinema-user-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .cinema-user-name {
+    font-size: 0.72rem;
+  }
+
+  .cinema-user-status {
+    font-size: 0.58rem;
+  }
+
+  .cinema-subbar {
+    padding: 6px 16px;
+    gap: 10px;
+    justify-content: flex-start;
+  }
+
+  .cinema-content-area {
+    padding: 14px 18px;
+  }
+
+  .cinema-catalog-header {
+    margin: 8px 0 12px 0;
+  }
+
+  .cinema-catalog-title {
+    font-size: 1rem;
+  }
+
   .cinema-detail-topbar {
     padding: 8px 24px;
   }
@@ -3608,7 +3861,51 @@
   }
 }
 
+/* Teléfonos apaisados compactos (16:9 / 18:9 en formato landscape con altura reducida) */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cinema-header {
+    padding: 4px 12px;
+    padding-top: max(4px, env(safe-area-inset-top, 4px));
+    gap: 6px;
+  }
+
+  .cinema-brand-badge {
+    display: none;
+  }
+
+  .cinema-tab-btn,
+  .cinema-mode-btn {
+    padding: 4px 9px;
+    font-size: 0.72rem;
+    gap: 4px;
+  }
+
+  .cinema-search-wrap {
+    width: clamp(90px, 12vw, 140px);
+  }
+
+  .cinema-user-meta {
+    display: none;
+  }
+
+  .cinema-user-btn {
+    padding: 2px;
+    border-radius: 50%;
+  }
+
+  .cinema-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
+
 /* Foco de Alta Precisión para Android TV / Control Remoto */
+.cinema-back-btn.is-tv-focused,
+.cinema-tab-btn.is-tv-focused,
+.cinema-mode-btn.is-tv-focused,
+.cinema-search-input.is-tv-focused,
+.cinema-user-btn.is-tv-focused,
+.cinema-rank-chip.is-tv-focused,
 .cinema-detail-back-btn.is-tv-focused,
 .cinema-detail-btn-lib.is-tv-focused,
 .cinema-detail-btn-watched.is-tv-focused,

@@ -68,7 +68,11 @@ export function initTvNavigation() {
     if (cinemaVodView && !cinemaVodView.classList.contains('is-hidden')) {
       const vodSelectors = [
         '#cinemaBackBtn',
+        '.cinema-tab-btn',
         '.cinema-mode-btn',
+        '#cinemaSearchInput',
+        '#cinemaUserBtn',
+        '.cinema-rank-chip',
         '.cinema-genre-chip',
         '.cinema-card',
         '.cinema-load-more-btn'
