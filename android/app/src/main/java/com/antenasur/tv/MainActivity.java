@@ -33,8 +33,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.JSONArray;
@@ -543,7 +549,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             // 2. Detalles de Película: /api/cinema/movie?id=...
-            if (path.contains("/api/cinema/movie") && !path.contains("/movies")) {
+            if (path.contains("/api/cinema/movie") && !path.contains("/movies") && !path.contains("/movie_torrents")) {
                 String id = uri.getQueryParameter("id");
                 if (id != null && !id.isEmpty()) {
                     String detailUrl = "https://yts.mx/api/v2/movie_details.json?movie_id=" + id + "&with_images=true&with_cast=true";
@@ -554,6 +560,22 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject data = raw.optJSONObject("data");
                             JSONObject movie = data != null ? data.optJSONObject("movie") : null;
                             if (movie != null) {
+                                String imdbCode = movie.optString("imdb_code");
+                                if (imdbCode != null && !imdbCode.isEmpty()) {
+                                    String cleanImdb = imdbCode.startsWith("tt") ? imdbCode : ("tt" + imdbCode);
+                                    String torrResp = fetchHttpUrl("https://torrentio.strem.fun/stream/movie/" + cleanImdb + ".json", 4000);
+                                    if (torrResp != null && !torrResp.isEmpty()) {
+                                        try {
+                                            JSONObject torrJson = new JSONObject(torrResp);
+                                            JSONArray torrStreams = torrJson.optJSONArray("streams");
+                                            JSONArray ytsTorrents = movie.optJSONArray("torrents");
+                                            JSONArray filteredTorrents = processAndFilterStreamsJava(torrStreams, ytsTorrents, movie.optString("title"));
+                                            if (filteredTorrents != null && filteredTorrents.length() > 0) {
+                                                movie.put("torrents", filteredTorrents);
+                                            }
+                                        } catch (Throwable ignored) {}
+                                    }
+                                }
                                 JSONObject out = new JSONObject();
                                 out.put("ok", true);
                                 out.put("movie", movie);
@@ -562,6 +584,29 @@ public class MainActivity extends AppCompatActivity {
                                 headers.put("Access-Control-Allow-Origin", "*");
                                 return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
                             }
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            }
+
+            // 2.1 Torrents enriquecidos de película por código IMDb: /api/cinema/movie_torrents?imdb=...
+            if (path.contains("/api/cinema/movie_torrents")) {
+                String imdb = uri.getQueryParameter("imdb");
+                if (imdb != null && !imdb.isEmpty()) {
+                    String cleanImdb = imdb.startsWith("tt") ? imdb : ("tt" + imdb);
+                    String torrResp = fetchHttpUrl("https://torrentio.strem.fun/stream/movie/" + cleanImdb + ".json", 4000);
+                    if (torrResp != null && !torrResp.isEmpty()) {
+                        try {
+                            JSONObject torrJson = new JSONObject(torrResp);
+                            JSONArray torrStreams = torrJson.optJSONArray("streams");
+                            JSONArray filteredStreams = processAndFilterStreamsJava(torrStreams, null, "Película");
+                            JSONObject out = new JSONObject();
+                            out.put("ok", true);
+                            out.put("streams", filteredStreams != null ? filteredStreams : new JSONArray());
+                            byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
                         } catch (Throwable ignored) {}
                     }
                 }
@@ -682,15 +727,19 @@ public class MainActivity extends AppCompatActivity {
                 String s = uri.getQueryParameter("season");
                 String ep = uri.getQueryParameter("episode");
                 if (imdb != null && !imdb.isEmpty()) {
-                    String streamUrl = "https://torrentio.strem.fun/stream/series/" + imdb + ":" + (s != null ? s : "1") + ":" + (ep != null ? ep : "1") + ".json";
+                    String cleanImdb = imdb.startsWith("tt") ? imdb : ("tt" + imdb);
+                    String sNum = (s != null && !s.isEmpty()) ? s : "1";
+                    String epNum = (ep != null && !ep.isEmpty()) ? ep : "1";
+                    String streamUrl = "https://torrentio.strem.fun/stream/series/" + cleanImdb + ":" + sNum + ":" + epNum + ".json";
                     String stResp = fetchHttpUrl(streamUrl, 5000);
                     if (stResp != null && !stResp.isEmpty()) {
                         try {
                             JSONObject raw = new JSONObject(stResp);
                             JSONArray rawStreams = raw.optJSONArray("streams");
+                            JSONArray filteredStreams = processAndFilterStreamsJava(rawStreams, null, "Episodio S" + sNum + "E" + epNum);
                             JSONObject out = new JSONObject();
                             out.put("ok", true);
-                            out.put("streams", rawStreams != null ? rawStreams : new JSONArray());
+                            out.put("streams", filteredStreams != null ? filteredStreams : new JSONArray());
                             byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
                             Map<String, String> headers = new HashMap<>();
                             headers.put("Access-Control-Allow-Origin", "*");
@@ -735,33 +784,234 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-    private String fetchHttpUrl(String targetUrl, int timeoutMs) {
-        HttpURLConnection conn = null;
+    private static final Pattern CAM_3D_PATTERN = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\]()/])(cam|hdcam|camrip|telesync|ts|hdts|telecine|tc|hdtc|screener|scr|dvdscr|bdscr|workprint|wp|3d|half-sbs|hsbs|half-ou|hou|sbs)(?:$|[\\s._\\-\\[\\]()/])");
+    private static final Pattern Q4K_PATTERN = Pattern.compile("(?i)\\b(2160p|4k|uhd)\\b");
+    private static final Pattern Q1080_PATTERN = Pattern.compile("(?i)\\b(1080p|fhd|1080i)\\b");
+    private static final Pattern Q720_PATTERN = Pattern.compile("(?i)\\b(720p|hd|hdtv)\\b");
+    private static final Pattern Q480_PATTERN = Pattern.compile("(?i)\\b(480p|480i|sd|dvdrip)\\b");
+    private static final Pattern SEEDS_PATTERN = Pattern.compile("👤\\s*(\\d+)");
+    private static final Pattern SIZE_PATTERN = Pattern.compile("💾\\s*([\\d.]+\\s*[MG]B)", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern LATINO_PATTERN = Pattern.compile("(?i)\\b(latino|lat|es-419|es-la|mx|mexico|colombia|chile|argentina)\\b");
+    private static final Pattern CASTELLANO_PATTERN = Pattern.compile("(?i)\\b(castellano|cast|es-es|spain)\\b");
+    private static final Pattern SPANISH_PATTERN = Pattern.compile("(?i)\\b(español|spanish|spa|esp)\\b");
+    private static final Pattern ENGLISH_PATTERN = Pattern.compile("(?i)\\b(english|eng|en)\\b");
+    private static final Pattern DUAL_PATTERN = Pattern.compile("(?i)\\b(dual|multi audio|multi|multi-audio|dub|mvo|dvdrip)\\b");
+
+    private static final String[] TORRENT_TRACKERS = new String[] {
+        "udp://tracker.opentrackr.org:1337/announce",
+        "udp://open.tracker.cl:1337/announce",
+        "udp://open.demonii.com:1337/announce",
+        "udp://open.stealth.si:80/announce",
+        "udp://tracker.torrent.eu.org:451/announce",
+        "udp://tracker.openbittorrent.com:80/announce",
+        "wss://tracker.btorrent.xyz",
+        "wss://tracker.openwebtorrent.com"
+    };
+
+    private static String buildMagnetUriJava(String hash, String title) {
+        if (hash == null || hash.isEmpty()) return "";
         try {
-            URL url = new URL(targetUrl);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-            conn.setConnectTimeout(timeoutMs);
-            conn.setReadTimeout(timeoutMs);
-            int code = conn.getResponseCode();
-            if (code >= 200 && code < 400) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                br.close();
-                return sb.toString();
+            StringBuilder sb = new StringBuilder();
+            sb.append("magnet:?xt=urn:btih:").append(hash);
+            sb.append("&dn=").append(URLEncoder.encode(title != null ? title : "Torrent", "UTF-8"));
+            for (String tr : TORRENT_TRACKERS) {
+                sb.append("&tr=").append(URLEncoder.encode(tr, "UTF-8"));
             }
-        } catch (Throwable ignored) {
-        } finally {
-            if (conn != null) {
-                try { conn.disconnect(); } catch (Throwable ignored) {}
+            return sb.toString();
+        } catch (Throwable t) {
+            return "magnet:?xt=urn:btih:" + hash;
+        }
+    }
+
+    private static List<String> extractFlagsJava(String text) {
+        List<String> flags = new ArrayList<>();
+        if (text == null || text.isEmpty()) return flags;
+        try {
+            Pattern p = Pattern.compile("([\\x{1F1E6}-\\x{1F1FF}]{2})");
+            Matcher m = p.matcher(text);
+            while (m.find()) {
+                String flg = m.group(1);
+                if (!flags.contains(flg)) flags.add(flg);
+            }
+        } catch (Throwable ignored) {}
+        return flags;
+    }
+
+    private static JSONArray processAndFilterStreamsJava(JSONArray rawStreams, JSONArray ytsTorrents, String defaultTitle) {
+        List<JSONObject> b4k = new ArrayList<>();
+        List<JSONObject> b1080 = new ArrayList<>();
+        List<JSONObject> b720 = new ArrayList<>();
+        List<JSONObject> b480 = new ArrayList<>();
+        Set<String> seenHashes = new HashSet<>();
+
+        if (rawStreams != null) {
+            for (int i = 0; i < rawStreams.length(); i++) {
+                JSONObject s = rawStreams.optJSONObject(i);
+                if (s == null) continue;
+                String h = s.optString("infoHash", s.optString("hash", "")).trim().toLowerCase();
+                if (h.isEmpty() || seenHashes.contains(h)) continue;
+                seenHashes.add(h);
+
+                String title = s.optString("title", "");
+                String name = s.optString("name", "");
+                String rawQ = s.optString("quality", "").trim();
+                String combined = name + " " + title + " " + rawQ;
+
+                if (CAM_3D_PATTERN.matcher(combined).find()) continue;
+
+                int seeds = 0;
+                Matcher sm = SEEDS_PATTERN.matcher(title);
+                if (sm.find()) {
+                    try { seeds = Integer.parseInt(sm.group(1)); } catch (Throwable ignored) {}
+                } else {
+                    seeds = s.optInt("seeds", 0);
+                }
+
+                String size = "HD";
+                Matcher szm = SIZE_PATTERN.matcher(title);
+                if (szm.find()) {
+                    size = szm.group(1);
+                } else {
+                    size = s.optString("size", "HD");
+                }
+
+                int fileIdx = s.optInt("fileIdx", 0);
+                String cleanTitle = title.contains("\n") ? title.split("\n")[0].trim() : (name.isEmpty() ? (defaultTitle != null ? defaultTitle : "Video") : name);
+                String magnet = s.optString("magnet_url", buildMagnetUriJava(h, cleanTitle));
+
+                String textForQ = name + " " + title;
+                String rawQUp = rawQ.toUpperCase();
+                String q = "";
+                if (Q4K_PATTERN.matcher(textForQ).find() || rawQUp.equals("4K") || rawQUp.equals("2160P") || rawQUp.equals("UHD")) {
+                    q = "4K";
+                } else if (Q1080_PATTERN.matcher(textForQ).find() || rawQUp.equals("1080P") || rawQUp.equals("FHD") || rawQUp.equals("1080I")) {
+                    q = "1080p";
+                } else if (Q720_PATTERN.matcher(textForQ).find() || rawQUp.equals("720P") || rawQUp.equals("HD")) {
+                    q = "720p";
+                } else if (Q480_PATTERN.matcher(textForQ).find() || rawQUp.equals("480P") || rawQUp.equals("SD")) {
+                    q = "480p";
+                } else {
+                    continue;
+                }
+
+                List<String> flags = extractFlagsJava(textForQ);
+                String textForQLower = textForQ.toLowerCase();
+                boolean isLatino = LATINO_PATTERN.matcher(textForQLower).find();
+                boolean isCastellano = CASTELLANO_PATTERN.matcher(textForQLower).find();
+                boolean isSpanish = SPANISH_PATTERN.matcher(textForQLower).find() || flags.contains("🇪🇸") || flags.contains("🇲🇽") || isLatino || isCastellano;
+                boolean isEnglish = ENGLISH_PATTERN.matcher(textForQLower).find() || flags.contains("🇬🇧") || flags.contains("🇺🇸");
+                boolean isDual = DUAL_PATTERN.matcher(textForQLower).find() || flags.size() > 1;
+
+                if (isLatino && !flags.contains("🇲🇽")) flags.add(0, "🇲🇽");
+                else if (isCastellano && !flags.contains("🇪🇸")) flags.add(0, "🇪🇸");
+                else if (isSpanish && !flags.contains("🇪🇸") && !flags.contains("🇲🇽")) flags.add(0, "🇪🇸");
+
+                if (isEnglish && !flags.contains("🇬🇧") && !flags.contains("🇺🇸")) flags.add("🇺🇸");
+                if (flags.isEmpty()) flags.add("🇺🇸");
+
+                String audioDesc;
+                if (isLatino && isEnglish) audioDesc = "Dual Latino";
+                else if (isLatino) audioDesc = "Español Latino";
+                else if (isCastellano && isEnglish) audioDesc = "Castellano / Dual";
+                else if (isCastellano) audioDesc = "Castellano";
+                else if (isSpanish && isDual) audioDesc = "Dual Español";
+                else if (isSpanish) audioDesc = "Español";
+                else if (isDual) audioDesc = "Multi Audio";
+                else if (flags.contains("🇬🇧") || flags.contains("🇺🇸") || isEnglish) audioDesc = "Inglés (V.O.)";
+                else audioDesc = "Audio Original";
+
+                try {
+                    JSONObject item = new JSONObject();
+                    item.put("quality", q);
+                    item.put("title", cleanTitle);
+                    item.put("size", size);
+                    item.put("seeds", seeds);
+                    JSONArray fArr = new JSONArray();
+                    for (String fl : flags) fArr.put(fl);
+                    item.put("flags", fArr);
+                    item.put("audio", flags.get(0) + " " + audioDesc);
+                    item.put("hash", h);
+                    item.put("fileIdx", fileIdx);
+                    item.put("magnet_url", magnet);
+                    item.put("type", "torrent");
+
+                    if (q.equals("4K")) b4k.add(item);
+                    else if (q.equals("1080p")) b1080.add(item);
+                    else if (q.equals("720p")) b720.add(item);
+                    else if (q.equals("480p")) b480.add(item);
+                } catch (Throwable ignored) {}
             }
         }
-        return null;
+
+        if (ytsTorrents != null) {
+            for (int i = 0; i < ytsTorrents.length(); i++) {
+                JSONObject yt = ytsTorrents.optJSONObject(i);
+                if (yt == null) continue;
+                String h = yt.optString("hash", "").trim().toLowerCase();
+                if (h.isEmpty() || seenHashes.contains(h)) continue;
+                seenHashes.add(h);
+
+                String rawQ = yt.optString("quality", "").trim().toUpperCase();
+                String q = "1080p";
+                if (rawQ.equals("2160P") || rawQ.equals("4K") || rawQ.equals("UHD")) q = "4K";
+                else if (rawQ.equals("1080P") || rawQ.equals("FHD")) q = "1080p";
+                else if (rawQ.equals("720P") || rawQ.equals("HD")) q = "720p";
+                else if (rawQ.equals("480P") || rawQ.equals("SD")) q = "480p";
+
+                String size = yt.optString("size", "HD");
+                int seeds = yt.optInt("seeds", 50);
+                String cleanTitle = (defaultTitle != null ? defaultTitle : "Película") + " [" + q + "]";
+                String magnet = yt.optString("magnet_url", buildMagnetUriJava(h, cleanTitle));
+
+                try {
+                    JSONObject item = new JSONObject();
+                    item.put("quality", q);
+                    item.put("title", cleanTitle);
+                    item.put("size", size);
+                    item.put("seeds", seeds);
+                    JSONArray fArr = new JSONArray();
+                    fArr.put("🇺🇸");
+                    item.put("flags", fArr);
+                    item.put("audio", "🇺🇸 Inglés (V.O.)");
+                    item.put("hash", h);
+                    item.put("fileIdx", 0);
+                    item.put("magnet_url", magnet);
+                    item.put("type", "torrent");
+
+                    if (q.equals("4K")) b4k.add(item);
+                    else if (q.equals("1080p")) b1080.add(item);
+                    else if (q.equals("720p")) b720.add(item);
+                    else if (q.equals("480p")) b480.add(item);
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        Comparator<JSONObject> streamComp = new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String audA = a.optString("audio", "");
+                String audB = b.optString("audio", "");
+                boolean hasSpaA = audA.contains("Latino") || audA.contains("Español") || audA.contains("Castellano") || audA.contains("🇲🇽") || audA.contains("🇪🇸");
+                boolean hasSpaB = audB.contains("Latino") || audB.contains("Español") || audB.contains("Castellano") || audB.contains("🇲🇽") || audB.contains("🇪🇸");
+                int scoreA = a.optInt("seeds", 0) + (hasSpaA ? 300 : 0);
+                int scoreB = b.optInt("seeds", 0) + (hasSpaB ? 300 : 0);
+                return Integer.compare(scoreB, scoreA);
+            }
+        };
+
+        Collections.sort(b4k, streamComp);
+        Collections.sort(b1080, streamComp);
+        Collections.sort(b720, streamComp);
+        Collections.sort(b480, streamComp);
+
+        JSONArray out = new JSONArray();
+        for (int i = 0; i < Math.min(3, b4k.size()); i++) out.put(b4k.get(i));
+        for (int i = 0; i < Math.min(3, b1080.size()); i++) out.put(b1080.get(i));
+        for (int i = 0; i < Math.min(3, b720.size()); i++) out.put(b720.get(i));
+        for (int i = 0; i < Math.min(3, b480.size()); i++) out.put(b480.get(i));
+
+        return out;
     }
 
     private boolean isAdRequest(String url) {

@@ -1503,8 +1503,27 @@ export class CinemaEngine {
         }
       }
 
-      // Renderizar calidades con el BOTÓN ÚNICO DE PLAY
+      // 1. Renderizar calidades disponibles de inmediato
+      movie.torrents = this.processAndFilterStreams([], movie.torrents || [], movie.title);
       this.renderMovieQualities(movie);
+
+      // 2. Si la película tiene código IMDb y tiene menos de 5 torrents (ej. sólo los básicos de YTS),
+      // enriquecer asíncronamente con el enjambre completo de Torrentio (hasta 3 de 4K, 3 de 1080p, 3 de 720p, 3 de 480p)
+      if (movie.imdb_code && (!movie.torrents || movie.torrents.length < 5)) {
+        try {
+          const cleanImdb = movie.imdb_code.startsWith('tt') ? movie.imdb_code : `tt${movie.imdb_code}`;
+          const torrPromise = fetch(`https://torrentio.strem.fun/stream/movie/${cleanImdb}.json`);
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3500));
+          const torrResp = await Promise.race([torrPromise, timeoutPromise]);
+          if (torrResp && torrResp.ok) {
+            const torrData = await torrResp.json();
+            if (torrData && torrData.streams && torrData.streams.length > 0) {
+              movie.torrents = this.processAndFilterStreams(torrData.streams, movie.torrents || [], movie.title);
+              this.renderMovieQualities(movie);
+            }
+          }
+        } catch (ignored) {}
+      }
 
       // Configurar estado de Mi Biblioteca y Marcar como Visto (Plex)
       this.currentDetailMedia = { item: movie, type: 'movie' };
@@ -1515,6 +1534,164 @@ export class CinemaEngine {
       if (this.dom.detailTitle) this.dom.detailTitle.textContent = 'Error';
       if (this.dom.detailSynopsis) this.dom.detailSynopsis.textContent = 'Ocurrió un error al consultar el servidor.';
     }
+  }
+
+  processAndFilterStreams(rawStreams = [], ytsTorrents = [], defaultTitle = '') {
+    const buckets = { '4K': [], '1080p': [], '720p': [], '480p': [] };
+    const seenHashes = new Set();
+    const CAM_3D_PATTERN = /(?:^|[\s._\-[\]()/])(cam|hdcam|camrip|telesync|ts|hdts|telecine|tc|hdtc|screener|scr|dvdscr|bdscr|workprint|wp|3d|half-sbs|hsbs|half-ou|hou|sbs)(?:$|[\s._\-[\]()/])/i;
+    const Q4K_RE = /\b(2160p|4k|uhd)\b/i;
+    const Q1080_RE = /\b(1080p|fhd|1080i)\b/i;
+    const Q720_RE = /\b(720p|hd|hdtv)\b/i;
+    const Q480_RE = /\b(480p|480i|sd|dvdrip)\b/i;
+
+    const buildMagnetUri = (hash, title) => {
+      if (!hash) return '';
+      const dn = encodeURIComponent(title || 'Torrent');
+      const trackers = [
+        'udp://tracker.opentrackr.org:1337/announce',
+        'udp://open.tracker.cl:1337/announce',
+        'udp://open.demonii.com:1337/announce',
+        'udp://open.stealth.si:80/announce',
+        'udp://tracker.torrent.eu.org:451/announce',
+        'udp://tracker.openbittorrent.com:80/announce',
+        'wss://tracker.btorrent.xyz',
+        'wss://tracker.openwebtorrent.com'
+      ].map(tr => `&tr=${encodeURIComponent(tr)}`).join('');
+      return `magnet:?xt=urn:btih:${hash}&dn=${dn}${trackers}`;
+    };
+
+    const parseLanguages = (name, title) => {
+      const full = `${name || ''} ${title || ''}`;
+      const fullL = full.toLowerCase();
+      const flagRegex = /[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/g;
+      const flags = [];
+      let m;
+      while ((m = flagRegex.exec(full)) !== null) {
+        if (!flags.includes(m[0])) flags.push(m[0]);
+      }
+      const isLatino = /\b(latino|lat|es-419|es-la|mx|mexico|colombia|chile|argentina)\b/i.test(fullL);
+      const isCastellano = /\b(castellano|cast|es-es|spain)\b/i.test(fullL);
+      const isSpanish = /\b(español|spanish|spa|esp)\b/i.test(fullL) || flags.includes('🇪🇸') || flags.includes('🇲🇽') || isLatino || isCastellano;
+      const isEnglish = /\b(english|eng|en)\b/i.test(fullL) || flags.includes('🇬🇧') || flags.includes('🇺🇸');
+      const isDual = /\b(dual|multi audio|multi|multi-audio|dub|mvo|dvdrip)\b/i.test(fullL) || flags.length > 1;
+
+      if (isLatino && !flags.includes('🇲🇽')) flags.unshift('🇲🇽');
+      else if (isCastellano && !flags.includes('🇪🇸')) flags.unshift('🇪🇸');
+      else if (isSpanish && !flags.includes('🇪🇸') && !flags.includes('🇲🇽')) flags.unshift('🇪🇸');
+
+      if (isEnglish && !flags.includes('🇬🇧') && !flags.includes('🇺🇸')) flags.push('🇺🇸');
+      if (flags.length === 0) flags.push('🇺🇸');
+
+      let desc = '';
+      if (isLatino && isEnglish) desc = `${flags.slice(0, 3).join(' ')} Dual Latino`;
+      else if (isLatino) desc = `${flags.slice(0, 3).join(' ')} Español Latino`;
+      else if (isCastellano && isEnglish) desc = `${flags.slice(0, 3).join(' ')} Castellano / Dual`;
+      else if (isCastellano) desc = `${flags.slice(0, 3).join(' ')} Castellano`;
+      else if (isSpanish && isDual) desc = `${flags.slice(0, 3).join(' ')} Dual Español`;
+      else if (isSpanish) desc = `${flags.slice(0, 3).join(' ')} Español`;
+      else if (isDual) desc = `${flags.slice(0, 4).join(' ')} Multi Audio`;
+      else if (flags.includes('🇬🇧') || flags.includes('🇺🇸') || isEnglish) desc = `${flags.slice(0, 2).join(' ')} Inglés (V.O.)`;
+      else desc = `${flags.slice(0, 3).join(' ')} Audio Original`;
+
+      return { flags, audio: desc };
+    };
+
+    if (Array.isArray(rawStreams)) {
+      rawStreams.forEach(s => {
+        const h = (s.infoHash || s.hash || '').trim().toLowerCase();
+        if (!h || seenHashes.has(h)) return;
+        seenHashes.add(h);
+
+        const title = s.title || '';
+        const name = s.name || '';
+        const rawQ = String(s.quality || '').trim();
+        const combined = `${name} ${title} ${rawQ}`;
+        if (CAM_3D_PATTERN.test(combined)) return;
+
+        const seedsM = title.match(/👤\s*(\d+)/);
+        const seeds = seedsM ? parseInt(seedsM[1], 10) : (parseInt(s.seeds, 10) || 0);
+        const sizeM = title.match(/💾\s*([\d.]+\s*[MG]B)/i);
+        const size = sizeM ? sizeM[1] : (s.size || 'HD');
+
+        const fileIdx = (s.fileIdx !== undefined && s.fileIdx !== null) ? s.fileIdx : 0;
+        const cleanTitle = title.split('\n')[0].trim() || name || defaultTitle;
+        const magnet = s.magnet_url || buildMagnetUri(h, cleanTitle);
+
+        const textForQ = `${name} ${title}`;
+        const rawQUp = rawQ.toUpperCase();
+        let q = '';
+        if (Q4K_RE.test(textForQ) || rawQUp === '4K' || rawQUp === '2160P' || rawQUp === 'UHD') q = '4K';
+        else if (Q1080_RE.test(textForQ) || rawQUp === '1080P' || rawQUp === 'FHD' || rawQUp === '1080I') q = '1080p';
+        else if (Q720_RE.test(textForQ) || rawQUp === '720P' || rawQUp === 'HD') q = '720p';
+        else if (Q480_RE.test(textForQ) || rawQUp === '480P' || rawQUp === 'SD') q = '480p';
+        else return;
+
+        const langInfo = (s.flags && s.audio) ? { flags: s.flags, audio: s.audio } : parseLanguages(name, title);
+
+        buckets[q].push({
+          quality: q,
+          title: cleanTitle,
+          size: size,
+          seeds: seeds,
+          flags: langInfo.flags,
+          audio: langInfo.audio,
+          hash: h,
+          fileIdx: fileIdx,
+          magnet_url: magnet,
+          type: 'torrent'
+        });
+      });
+    }
+
+    if (Array.isArray(ytsTorrents)) {
+      ytsTorrents.forEach(yt => {
+        const h = (yt.hash || yt.infoHash || '').trim().toLowerCase();
+        if (!h || seenHashes.has(h)) return;
+        seenHashes.add(h);
+
+        const rawQ = String(yt.quality || '').trim().toUpperCase();
+        let q = '1080p';
+        if (rawQ === '2160P' || rawQ === '4K' || rawQ === 'UHD') q = '4K';
+        else if (rawQ === '1080P' || rawQ === 'FHD') q = '1080p';
+        else if (rawQ === '720P' || rawQ === 'HD') q = '720p';
+        else if (rawQ === '480P' || rawQ === 'SD') q = '480p';
+
+        const size = yt.size || 'HD';
+        const seeds = parseInt(yt.seeds, 10) || 50;
+        const cleanTitle = yt.title || `${defaultTitle || 'Película'} [${q}]`;
+        const magnet = yt.magnet_url || buildMagnetUri(h, cleanTitle);
+
+        buckets[q].push({
+          quality: q,
+          title: cleanTitle,
+          size: size,
+          seeds: seeds,
+          flags: yt.flags || ['🇺🇸'],
+          audio: yt.audio || '🇺🇸 Inglés (V.O.)',
+          hash: h,
+          fileIdx: 0,
+          magnet_url: magnet,
+          type: 'torrent'
+        });
+      });
+    }
+
+    // Máximo 3 opciones por resolución, priorizando semillas verificadas y audio latino/español (+300 pts)
+    ['4K', '1080p', '720p', '480p'].forEach(q => {
+      buckets[q].sort((a, b) => {
+        const hasSpaA = (a.audio && a.audio.toLowerCase().includes('latino')) || (a.flags && (a.flags.includes('🇲🇽') || a.flags.includes('🇪🇸')));
+        const hasSpaB = (b.audio && b.audio.toLowerCase().includes('latino')) || (b.flags && (b.flags.includes('🇲🇽') || b.flags.includes('🇪🇸')));
+        const scoreA = (a.seeds || 0) + (hasSpaA ? 300 : 0);
+        const scoreB = (b.seeds || 0) + (hasSpaB ? 300 : 0);
+        return scoreB - scoreA;
+      });
+      // Límite estricto de hasta 3 alternativas por calidad
+      buckets[q] = buckets[q].slice(0, 3);
+    });
+
+    // En orden estricto de mayor a menor calidad: 4K (hasta 3), 1080p (hasta 3), 720p (hasta 3), 480p (hasta 3)
+    return [...buckets['4K'], ...buckets['1080p'], ...buckets['720p'], ...buckets['480p']];
   }
 
   sortStreamsByQuality(streams) {
@@ -1999,7 +2176,7 @@ export class CinemaEngine {
       const resp = await fetch(`/api/cinema/series/episode_streams?imdb=${encodeURIComponent(imdbCode)}&season=${seasonNum}&episode=${episodeNum}`);
       const data = await resp.json();
       if (data.ok && data.streams && data.streams.length > 0) {
-        const sortedStreams = this.sortStreamsByQuality(data.streams);
+        const sortedStreams = this.processAndFilterStreams(data.streams, [], `Episodio S${seasonNum}E${episodeNum}`);
         episode.streams = sortedStreams;
         if (blockEl) {
           blockEl.innerHTML = `
