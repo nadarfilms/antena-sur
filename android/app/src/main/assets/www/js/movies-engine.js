@@ -119,12 +119,6 @@ export class CinemaEngine {
       playerSubtitle: document.getElementById('cinemaPlayerSubtitle'),
       playerStatusBadge: document.getElementById('cinemaPlayerStatusBadge'),
       playerStatsBadge: document.getElementById('cinemaPlayerStatsBadge'),
-      playerIframe: document.getElementById('cinemaPlayerIframe'),
-      serverSelector: document.getElementById('cinemaServerSelector'),
-      btnServer1: document.getElementById('btnServer1'),
-      btnServer2: document.getElementById('btnServer2'),
-      btnServer3: document.getElementById('btnServer3'),
-      btnServerP2P: document.getElementById('btnServerP2P'),
       videoWrap: document.getElementById('cinemaPlayerVideoWrap'),
       videoElement: document.getElementById('cinemaVideoElement'),
       loadingOverlay: document.getElementById('cinemaPlayerLoadingOverlay'),
@@ -2084,141 +2078,6 @@ export class CinemaEngine {
      REPRODUCTOR DE VIDEO INTEGRADO EN LA APLICACIÓN (MOTOR HÍBRIDO DIRECTO + P2P)
      ======================================================================== */
 
-  updateServerButtonsUI(serverIndex) {
-    const btns = [this.dom.btnServer1, this.dom.btnServer2, this.dom.btnServer3, this.dom.btnServerP2P];
-    btns.forEach((btn, idx) => {
-      if (btn) {
-        if (idx === serverIndex) {
-          btn.classList.add('is-active');
-        } else {
-          btn.classList.remove('is-active');
-        }
-      }
-    });
-  }
-
-  switchServer(serverIndex) {
-    if (!this.activeMedia) return;
-    if (serverIndex === 3) {
-      this.startP2PPlayback();
-    } else {
-      this.startDirectPlayback(serverIndex);
-    }
-  }
-
-  startDirectPlayback(serverIndex = 0) {
-    if (!this.activeMedia) return;
-    this.activeMedia.currentServer = serverIndex;
-    this.updateServerButtonsUI(serverIndex);
-
-    // Detener cualquier torrent o sondeo previo
-    if (this.activeTorrent) {
-      try {
-        fetch(`/api/torrent/stop?torrent=${encodeURIComponent(this.activeTorrent)}`).catch(() => {});
-      } catch (e) {}
-      this.activeTorrent = null;
-    }
-    if (this.statusPollTimer) {
-      clearInterval(this.statusPollTimer);
-      this.statusPollTimer = null;
-    }
-
-    // Pausar y ocultar video HTML5 nativo
-    const video = this.dom.videoElement;
-    if (video) {
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
-      video.style.display = 'none';
-    }
-
-    const imdb = this.activeMedia.imdb || '';
-    const isSeries = (this.activeMedia.type === 'series');
-    const s = this.activeMedia.season || 1;
-    const ep = this.activeMedia.episode || 1;
-
-    let streamUrl = '';
-    let serverLabel = '';
-    if (serverIndex === 0) {
-      serverLabel = 'Servidor 1 (2Embed)';
-      streamUrl = isSeries
-        ? `https://www.2embed.cc/embedtv/${imdb}&s=${s}&e=${ep}`
-        : `https://www.2embed.cc/embed/${imdb}`;
-    } else if (serverIndex === 1) {
-      serverLabel = 'Servidor 2 (MultiEmbed)';
-      streamUrl = isSeries
-        ? `https://multiembed.mov/?video_id=${imdb}&s=${s}&e=${ep}`
-        : `https://multiembed.mov/?video_id=${imdb}`;
-    } else if (serverIndex === 2) {
-      serverLabel = 'Servidor 3 (VidSrc PM)';
-      streamUrl = isSeries
-        ? `https://vidsrc.pm/embed/tv/${imdb}/${s}/${ep}`
-        : `https://vidsrc.pm/embed/movie/${imdb}`;
-    }
-
-    // Actualizar iframe
-    const iframe = this.dom.playerIframe;
-    if (iframe) {
-      iframe.classList.remove('is-hidden');
-      iframe.style.display = 'block';
-      iframe.src = streamUrl;
-    }
-
-    if (this.dom.playerStatusBadge) {
-      this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot" style="background:#00e5ff;"></span> ${serverLabel.toUpperCase()} ACTIVO`;
-    }
-    if (this.dom.playerStatsBadge) {
-      this.dom.playerStatsBadge.textContent = '⚡ Streaming Directo 1080p';
-    }
-
-    // Ocultar overlay de carga tras 1.2 segundos
-    setTimeout(() => {
-      if (this.dom.loadingOverlay) {
-        this.dom.loadingOverlay.classList.add('is-hidden');
-      }
-    }, 1200);
-
-    // Asegurar foco para control remoto en Android TV
-    if (window.setTvFocus) {
-      const activeBtn = [this.dom.btnServer1, this.dom.btnServer2, this.dom.btnServer3, this.dom.btnServerP2P][serverIndex] || this.dom.playerBackBtn;
-      if (activeBtn) window.setTvFocus(activeBtn);
-    }
-
-    this.showToast(`▶ Conectado a ${serverLabel}`, 'info');
-  }
-
-  startP2PPlayback() {
-    if (!this.activeMedia) return;
-    this.activeMedia.currentServer = 3;
-    this.updateServerButtonsUI(3);
-
-    // Ocultar iframe
-    const iframe = this.dom.playerIframe;
-    if (iframe) {
-      iframe.src = 'about:blank';
-      iframe.classList.add('is-hidden');
-      iframe.style.display = 'none';
-    }
-
-    // Mostrar video nativo
-    const video = this.dom.videoElement;
-    if (video) {
-      video.style.display = 'block';
-    }
-
-    const title = this.activeMedia.title || 'Contenido';
-    const torrentId = this.activeMedia.torrentId;
-    const fileIdx = this.activeMedia.fileIdx;
-
-    if (!torrentId) {
-      this.showToast('No hay fuente torrent P2P disponible. Regresando a Servidor 1...', 'info');
-      this.startDirectPlayback(0);
-      return;
-    }
-
-    this.startTorrentPlayback(title, torrentId, fileIdx);
-  }
-
   playMovie(movie, torrent) {
     // Detener audio de radios para evitar sonidos superpuestos
     if (window.AntenaSurPlayer && typeof window.AntenaSurPlayer.stopRadio === 'function') {
@@ -2244,7 +2103,6 @@ export class CinemaEngine {
       fileIdx: fileIdx,
       allStreams: availableStreams,
       currentStreamIndex: Math.max(0, currentIndex),
-      currentServer: 0,
       parentMedia: movie,
       torrentData: torrent
     };
@@ -2253,12 +2111,10 @@ export class CinemaEngine {
     if (this.dom.playerSubtitle) this.dom.playerSubtitle.textContent = `PELÍCULA • CALIDAD ${q} • 📁 ${releaseName}`;
 
     this.openCinemaPlayer();
-    if (this.activeMedia.imdb) {
-      this.startDirectPlayback(0);
-    } else if (torrentId) {
-      this.startP2PPlayback();
+    if (torrentId) {
+      this.startTorrentPlayback(title, torrentId, fileIdx);
     } else {
-      this.showToast('No se encontró fuente de reproducción para esta película', 'error');
+      this.showToast('No se encontró fuente de reproducción torrent para esta película', 'error');
     }
   }
 
@@ -2302,7 +2158,6 @@ export class CinemaEngine {
       fileIdx: fileIdx,
       allStreams: availableStreams,
       currentStreamIndex: Math.max(0, currentIndex),
-      currentServer: 0,
       parentMedia: show,
       episodeData: episode,
       streamData: stream
@@ -2312,12 +2167,10 @@ export class CinemaEngine {
     if (this.dom.playerSubtitle) this.dom.playerSubtitle.textContent = `TEMPORADA ${s} • EPISODIO ${epNum} • 📁 ${epReleaseName}`;
 
     this.openCinemaPlayer();
-    if (imdbCode) {
-      this.startDirectPlayback(0);
-    } else if (torrentId) {
-      this.startP2PPlayback();
+    if (torrentId) {
+      this.startTorrentPlayback(title, torrentId, fileIdx);
     } else {
-      this.showToast('No se encontró fuente de reproducción para este episodio', 'error');
+      this.showToast('No se encontró fuente torrent para este episodio', 'error');
     }
   }
 
@@ -2331,10 +2184,10 @@ export class CinemaEngine {
     this.closeAllPopovers();
     this.resetHudTimer();
 
-    // Auto-focus para Android TV en el botón de retroceso o servidor
+    // Auto-focus para Android TV en el botón de reproducción o retroceso
     if (window.setTvFocus) {
       setTimeout(() => {
-        const targetFocus = this.dom.btnServer1 || this.dom.playerBackBtn;
+        const targetFocus = this.dom.ctrlPlayBtn || this.dom.playerBackBtn;
         if (targetFocus) window.setTvFocus(targetFocus);
       }, 100);
     }
@@ -2543,17 +2396,6 @@ export class CinemaEngine {
       this.dom.playerView.addEventListener('mousemove', onActivity);
       this.dom.playerView.addEventListener('touchstart', onActivity, { passive: true });
     }
-
-    // 10b. Botones de Selección de Servidor (Directo HD & Torrent)
-    const serverButtons = [this.dom.btnServer1, this.dom.btnServer2, this.dom.btnServer3, this.dom.btnServerP2P];
-    serverButtons.forEach((btn, idx) => {
-      if (btn) {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          this.switchServer(idx);
-        });
-      }
-    });
 
     // 11. Eventos del Elemento de Video HTML5
     video.addEventListener('timeupdate', () => this.updateTimeDisplay());
@@ -4107,14 +3949,17 @@ export class CinemaEngine {
         this.probeAudioTracks(torrentId, fileIdx);
       }
 
-      // Si tras 6 segundos no hay semillas activas o no hay motor torrent disponible (p. ej. en Android APK),
-      // failover automático al Servidor 1 Directo HD (VidSrc / 2Embed)
-      if (!playbackStarted && !failoverTriggered && (secondsWithZeroPeers >= 6 || totalPollSeconds >= 8)) {
-        failoverTriggered = true;
-        console.log('[Cinema Player] Sin semillas P2P activas tras 6s. Conectando automáticamente a Servidor 1...');
-        this.showToast('⚡ Conexión P2P lenta. Conectando automáticamente a Servidor 1 Directo HD...', 'info');
-        this.startDirectPlayback(0);
-        return;
+      // Si tras 8 segundos no hay semillas activas en este torrent específico y no se ha iniciado la reproducción,
+      // probar automáticamente con la siguiente calidad de torrent disponible
+      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 8) {
+        const streams = this.activeMedia?.allStreams || [];
+        if (streams.length > 1) {
+          failoverTriggered = true;
+          console.log('[Cinema Player] 0 semillas activas tras 8s. Probando siguiente opción de calidad torrent...');
+          if (this.tryNextStreamFallback('sin semillas activas')) {
+            return;
+          }
+        }
       }
 
       if (!playbackStarted) {

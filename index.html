@@ -816,27 +816,17 @@
       </div>
 
       <div class="cinema-player-hud-right">
-        <!-- Selector de Servidores de Streaming Directo y P2P -->
-        <div class="cinema-server-selector" id="cinemaServerSelector">
-          <button class="cinema-server-btn is-active" data-server="0" id="btnServer1" title="Servidor 1 (Directo Rápido 1080p)" tabindex="0">⚡ Servidor 1</button>
-          <button class="cinema-server-btn" data-server="1" id="btnServer2" title="Servidor 2 (Multi-Stream)" tabindex="0">⚡ Servidor 2</button>
-          <button class="cinema-server-btn" data-server="2" id="btnServer3" title="Servidor 3 (VidSrc PM)" tabindex="0">⚡ Servidor 3</button>
-          <button class="cinema-server-btn" data-server="3" id="btnServerP2P" title="Motor Torrent P2P" tabindex="0">🧲 P2P Torrent</button>
-        </div>
         <span class="cinema-player-status-badge" id="cinemaPlayerStatusBadge">
           <span class="cinema-pulse-dot"></span> CONECTANDO...
         </span>
-        <span class="cinema-player-stats-badge" id="cinemaPlayerStatsBadge" title="Estado de la conexión">
-          ⚡ Streaming HD
+        <span class="cinema-player-stats-badge" id="cinemaPlayerStatsBadge" title="Estado de la conexión P2P">
+          👥 0 Semillas • 0 KB/s
         </span>
       </div>
     </header>
 
     <!-- Área de Video y Renderizado Exclusivamente Nativa -->
     <div class="cinema-player-video-wrap" id="cinemaPlayerVideoWrap">
-      <!-- Iframe para Servidores de Streaming Directo HD (VidSrc / 2Embed / MultiEmbed) -->
-      <iframe id="cinemaPlayerIframe" class="cinema-player-iframe is-hidden" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture"></iframe>
-
       <!-- Elemento de Video Nativo para WebTorrent P2P -->
       <video id="cinemaVideoElement" class="cinema-player-video" playsinline preload="auto"></video>
 

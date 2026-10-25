@@ -2136,10 +2136,8 @@
 .cinema-player-hud-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 1;
-  max-width: 65%;
-  overflow: hidden;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 /* Selector Rápido de Servidores Directos (Pills) */
@@ -2306,74 +2304,6 @@
   object-fit: contain;
   background: #000000;
   outline: none;
-}
-
-.cinema-player-iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: #000000;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-}
-
-.cinema-player-iframe.is-hidden {
-  display: none !important;
-}
-
-/* Selector de Servidores de Streaming Directo y P2P */
-.cinema-server-selector {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(10, 15, 26, 0.85);
-  padding: 3px 6px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  margin-right: 8px;
-}
-
-.cinema-server-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: #94a3b8;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-}
-
-.cinema-server-btn:hover,
-.cinema-server-btn:focus,
-.cinema-server-btn.is-tv-focused {
-  color: #ffffff;
-  border-color: rgba(0, 229, 255, 0.4);
-  background: rgba(0, 229, 255, 0.12);
-  outline: none;
-}
-
-.cinema-server-btn.is-active {
-  background: rgba(0, 229, 255, 0.22);
-  border-color: #00e5ff;
-  color: #00e5ff;
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
-}
-
-@media (max-width: 768px) {
-  .cinema-server-selector {
-    gap: 2px;
-    padding: 2px 4px;
-    margin-right: 4px;
-  }
-  .cinema-server-btn {
-    font-size: 0.65rem;
-    padding: 3px 5px;
-  }
 }
 
 .cinema-player-loading-overlay {
@@ -3977,7 +3907,6 @@
 .cinema-btn-load-ep-streams.is-tv-focused,
 .cinema-quality-play-btn.is-tv-focused,
 [data-action="play-movie-quality"].is-tv-focused,
-.cinema-server-btn.is-tv-focused,
 .cinema-player-back-btn.is-tv-focused,
 .cinema-ctrl-btn.is-tv-focused,
 .cinema-scrub-track.is-tv-focused,

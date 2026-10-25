@@ -11,11 +11,6 @@ export function initTvNavigation() {
     if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
       const playerSelectors = [
         '#cinemaPlayerBackBtn',
-        '#btnServer1',
-        '#btnServer2',
-        '#btnServer3',
-        '#btnServerP2P',
-        '.cinema-server-btn',
         '#cinemaCtrlPlayBtn',
         '#cinemaCtrlRewindBtn',
         '#cinemaCtrlForwardBtn',
