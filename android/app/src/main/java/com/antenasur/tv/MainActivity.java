@@ -784,6 +784,35 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    private String fetchHttpUrl(String targetUrl, int timeoutMs) {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(targetUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            conn.setConnectTimeout(timeoutMs);
+            conn.setReadTimeout(timeoutMs);
+            int code = conn.getResponseCode();
+            if (code >= 200 && code < 400) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                return sb.toString();
+            }
+        } catch (Throwable ignored) {
+        } finally {
+            if (conn != null) {
+                try { conn.disconnect(); } catch (Throwable ignored) {}
+            }
+        }
+        return null;
+    }
+
     private static final Pattern CAM_3D_PATTERN = Pattern.compile("(?i)(?:^|[\\s._\\-\\[\\]()/])(cam|hdcam|camrip|telesync|ts|hdts|telecine|tc|hdtc|screener|scr|dvdscr|bdscr|workprint|wp|3d|half-sbs|hsbs|half-ou|hou|sbs)(?:$|[\\s._\\-\\[\\]()/])");
     private static final Pattern Q4K_PATTERN = Pattern.compile("(?i)\\b(2160p|4k|uhd)\\b");
     private static final Pattern Q1080_PATTERN = Pattern.compile("(?i)\\b(1080p|fhd|1080i)\\b");
