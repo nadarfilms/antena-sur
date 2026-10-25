@@ -1820,19 +1820,9 @@ export class PlayerEngine {
     const station = this.currentStation;
     const targetUrl = source.url;
 
-    // Conmutación inmediata para fuentes web o de inserción interactiva (ej. 13.cl/en-vivo, tvn.cl/ntv, tvn.cl/en-vivo, live.tvn.cl, rudo.video)
-    const isEmbedSource = source.isEmbed ||
-      (targetUrl && (
-        targetUrl.includes('13.cl/en-vivo') ||
-        targetUrl.includes('rudo.video/live') ||
-        targetUrl.includes('/live/c13') ||
-        targetUrl.includes('tvn.cl/ntv') ||
-        targetUrl.includes('tvn.cl/en-vivo') ||
-        targetUrl.includes('tvn.cl/envivo') ||
-        targetUrl.includes('tvn.cl/tvchile') ||
-        targetUrl.includes('live.tvn.cl') ||
-        targetUrl.includes('mdstrm.com/live-stream/')
-      ));
+    // Conmutación solo para fuentes web explícitamente marcadas como incrustación HTML (NUNCA streams .m3u8)
+    const isM3u8Stream = targetUrl && (targetUrl.includes('.m3u8') || targetUrl.includes('.smil'));
+    const isEmbedSource = !isM3u8Stream && source.isEmbed;
 
     if (isEmbedSource) {
       this.switchToWebPlayer(targetUrl);
@@ -1885,8 +1875,6 @@ export class PlayerEngine {
         } else if (station.sources && this.currentSourceIndex < station.sources.length - 1) {
           console.log(`Fuente #${this.currentSourceIndex + 1} no respondió. Conmutando automáticamente a Fuente #${this.currentSourceIndex + 2}...`);
           this.switchTvSource(this.currentSourceIndex + 1);
-        } else if (station.embedUrl) {
-          this.switchToWebPlayer();
         } else {
           this.showTvFallback('La fuente seleccionada puede no estar disponible temporalmente.');
         }
@@ -1941,11 +1929,6 @@ export class PlayerEngine {
                   this.switchTvSource(this.currentSourceIndex + 1);
                   return;
                 }
-                if (station.embedUrl) {
-                  console.log('Conmutando a reproductor web oficial...');
-                  this.switchToWebPlayer();
-                  return;
-                }
                 this.showTvFallback('La fuente pública actual puede tener restricciones de conexión.');
                 break;
               case window.Hls.ErrorTypes.MEDIA_ERROR:
@@ -1961,11 +1944,7 @@ export class PlayerEngine {
                   this.switchTvSource(this.currentSourceIndex + 1);
                   return;
                 }
-                if (station.embedUrl) {
-                  this.switchToWebPlayer();
-                } else {
-                  this.showTvFallback('Error desconocido al reproducir la fuente seleccionada.');
-                }
+                this.showTvFallback('Error desconocido al reproducir la fuente seleccionada.');
                 break;
             }
           }
@@ -1978,11 +1957,7 @@ export class PlayerEngine {
         console.warn('Safari autoplay bloqueado:', e);
       });
     } else {
-      if (station.embedUrl) {
-        this.switchToWebPlayer();
-      } else {
-        this.showTvFallback('Tu navegador no es compatible con transmisiones HLS.');
-      }
+      this.showTvFallback('Tu navegador no es compatible con transmisiones HLS.');
     }
 
     if (this.onStationChange) {
@@ -2024,6 +1999,10 @@ export class PlayerEngine {
   showTvFallback(message) {
     this.clearConnectionWatchdog();
     if (this.dom.tvLoading) this.dom.tvLoading.style.display = 'none';
+    if (this.dom.tvIframe) {
+      this.dom.tvIframe.src = 'about:blank';
+      this.dom.tvIframe.classList.add('is-hidden');
+    }
     if (this.dom.tvFallbackOverlay) {
       this.dom.tvFallbackOverlay.classList.remove('is-hidden');
     }

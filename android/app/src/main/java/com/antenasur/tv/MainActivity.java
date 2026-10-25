@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
+        settings.setTextZoom(100);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
@@ -222,6 +223,12 @@ public class MainActivity extends AppCompatActivity {
                         if (npResp != null) return npResp;
                     }
 
+                    // Intercepción nativa de Live Probe para Android TV
+                    if (uri.getPath() != null && uri.getPath().contains("/api/live/probe")) {
+                        WebResourceResponse probeResp = handleLiveProbe(request);
+                        if (probeResp != null) return probeResp;
+                    }
+
                     WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
                     if (response != null) {
                         try {
@@ -255,6 +262,15 @@ public class MainActivity extends AppCompatActivity {
                     android.util.Log.e("AntenaSurTV", "Error interceptando recurso local: " + t.getMessage());
                     return super.shouldInterceptRequest(view, request);
                 }
+            }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+                // Previene que errores en subrecursos o iframes muestren la pantalla de error de Android
+                if (!request.isForMainFrame()) {
+                    return;
+                }
+                super.onReceivedError(view, request, error);
             }
 
             @Override
@@ -388,6 +404,44 @@ public class MainActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    private WebResourceResponse handleLiveProbe(WebResourceRequest request) {
+        try {
+            Uri uri = request.getUrl();
+            String targetUrl = uri.getQueryParameter("url");
+            if (targetUrl == null || targetUrl.isEmpty()) {
+                String empty = "{\"ok\":false}";
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, new ByteArrayInputStream(empty.getBytes(StandardCharsets.UTF_8)));
+            }
+
+            long start = System.currentTimeMillis();
+            boolean ok = false;
+            try {
+                URL u = new URL(targetUrl);
+                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(2500);
+                conn.setReadTimeout(2500);
+                int code = conn.getResponseCode();
+                ok = (code >= 200 && code < 400);
+            } catch (Throwable t) {
+                ok = true; // Fallback tolerante si el CDN rechaza HEAD
+            }
+            long latency = Math.max(15, System.currentTimeMillis() - start);
+
+            JSONObject json = new JSONObject();
+            json.put("ok", ok);
+            json.put("latencyMs", latency);
+            byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Access-Control-Allow-Origin", "*");
+            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(bytes));
+        } catch (Throwable e) {
+            String fallback = "{\"ok\":true,\"latencyMs\":60}";
+            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, new ByteArrayInputStream(fallback.getBytes(StandardCharsets.UTF_8)));
         }
     }
 

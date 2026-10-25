@@ -1,12 +1,15 @@
-// Antena Sur - Base de Datos Global de Estaciones
+/**
+ * ANTENA SUR - Catálogo de Canales y Emisoras
+ */
 window.STATIONS_DATA = {
-  "lastUpdated": "2026-10-23",
+  "lastUpdated": "2026-09-22",
   "version": "2.0.0",
   "countries": [
     {
       "code": "CL",
       "name": "Chile",
-      "flag": "🇨🇱"
+      "flag": "🇨🇱",
+      "capital": "Santiago"
     }
   ],
   "stations": [
@@ -20,8 +23,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Cultura",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1193_13_Cultura.png",
-      "streamUrl": "https://redirector.dps.live/hls/13cultura/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-13c.svg",
+      "streamUrl": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
       "backupStreamUrl": "https://redirector.dps.live/hls/13cultura/playlist.m3u8?PlaylistM3UCL",
       "embedUrl": "https://www.13.cl/c",
       "website": "https://www.13.cl",
@@ -30,7 +33,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.dps.live/hls/13cultura/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
           "needsProxy": true
         },
         {
@@ -62,11 +65,6 @@ window.STATIONS_DATA = {
         {
           "name": "Fuente 1 (Principal)",
           "url": "https://origin.dpsgo.com/ssai/event/uFiYkh4CQPCPgbs7WPKhXw/master.m3u8?PlaylistM3UCL",
-          "needsProxy": true
-        },
-        {
-          "name": "Fuente Rudo Free-TV",
-          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/13d/13d.smil/playlist.m3u8",
           "needsProxy": true
         }
       ],
@@ -260,8 +258,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/448_TVN_24_Horas.png",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-24horas.svg",
+      "streamUrl": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
       "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
       "website": "https://www.24horas.cl",
       "description": "Canal chileno de noticias las 24 horas del día, perteneciente a Televisión Nacional de Chile.",
@@ -270,7 +268,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8?PlaylistM3UCL",
+          "url": "https://mdstrm.com/live-stream-playlist/689ba606ecfe7915e1f8f741.m3u8",
           "needsProxy": false
         },
         {
@@ -295,8 +293,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/424_ADN.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-adntv.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.adnradio.cl",
       "description": "Canal de video de ADN Radio Chile con Los Tenores, noticias y análisis en directo.",
@@ -305,7 +303,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -326,8 +324,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/421_Bio_Bio_TV.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-biobiotv.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.biobiochile.cl/biobiotv",
       "description": "Canal de televisión de Radio Bío Bío con debate, reportajes y noticias en vivo.",
@@ -336,7 +334,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -407,9 +405,9 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1733_Canal_13.png",
+      "logo": "./img/logos/cl-tv-canal13.svg",
       "streamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
-      "backupStreamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8",
+      "backupStreamUrl": "https://rudo.video/live/c13",
       "website": "https://www.13.cl",
       "description": "Señal nacional abierta oficial de Canal 13 en alta definición (1080p).",
       "embedUrl": "https://www.13.cl/en-vivo",
@@ -418,13 +416,33 @@ window.STATIONS_DATA = {
       "channelNumber": 15,
       "sources": [
         {
-          "name": "Fuente 1 (Señal Directa DPS - M3U.CL)",
+          "name": "Fuente 1 (Señal HLS Directa DPS)",
           "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 2 (Señal DPS - Free-TV)",
-          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8",
+          "name": "Fuente 2 (Web Oficial En Vivo)",
+          "url": "https://www.13.cl/en-vivo",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal Alternativa HLS)",
+          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 4 (Reproductor Rudo Oficial)",
+          "url": "https://rudo.video/live/c13",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 5 (Señal Internacional 13)",
+          "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 6 (HLS Respaldo HD)",
+          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
           "needsProxy": true
         }
       ]
@@ -464,8 +482,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1569_CHV.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chv/chv.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-chv.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chv/chv.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chv/chv.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.chilevision.cl",
       "description": "Canal de televisión abierta chileno con programación matinal, noticias, deportes y entretenimiento familiar.",
@@ -474,7 +492,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chv/chv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chv/chv.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -495,8 +513,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Deportes",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1763_CHV_Deportes.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chvdeportes/chvdeportes.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-chvdeportes.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chvdeportes/chvdeportes.smil/playlist.m3u8",
       "backupStreamUrl": "https://teletraktv.janus.cl/playlist/stream.m3u8?t=0&s=&p=&id=lufuufsd&d=w",
       "embedUrl": "https://www.chilevision.cl/deportes",
       "website": "https://www.chilevision.cl",
@@ -505,7 +523,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chvdeportes/chvdeportes.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chvdeportes/chvdeportes.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -530,8 +548,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1153_CHV_Noticias.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-chvnoticias.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.chvnoticias.cl",
       "description": "Canal dedicado a la información continua y reportajes en profundidad de Chilevisión Noticias.",
@@ -540,18 +558,13 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
           "name": "Fuente 2 (M3U Alternativa)",
           "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/chvn/chvn.smil/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": false
-        },
-        {
-          "name": "Fuente Rudo Free-TV",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/chvn/chvn.smil/playlist.m3u8",
-          "needsProxy": true
         }
       ]
     },
@@ -590,8 +603,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/422_Cooperativa.png",
-      "streamUrl": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-cooperativatv.svg",
+      "streamUrl": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8",
       "backupStreamUrl": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.cooperativa.cl",
       "description": "Transmisión televisada en directo de los estudios y programas de Radio Cooperativa.",
@@ -600,7 +613,7 @@ window.STATIONS_DATA = {
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8",
           "needsProxy": true
         },
         {
@@ -696,8 +709,8 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/790_La_Red.png",
-      "streamUrl": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-lared.svg",
+      "streamUrl": "https://rudo.video/live/lared",
       "backupStreamUrl": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
       "website": "https://www.lared.cl",
       "description": "Canal nacional de televisión abierta chileno con programación miscelánea e informativa.",
@@ -705,11 +718,51 @@ window.STATIONS_DATA = {
       "channelNumber": 25,
       "sources": [
         {
-          "name": "Fuente 1 (Señal Directa M3U.CL)",
+          "name": "Fuente 1 (Reproductor Rudo Oficial)",
+          "url": "https://rudo.video/live/lared",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Señal Alternativa HD)",
+          "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (M3U Alternativa)",
           "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
           "needsProxy": false
+        },
+        {
+          "name": "Fuente 4 (Web Oficial En Vivo)",
+          "url": "https://www.lared.cl/senal-online",
+          "isEmbed": true
         }
       ]
+    },
+    {
+      "id": "cl-tv-lcr-televisi-n",
+      "name": "LCR Televisión",
+      "type": "tv",
+      "country": "CL",
+      "countryName": "Chile",
+      "region": "Chile",
+      "city": "Chile",
+      "genre": "General",
+      "isNational": false,
+      "logo": "https://cdn.m3u.cl/logo/1798_LCR_Television.png",
+      "streamUrl": "https://stream.blserver.cl/hls/expresiontv/index.m3u8?PlaylistM3UCL",
+      "backupStreamUrl": null,
+      "sources": [
+        {
+          "name": "Fuente 1 (Principal)",
+          "url": "https://stream.blserver.cl/hls/expresiontv/index.m3u8?PlaylistM3UCL",
+          "needsProxy": false
+        }
+      ],
+      "website": "",
+      "description": "Canal de televisión LCR Televisión disponible en señal abierta y web streaming de Chile.",
+      "status": "online",
+      "channelNumber": 26
     },
     {
       "id": "cl-tv-mega",
@@ -721,23 +774,33 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/455_Mega.png",
-      "streamUrl": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8?PlaylistM3UCL",
-      "backupStreamUrl": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
+      "logo": "./img/logos/cl-tv-mega.svg",
+      "streamUrl": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
+      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/561430ae330428c223687e1e.m3u8",
       "website": "https://www.mega.cl",
       "description": "Red televisiva privada líder en ficción nacional, producción propia y noticieros.",
       "embedUrl": "https://www.mega.cl/senal-en-vivo/",
-      "channelNumber": 26,
+      "channelNumber": 27,
       "sources": [
         {
-          "name": "Fuente 1 (Señal DPS - M3U.CL)",
+          "name": "Fuente 1 (Principal)",
+          "url": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
+          "needsProxy": true
+        },
+        {
+          "name": "Fuente 2 (Respaldo Oficial)",
+          "url": "https://mdstrm.com/live-stream-playlist/561430ae330428c223687e1e.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (M3U Alternativa)",
           "url": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         },
         {
-          "name": "Fuente 2 (Señal DPS Directa)",
-          "url": "https://unlimited2-cl-isp.dps.live/mega/mega.smil/playlist.m3u8",
-          "needsProxy": true
+          "name": "Fuente 4 (M3U Alternativa)",
+          "url": "https://mdstrm.com/live-stream-playlist/561430ae330428c223687e1e.m3u8?PlaylistM3UCL",
+          "needsProxy": false
         }
       ]
     },
@@ -751,17 +814,32 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Cultura",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/45_NTV.png",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-ntv.svg",
+      "streamUrl": "https://www.tvn.cl/ntv",
       "backupStreamUrl": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
       "website": "https://www.tvn.cl/ntv",
       "description": "Señal pública cultural y familiar de Televisión Nacional de Chile con contenidos educativos e infantiles.",
       "embedUrl": "https://www.tvn.cl/ntv",
-      "channelNumber": 27,
+      "channelNumber": 28,
       "sources": [
         {
-          "name": "Fuente 1 (Señal HLS Directa)",
-          "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Web Oficial En Vivo)",
+          "url": "https://www.tvn.cl/ntv",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 2 (Reproductor Mediastream)",
+          "url": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
+          "isEmbed": true
+        },
+        {
+          "name": "Fuente 3 (Señal HLS Directa)",
+          "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 4 (HLS Respaldo Oficial)",
+          "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
           "needsProxy": false
         }
       ]
@@ -789,7 +867,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Patagonia Radio TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 28
+      "channelNumber": 29
     },
     {
       "id": "cl-tv-pautatv",
@@ -801,17 +879,17 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/882_Pauta_TV.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-pautatv.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.pauta.cl",
       "description": "Medio de comunicación chileno multiplataforma enfocado en actualidad, negocios, economía y opinión.",
       "embedUrl": "https://www.pauta.cl",
-      "channelNumber": 29,
+      "channelNumber": 30,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -844,7 +922,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Radio Romantica disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 30
+      "channelNumber": 31
     },
     {
       "id": "cl-tv-retro-plus-tv",
@@ -857,19 +935,19 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/4_Retro_Plus_TV.png",
-      "streamUrl": "https://srt01.logicahost.com.br/senal1/index.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8?PlaylistM3UCL",
       "backupStreamUrl": null,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://srt01.logicahost.com.br/senal1/index.m3u8?PlaylistM3UCL",
+          "url": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": false
         }
       ],
       "website": "",
       "description": "Canal de televisión Retro Plus TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 31
+      "channelNumber": 32
     },
     {
       "id": "cl-tv-retro-plus-tv-se-al-2",
@@ -882,19 +960,19 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/5_Retro_Plus_TV_Senal_2.png",
-      "streamUrl": "https://srt01.logicahost.com.br/senal2/index.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvdos/live/playlist.m3u8?PlaylistM3UCL",
       "backupStreamUrl": null,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://srt01.logicahost.com.br/senal2/index.m3u8?PlaylistM3UCL",
+          "url": "https://tls-cl.cdnz.cl/retroplustvdos/live/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": false
         }
       ],
       "website": "",
       "description": "Canal de televisión Retro Plus TV Señal 2 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 32
+      "channelNumber": 33
     },
     {
       "id": "cl-tv-retro-plus-tv-se-al-3",
@@ -907,19 +985,19 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/465_Retro_Plus_TV_Senal_3.png",
-      "streamUrl": "https://srt01.logicahost.com.br/senal3/index.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvtres/live/playlist.m3u8?PlaylistM3UCL",
       "backupStreamUrl": null,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://srt01.logicahost.com.br/senal3/index.m3u8?PlaylistM3UCL",
+          "url": "https://tls-cl.cdnz.cl/retroplustvtres/live/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": false
         }
       ],
       "website": "",
       "description": "Canal de televisión Retro Plus TV Señal 3 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 33
+      "channelNumber": 34
     },
     {
       "id": "cl-tv-rewind",
@@ -944,7 +1022,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Rewind disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 34
+      "channelNumber": 35
     },
     {
       "id": "cl-tv-suyai-tv",
@@ -969,7 +1047,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión Suyai TV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 35
+      "channelNumber": 36
     },
     {
       "id": "cl-tv-t13envivo",
@@ -981,17 +1059,17 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Noticias",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1054_T13.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-t13envivo.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8",
       "backupStreamUrl": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
       "website": "https://www.t13.cl",
       "description": "Señal informativa 24/7 de Teletrece con noticias de Chile y el mundo al instante.",
       "embedUrl": "https://www.t13.cl/en-vivo",
-      "channelNumber": 36,
+      "channelNumber": 37,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -1029,7 +1107,32 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TeleZeta Tropical disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 37
+      "channelNumber": 38
+    },
+    {
+      "id": "cl-tv-turismo-travel-tv",
+      "name": "Turismo Travel TV",
+      "type": "tv",
+      "country": "CL",
+      "countryName": "Chile",
+      "region": "Chile",
+      "city": "Chile",
+      "genre": "General",
+      "isNational": false,
+      "logo": "https://cdn.m3u.cl/logo/1746_Turismo_Travel_TV.png",
+      "streamUrl": "https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8?PlaylistM3UCL",
+      "backupStreamUrl": null,
+      "sources": [
+        {
+          "name": "Fuente 1 (Principal)",
+          "url": "https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8?PlaylistM3UCL",
+          "needsProxy": false
+        }
+      ],
+      "website": "",
+      "description": "Canal de televisión Turismo Travel TV disponible en señal abierta y web streaming de Chile.",
+      "status": "online",
+      "channelNumber": 39
     },
     {
       "id": "cl-tv-turnoenvivo",
@@ -1054,7 +1157,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TurnoEnVivo disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 38
+      "channelNumber": 40
     },
     {
       "id": "cl-tv-tvchile",
@@ -1066,19 +1169,19 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General / Noticias / Cultura",
       "description": "Señal internacional oficial de Televisión Nacional de Chile para todo el mundo.",
-      "logo": "https://cdn.m3u.cl/logo/491_TV_Chile.png",
-      "streamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-tvchile.svg",
+      "streamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
       "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
       "embedUrl": "https://www.tvn.cl/tvchile",
       "website": "https://www.tvn.cl/tvchile",
       "status": "online",
       "isHd": true,
       "featured": true,
-      "channelNumber": 39,
+      "channelNumber": 41,
       "sources": [
         {
           "name": "Fuente 1 (Señal HLS Directa)",
-          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8?PlaylistM3UCL",
+          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
           "needsProxy": false
         }
       ],
@@ -1094,17 +1197,17 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Entretenimiento",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/458_TV_.png",
-      "streamUrl": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "./img/logos/cl-tv-tvmas.svg",
+      "streamUrl": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
       "backupStreamUrl": "https://marine2.miplay.cl/tateti/playlist.m3u8",
       "website": "https://www.tvmas.tv",
       "description": "Canal enfocado en programas de conversación, actualidad y entretenimiento.",
       "embedUrl": "https://tvmas.tv/senal-en-vivo/",
-      "channelNumber": 40,
+      "channelNumber": 42,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
@@ -1134,30 +1237,20 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "General",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/452_TVN.png",
-      "streamUrl": "/api/live/tvn.m3u8",
+      "logo": "./img/logos/cl-tv-tvn.svg",
+      "streamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
       "backupStreamUrl": "http://15.204.246.24:8080/TVNHD/index.m3u8",
       "website": "https://www.tvn.cl/en-vivo",
       "description": "Señal abierta nacional en directo de Televisión Nacional de Chile en Full HD (1080p).",
       "embedUrl": "https://www.tvn.cl/en-vivo",
       "status": "online",
       "needsProxy": true,
-      "channelNumber": 41,
+      "channelNumber": 43,
       "sources": [
         {
-          "name": "Fuente 1 (Señal Nacional TVN HD - Oficial)",
-          "url": "/api/live/tvn.m3u8",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 2 (Señal TV Chile - M3U.CL)",
-          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8?PlaylistM3UCL",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 3 (Señal Intersur - M3U.CL)",
-          "url": "https://iptv2.intersurtv.cl/TVN/index.m3u8?PlaylistM3UCL",
-          "needsProxy": false
+          "name": "Fuente 1 (HLS HD Principal)",
+          "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+          "needsProxy": true
         }
       ]
     },
@@ -1184,7 +1277,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión TVN3 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 42
+      "channelNumber": 44
     },
     {
       "id": "cl-tv-uchile",
@@ -1196,29 +1289,34 @@ window.STATIONS_DATA = {
       "city": "Santiago",
       "genre": "Cultura / Educación",
       "isNational": true,
-      "logo": "https://cdn.m3u.cl/logo/1017_U_Chile_TV.png",
-      "streamUrl": "https://unlimited1-cl-isp.dps.live/uchiletv/uchiletv.smil/playlist.m3u8?PlaylistM3UCL",
-      "backupStreamUrl": "https://unlimited1-us.dps.live/uchiletv/uchiletv.smil/playlist.m3u8",
+      "logo": "./img/logos/cl-tv-uchile.png",
+      "streamUrl": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/uchiletv/uchiletv.smil/playlist.m3u8",
+      "backupStreamUrl": "https://rudo.video/live/uchiletv",
       "embedUrl": "https://rudo.video/live/uchiletv",
       "website": "https://tv.uchile.cl",
       "description": "Canal público de televisión de la Universidad de Chile con contenidos culturales, educativos, científicos y de debate ciudadano.",
-      "channelNumber": 43,
+      "channelNumber": 45,
       "sources": [
         {
           "name": "Fuente 1 (Principal)",
-          "url": "https://unlimited1-cl-isp.dps.live/uchiletv/uchiletv.smil/playlist.m3u8?PlaylistM3UCL",
+          "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/uchiletv/uchiletv.smil/playlist.m3u8",
           "needsProxy": false
         },
         {
-          "name": "Fuente 2 (Señal DPS Free-TV)",
-          "url": "https://unlimited1-us.dps.live/uchiletv/uchiletv.smil/playlist.m3u8",
+          "name": "Fuente 2 (Respaldo Oficial)",
+          "url": "https://rudo.video/live/uchiletv",
+          "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (M3U Alternativa)",
+          "url": "https://unlimited1-cl-isp.dps.live/uchiletv/uchiletv.smil/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         }
       ]
     },
     {
       "id": "cl-tv-ucv-2",
-      "name": "UCV Televisión",
+      "name": "UCV 2",
       "type": "tv",
       "country": "CL",
       "countryName": "Chile",
@@ -1226,20 +1324,20 @@ window.STATIONS_DATA = {
       "city": "Chile",
       "genre": "General",
       "isNational": false,
-      "logo": "https://cdn.m3u.cl/logo/54_UCV.png",
-      "streamUrl": "https://unlimited2-cl-isp.dps.live/ucvtv2/ucvtv2.smil/playlist.m3u8?PlaylistM3UCL",
+      "logo": "https://cdn.m3u.cl/logo/1152_UCV_2.png",
+      "streamUrl": "https://unlimited1-cl-isp.dps.live/ucvtveventos/ucvtveventos.smil/playlist.m3u8?PlaylistM3UCL",
       "backupStreamUrl": null,
       "sources": [
         {
-          "name": "Fuente Oficial Free-TV",
-          "url": "https://unlimited2-cl-isp.dps.live/ucvtv2/ucvtv2.smil/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Principal)",
+          "url": "https://unlimited1-cl-isp.dps.live/ucvtveventos/ucvtveventos.smil/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": true
         }
       ],
       "website": "",
       "description": "Canal de televisión UCV 2 disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 44
+      "channelNumber": 46
     },
     {
       "id": "cl-tv-vclassictv",
@@ -1264,7 +1362,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión VClassicTV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 45
+      "channelNumber": 47
     },
     {
       "id": "cl-tv-vclassictv-tropical",
@@ -1289,7 +1387,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión VClassicTV Tropical disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 46
+      "channelNumber": 48
     },
     {
       "id": "cl-tv-wapptv",
@@ -1314,7 +1412,7 @@ window.STATIONS_DATA = {
       "website": "",
       "description": "Canal de televisión WappTV disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 47
+      "channelNumber": 49
     },
     {
       "id": "cl-rad-biobiosantiago",

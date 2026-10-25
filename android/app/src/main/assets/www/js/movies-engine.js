@@ -1111,11 +1111,11 @@ export class CinemaEngine {
   }
 
   close() {
+    this.closeCinemaPlayer(false);
+    this.closeDetail();
     if (this.dom.view) {
       this.dom.view.classList.add('is-hidden');
     }
-    this.closeDetail();
-    this.closeCinemaPlayer();
   }
 
   async loadCatalog(reset = false) {
@@ -1602,6 +1602,14 @@ export class CinemaEngine {
         }
       });
     });
+
+    // Auto-enfocar primera calidad para control remoto de Android TV
+    if (window.setTvFocus) {
+      setTimeout(() => {
+        const firstPlay = this.dom.detailMainContent.querySelector('[data-action="play-movie-quality"]') || this.dom.detailBackBtn;
+        if (firstPlay) window.setTvFocus(firstPlay);
+      }, 100);
+    }
   }
 
   /* ========================================================================
@@ -1774,6 +1782,14 @@ export class CinemaEngine {
       // Configurar estado de Mi Biblioteca y Marcar como Visto (Plex)
       this.currentDetailMedia = { item: fullShow, type: 'series' };
       this.updateDetailActionButtons();
+
+      // Auto-enfocar primer control de serie para control remoto de Android TV
+      if (window.setTvFocus) {
+        setTimeout(() => {
+          const firstEpBtn = this.dom.detailMainContent.querySelector('[data-action="play-ep-stream"], [data-action="load-ep-streams"], .cinema-season-tab') || this.dom.detailBackBtn;
+          if (firstEpBtn) window.setTvFocus(firstEpBtn);
+        }, 120);
+      }
 
     } catch (err) {
       console.error('Error al cargar temporadas y episodios:', err);
@@ -2026,6 +2042,12 @@ export class CinemaEngine {
       this.dom.detailView.classList.add('is-hidden');
     }
     this.currentDetailMedia = null;
+    if (window.setTvFocus && this.dom.view) {
+      setTimeout(() => {
+        const activeCard = this.dom.view.querySelector('.cinema-card.is-tv-focused') || this.dom.view.querySelector('.cinema-card') || this.dom.backBtn;
+        if (activeCard) window.setTvFocus(activeCard);
+      }, 50);
+    }
   }
 
   /* ========================================================================
@@ -2161,7 +2183,7 @@ export class CinemaEngine {
     this.resetHudTimer();
   }
 
-  closeCinemaPlayer() {
+  closeCinemaPlayer(returnToDetail = true) {
     this.savePlaybackProgress(true);
     setTimeout(() => {
       this.loadUserProfile().then(() => this.loadContinueWatching());
@@ -2212,9 +2234,19 @@ export class CinemaEngine {
       this.dom.playerView.classList.remove('hud-hidden');
     }
 
-    // Regresar siempre a la vista de detalles de la película o serie (no a la cartelera completa)
+    // Regresar a la vista de detalles solo si se solicitó explícitamente y hay contenido cargado
     if (this.dom.detailView) {
-      this.dom.detailView.classList.remove('is-hidden');
+      if (returnToDetail && this.currentDetailMedia) {
+        this.dom.detailView.classList.remove('is-hidden');
+        if (window.setTvFocus) {
+          setTimeout(() => {
+            const firstPlay = this.dom.detailView.querySelector('[data-action="play-movie-quality"], [data-action="play-ep-stream"], .cinema-season-tab') || this.dom.detailBackBtn;
+            if (firstPlay) window.setTvFocus(firstPlay);
+          }, 80);
+        }
+      } else {
+        this.dom.detailView.classList.add('is-hidden');
+      }
     }
 
     this.activeMedia = null;
@@ -3782,6 +3814,9 @@ export class CinemaEngine {
       }
       this.updatePlayPauseUI(true);
       this.resetHudTimer();
+      if (window.setTvFocus && this.dom.ctrlPlayBtn) {
+        setTimeout(() => window.setTvFocus(this.dom.ctrlPlayBtn), 150);
+      }
 
       const playPromise = video.play();
       if (playPromise !== undefined) {
@@ -3804,6 +3839,7 @@ export class CinemaEngine {
                 if (this.dom.loadingOverlay) this.dom.loadingOverlay.classList.add('is-hidden');
                 this.updatePlayPauseUI(true);
               };
+              if (window.setTvFocus) window.setTvFocus(mBtn);
             }
           }
         });

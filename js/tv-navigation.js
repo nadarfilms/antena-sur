@@ -6,22 +6,90 @@
 
 export function initTvNavigation() {
   function getFocusableElements() {
-    const selectors = [
-      '#heroCardTv',
+    // 1. Si el reproductor cinema está abierto, enfocar exclusivamente controles del reproductor
+    const cinemaPlayerView = document.getElementById('cinemaPlayerView');
+    if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
+      const playerSelectors = [
+        '#cinemaPlayerBackBtn',
+        '#cinemaCtrlPlayBtn',
+        '#cinemaCtrlRewindBtn',
+        '#cinemaCtrlForwardBtn',
+        '#cinemaCtrlVolumeBtn',
+        '#cinemaCtrlAudioBtn',
+        '#cinemaCtrlSubtitlesBtn',
+        '#cinemaCtrlSpeedBtn',
+        '#cinemaCtrlAspectBtn',
+        '#cinemaScrubTrack',
+        '#btnManualStartPlay',
+        '.cinema-btn-load-cancel',
+        '.cinema-player-skip-wait-btn',
+        '.cinema-sub-size-pill',
+        '.cinema-sub-pos-pill',
+        '.cinema-btn-sync',
+        '.cinema-sub-option',
+        '.cinema-audio-opt-btn',
+        '.cinema-speed-opt',
+        '.cinema-popover-close-btn'
+      ];
+      return Array.from(cinemaPlayerView.querySelectorAll(playerSelectors.join(',')))
+        .filter(el => {
+          if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) return false;
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+    }
+
+    // 2. Si la vista de detalles de película o serie está abierta, enfocar exclusivamente sus controles
+    const cinemaDetailView = document.getElementById('cinemaDetailView');
+    if (cinemaDetailView && !cinemaDetailView.classList.contains('is-hidden')) {
+      const detailSelectors = [
+        '#cinemaDetailBackBtn',
+        '#cinemaDetailHeroPlayBtn',
+        '#cinemaDetailFavBtn',
+        '#cinemaDetailWatchedBtn',
+        '[data-action="play-movie-quality"]',
+        '.cinema-season-tab',
+        '[data-action="play-ep-stream"]',
+        '[data-action="load-ep-streams"]',
+        '.cinema-ep-stream-btn',
+        '.cinema-quality-play-btn',
+        '#btnManualStartPlay'
+      ];
+      return Array.from(cinemaDetailView.querySelectorAll(detailSelectors.join(',')))
+        .filter(el => {
+          if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) return false;
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+    }
+
+    // 3. Si la cartelera VOD de cine está abierta
+    const cinemaVodView = document.getElementById('cinemaVodView');
+    if (cinemaVodView && !cinemaVodView.classList.contains('is-hidden')) {
+      const vodSelectors = [
+        '#cinemaBackBtn',
+        '.cinema-mode-btn',
+        '.cinema-genre-chip',
+        '.cinema-card',
+        '.cinema-load-more-btn'
+      ];
+      return Array.from(cinemaVodView.querySelectorAll(vodSelectors.join(',')))
+        .filter(el => {
+          if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) return false;
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        });
+    }
+
+    // 4. Menú principal y catálogo general
+    const generalSelectors = [
       '#heroCardRadio',
+      '#heroCardTv',
       '#heroCardCinema',
       '.section-nav-tab',
-      '.station-card',
-      '.cinema-card',
-      '.cinema-genre-chip',
-      '.cinema-mode-btn',
-      '.cinema-btn-play-action',
-      '.cinema-load-more-btn',
-      '#cinemaBackBtn',
-      '#cinemaPlayerBackBtn',
-      '#cinemaPlayerEngineBtn'
+      '.station-card'
     ];
-    return Array.from(document.querySelectorAll(selectors.join(',')))
+    return Array.from(document.querySelectorAll(generalSelectors.join(',')))
       .filter(el => {
         if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) return false;
         const style = window.getComputedStyle(el);
@@ -50,6 +118,7 @@ export function initTvNavigation() {
     element.classList.add('is-tv-focused');
     currentTvFocused = element;
   }
+  window.setTvFocus = setFocus;
 
   function navigateSpatial(direction) {
     let current = document.activeElement;
@@ -57,39 +126,64 @@ export function initTvNavigation() {
       current = currentTvFocused || document.querySelector('.is-tv-focused');
     }
 
-    const heroTv = document.getElementById('heroCardTv');
     const heroRadio = document.getElementById('heroCardRadio');
+    const heroTv = document.getElementById('heroCardTv');
     const heroCinema = document.getElementById('heroCardCinema');
 
     if (!current) {
-      setFocus(heroTv || heroRadio || heroCinema);
+      setFocus(heroRadio || heroTv || heroCinema);
       return;
     }
 
     // ========================================================================
     // NAVEGACIÓN DETERMINISTA EN LOS 3 GRANDES BOTONES PRINCIPALES (HERO)
+    // 01: RADIOS FM | 02: CANALES DE TV | 03: CINE & SERIES
     // ========================================================================
-    if (current === heroTv || current.id === 'heroCardTv') {
-      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+    if (current === heroRadio || current.id === 'heroCardRadio') {
+      if (direction === 'ArrowDown') {
+        // Salto directo de la opción 1 a la opción 3 (pedido explícito del usuario)
+        setFocus(heroCinema);
+        return;
+      }
+      if (direction === 'ArrowRight') {
+        setFocus(heroTv);
+        return;
+      }
+      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
         setFocus(heroRadio);
         return;
       }
       return;
     }
-    if (current === heroRadio || current.id === 'heroCardRadio') {
-      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
-        setFocus(heroTv);
+
+    if (current === heroTv || current.id === 'heroCardTv') {
+      if (direction === 'ArrowLeft') {
+        setFocus(heroRadio);
         return;
       }
       if (direction === 'ArrowRight' || direction === 'ArrowDown') {
         setFocus(heroCinema);
         return;
       }
+      if (direction === 'ArrowUp') {
+        setFocus(heroRadio);
+        return;
+      }
       return;
     }
+
     if (current === heroCinema || current.id === 'heroCardCinema') {
-      if (direction === 'ArrowLeft' || direction === 'ArrowUp') {
+      if (direction === 'ArrowUp') {
+        // Regreso directo a la opción 1 (Radios)
         setFocus(heroRadio);
+        return;
+      }
+      if (direction === 'ArrowLeft') {
+        setFocus(heroTv);
+        return;
+      }
+      if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+        setFocus(heroCinema);
         return;
       }
       return;
@@ -223,24 +317,75 @@ export function initTvNavigation() {
 
   // Interfaz pública para Android WebView
   window.initTvFocus = function() {
-    const heroTv = document.getElementById('heroCardTv');
-    setFocus(heroTv);
+    const heroRadio = document.getElementById('heroCardRadio');
+    setFocus(heroRadio);
   };
 
   window.onTvBack = function() {
+    // 1. Reproductor Cinema en Pantalla Completa
+    const cinemaPlayerView = document.getElementById('cinemaPlayerView');
+    if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
+      if (window.AntenaSurCinema) {
+        if (window.AntenaSurCinema.closeAllPopovers && window.AntenaSurCinema.closeAllPopovers()) {
+          return true;
+        }
+        window.AntenaSurCinema.closeCinemaPlayer(true);
+      }
+      return true;
+    }
+
+    // 2. Vista de Detalles de Película / Serie
+    const cinemaDetailView = document.getElementById('cinemaDetailView');
+    if (cinemaDetailView && !cinemaDetailView.classList.contains('is-hidden')) {
+      if (window.AntenaSurCinema) {
+        window.AntenaSurCinema.closeDetail();
+      }
+      return true;
+    }
+
+    // 3. Cartelera Cinema & Series VOD (cerrar y volver al menú principal)
+    const cinemaVodView = document.getElementById('cinemaVodView');
+    if (cinemaVodView && !cinemaVodView.classList.contains('is-hidden')) {
+      if (window.AntenaSurCinema) {
+        window.AntenaSurCinema.close();
+      }
+      const heroCinema = document.getElementById('heroCardCinema');
+      if (heroCinema) setFocus(heroCinema);
+      return true;
+    }
+
+    // 4. Reproductor TV en Pantalla Completa / Zapping
     const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
     if (isTvPlayerOpen) {
-      window.onTvNav('Back');
+      if (player.isOptionsMenuOpen) {
+        player.closeTvOptionsMenu();
+        return true;
+      }
+      if (player.isGuideOverlayVisible) {
+        player.hideFullscreenGuide();
+        return true;
+      }
+      if (player.isSidebarOpen) {
+        player.toggleSidebar(false);
+        return true;
+      }
+      player.closeTvPlayer();
+      const heroTv = document.getElementById('heroCardTv');
+      if (heroTv) setFocus(heroTv);
       return true;
     }
 
+    // 5. Radios FM en Pantalla Completa
     const isRadioFsOpen = (player && (player.isRadioFullscreen || (player.dom && player.dom.radioFullscreenView && !player.dom.radioFullscreenView.classList.contains('is-hidden'))));
     if (isRadioFsOpen) {
       player.closeFullscreenRadio();
+      const heroRadio = document.getElementById('heroCardRadio');
+      if (heroRadio) setFocus(heroRadio);
       return true;
     }
 
+    // 6. Modales secundarios
     const infoModal = document.getElementById('stationInfoModal');
     const customModal = document.getElementById('addCustomModal');
     if (infoModal && infoModal.classList.contains('is-open')) {
@@ -252,16 +397,23 @@ export function initTvNavigation() {
       return true;
     }
 
-    const heroTv = document.getElementById('heroCardTv');
-    if (document.activeElement && document.activeElement !== heroTv && heroTv) {
-      setFocus(heroTv);
+    // 7. En el menú principal: si el foco no está en el primer elemento (Radios), enfocar Radios
+    const heroRadio = document.getElementById('heroCardRadio');
+    if (document.activeElement && document.activeElement !== heroRadio && heroRadio) {
+      setFocus(heroRadio);
       return true;
     }
 
+    // Si ya estamos en el Menú Principal y en la primera opción, retornar false para que Android muestre "Presiona Atrás otra vez para salir"
     return false;
   };
 
   window.onTvNav = function(action) {
+    if (action === 'Back') {
+      window.onTvBack();
+      return;
+    }
+
     const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
     const isTvPlayerOpen = (player && player.dom && player.dom.tvZappingView && !player.dom.tvZappingView.classList.contains('is-hidden'));
 
@@ -269,51 +421,88 @@ export function initTvNavigation() {
     const cinemaPlayerView = document.getElementById('cinemaPlayerView');
     const isCinemaPlayerOpen = cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden');
     if (isCinemaPlayerOpen) {
-      if (action === 'Back') {
-        if (window.AntenaSurCinema) window.AntenaSurCinema.closeCinemaPlayer();
+      if (window.AntenaSurCinema && typeof window.AntenaSurCinema.resetHudTimer === 'function') {
+        window.AntenaSurCinema.resetHudTimer();
+      }
+
+      if (action === 'PlayPause') {
+        if (window.AntenaSurCinema && typeof window.AntenaSurCinema.togglePlayPause === 'function') {
+          window.AntenaSurCinema.togglePlayPause();
+        }
         return;
       }
+
       if (action === 'Enter') {
-        const vid = document.getElementById('cinemaVideoElement');
-        if (vid && vid.style.display !== 'none') {
-          if (vid.paused) vid.play(); else vid.pause();
+        let current = document.activeElement;
+        if (!current || current === document.body || current === cinemaPlayerView) {
+          current = document.querySelector('.is-tv-focused');
+        }
+        if (current && typeof current.click === 'function' && current !== cinemaPlayerView) {
+          current.click();
+        } else if (window.AntenaSurCinema && typeof window.AntenaSurCinema.togglePlayPause === 'function') {
+          window.AntenaSurCinema.togglePlayPause();
         }
         return;
       }
-      if (action === 'ArrowLeft') {
-        const vid = document.getElementById('cinemaVideoElement');
-        if (vid && vid.style.display !== 'none') {
-          vid.currentTime = Math.max(0, vid.currentTime - 10);
-        }
-        return;
-      }
-      if (action === 'ArrowRight') {
-        const vid = document.getElementById('cinemaVideoElement');
-        if (vid && vid.style.display !== 'none') {
-          vid.currentTime = Math.min(vid.duration || 0, vid.currentTime + 10);
+
+      if (action === 'ArrowLeft' || action === 'ArrowRight' || action === 'ArrowUp' || action === 'ArrowDown') {
+        const prevFocused = document.activeElement;
+        navigateSpatial(action);
+        // Si no cambió de elemento y estamos en video sin controles enfocados, permitir seek
+        if (document.activeElement === prevFocused && (!document.activeElement || document.activeElement === cinemaPlayerView || document.activeElement.id === 'cinemaScrubTrack')) {
+          if (action === 'ArrowLeft' && window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(-10);
+          } else if (action === 'ArrowRight' && window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(10);
+          }
         }
         return;
       }
       return;
     }
 
-    // Navegación en Cartelera Cinema & Series VOD
-    const cinemaView = document.getElementById('cinemaVodView');
-    const isCinemaOpen = cinemaView && !cinemaView.classList.contains('is-hidden');
-    if (isCinemaOpen) {
-      const cinemaModal = document.getElementById('cinemaDetailModal');
-      const isModalOpen = cinemaModal && !cinemaModal.classList.contains('is-hidden');
-
-      if (action === 'Back') {
-        if (isModalOpen) {
-          if (window.AntenaSurCinema) window.AntenaSurCinema.closeDetail();
-        } else {
-          if (window.AntenaSurCinema) window.AntenaSurCinema.close();
-          const heroCinema = document.getElementById('heroCardCinema');
-          if (heroCinema) setFocus(heroCinema);
+    // 1. Navegación en Vista de Detalles de Películas / Series (Cinema Detail View)
+    const cinemaDetailView = document.getElementById('cinemaDetailView');
+    const isCinemaDetailOpen = cinemaDetailView && !cinemaDetailView.classList.contains('is-hidden');
+    if (isCinemaDetailOpen) {
+      if (action === 'Enter') {
+        let current = document.activeElement;
+        if (!current || current === document.body || !document.contains(current)) {
+          current = document.querySelector('.is-tv-focused');
+        }
+        if (current && typeof current.click === 'function') {
+          current.click();
         }
         return;
       }
+
+      if (action === 'ArrowLeft' || action === 'ArrowRight' || action === 'ArrowUp' || action === 'ArrowDown') {
+        navigateSpatial(action);
+        return;
+      }
+      return;
+    }
+
+    // 2. Navegación en Cartelera Cinema & Series VOD (Catálogo)
+    const cinemaView = document.getElementById('cinemaVodView');
+    const isCinemaOpen = cinemaView && !cinemaView.classList.contains('is-hidden');
+    if (isCinemaOpen) {
+      if (action === 'Enter') {
+        let current = document.activeElement;
+        if (!current || current === document.body || !document.contains(current)) {
+          current = document.querySelector('.is-tv-focused');
+        }
+        if (current && typeof current.click === 'function') {
+          current.click();
+        }
+        return;
+      }
+
+      if (action === 'ArrowLeft' || action === 'ArrowRight' || action === 'ArrowUp' || action === 'ArrowDown') {
+        navigateSpatial(action);
+        return;
+      }
+      return;
     }
 
     // Navegación en Reproductor de Radio en Pantalla Completa (1 a 1)
@@ -436,10 +625,10 @@ export function initTvNavigation() {
       if (current && typeof current.click === 'function') {
         current.click();
       } else {
-        const heroTv = document.getElementById('heroCardTv');
-        if (heroTv) {
-          setFocus(heroTv);
-          heroTv.click();
+        const heroRadio = document.getElementById('heroCardRadio');
+        if (heroRadio) {
+          setFocus(heroRadio);
+          heroRadio.click();
         }
       }
       return;

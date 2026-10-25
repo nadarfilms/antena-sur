@@ -51,138 +51,23 @@ export class DataManager {
   }
 
   /**
-   * Aplica enlaces de m3u.cl cacheados en localStorage al inicio
+   * Limpia cachés de enlaces obsoletos para asegurar que se utilicen siempre
+   * las señales verificadas de stations-data.js
    */
   applyCachedStreamUpdates() {
     try {
-      const cached = localStorage.getItem('antena_sur_m3ucl_links');
-      if (cached) {
-        const updates = JSON.parse(cached);
-        if (updates && typeof updates === 'object') {
-          let count = 0;
-          this.stations.forEach(s => {
-            if (s.country === 'CL' && updates[s.id]) {
-              const item = updates[s.id];
-              const newUrl = typeof item === 'string' ? item : item.url;
-              const newLogo = typeof item === 'object' ? item.logo : null;
-
-              if (newLogo && s.logo !== newLogo) {
-                s.logo = newLogo;
-                count++;
-              }
-
-              if (newUrl && s.streamUrl !== newUrl) {
-                if (s.id !== 'cl-tv-tvn') {
-                  s.streamUrl = newUrl;
-                  if (s.sources && s.sources.length > 0) {
-                    s.sources[0].url = newUrl;
-                  }
-                  count++;
-                }
-              }
-            }
-          });
-          if (count > 0) {
-            console.log(`[DataManager] ${count} canales chilenos actualizados desde caché de m3u.cl.`);
-          }
-        }
-      }
-    } catch (e) {
-      console.warn('[DataManager] Error aplicando enlaces cacheados:', e);
-    }
+      localStorage.removeItem('antena_sur_m3ucl_links');
+    } catch (e) {}
   }
 
   /**
-   * Sincroniza activamente los canales chilenos con https://m3u.cl/lista/CL.m3u
-   * Se ejecuta automáticamente cada vez que se abre/inicia la aplicación.
+   * Sincronización pasiva (no sobreescribe señales maestras de Antena Sur)
    */
   async syncWithM3UCL(callback) {
-    try {
-      let updates = null;
-
-      // 1. Intentar endpoint de sincronización del servidor local
-      try {
-        const resp = await fetch('./api/sync/m3u-cl', { cache: 'no-store' });
-        if (resp.ok) {
-          const json = await resp.json();
-          if (json && json.ok && json.updates) {
-            updates = json.updates;
-          }
-        }
-      } catch (err) {
-        // Fallback a descarga cliente
-      }
-
-      // 2. Fallback de cliente: intentar vía proxy o fetch directo si no hay servidor local
-      if (!updates || Object.keys(updates).length === 0) {
-        try {
-          let m3uText = '';
-          try {
-            const proxyResp = await fetch('./api/proxy?url=' + encodeURIComponent('https://m3u.cl/lista/CL.m3u'));
-            if (proxyResp.ok) m3uText = await proxyResp.text();
-          } catch (e) {}
-
-          if (!m3uText) {
-            const directResp = await fetch('https://m3u.cl/lista/CL.m3u');
-            if (directResp.ok) m3uText = await directResp.text();
-          }
-
-          if (m3uText && m3uText.includes('#EXTM3U')) {
-            updates = this.parseM3UCLContent(m3uText);
-          }
-        } catch (e) {
-          console.warn('[DataManager] Fallback de descarga M3U.CL no disponible:', e);
-        }
-      }
-
-      if (updates && Object.keys(updates).length > 0) {
-        let changedCount = 0;
-        this.stations.forEach(s => {
-          if (s.country === 'CL' && updates[s.id]) {
-            const item = updates[s.id];
-            const newUrl = typeof item === 'string' ? item : item.url;
-            const newLogo = typeof item === 'object' ? item.logo : null;
-
-            if (newLogo && s.logo !== newLogo) {
-              s.logo = newLogo;
-              changedCount++;
-            }
-
-            if (newUrl && s.streamUrl !== newUrl) {
-              if (s.id === 'cl-tv-tvn') {
-                // TVN: actualizar fuentes secundarias (Intersur / TV Chile) sin pisar el endpoint oficial principal
-                if (s.sources && s.sources.length > 2) {
-                  s.sources[2].url = newUrl;
-                }
-              } else {
-                s.streamUrl = newUrl;
-                if (s.sources && s.sources.length > 0) {
-                  s.sources[0].url = newUrl;
-                }
-                changedCount++;
-              }
-            }
-          }
-        });
-
-        // Guardar mapeo persistente en localStorage
-        try {
-          const existing = JSON.parse(localStorage.getItem('antena_sur_m3ucl_links') || '{}');
-          const merged = { ...existing, ...updates };
-          localStorage.setItem('antena_sur_m3ucl_links', JSON.stringify(merged));
-        } catch (e) {}
-
-        console.log(`📡 [M3U.CL Sync] Verificación completada: ${Object.keys(updates).length} canales comprobados, ${changedCount} actualizados.`);
-
-        if (typeof callback === 'function') {
-          callback({ ok: true, changedCount, total: Object.keys(updates).length, updates });
-        }
-        return { ok: true, changedCount, total: Object.keys(updates).length };
-      }
-    } catch (error) {
-      console.warn('[DataManager] Error al sincronizar canales con m3u.cl:', error);
+    if (typeof callback === 'function') {
+      callback({ ok: true, changedCount: 0 });
     }
-    return { ok: false };
+    return { ok: true, changedCount: 0 };
   }
 
   /**

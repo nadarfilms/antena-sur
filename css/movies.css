@@ -3528,3 +3528,111 @@
   margin-top: 8px;
 }
 
+/* ==========================================================================
+   OPTIMIZACIÓN DE ESCALADO Y PROPORCIONES PARA ANDROID TV / 16:9 4K LANDSCAPE
+   ========================================================================== */
+@media (orientation: landscape) {
+  .cinema-detail-topbar {
+    padding: 8px 24px;
+  }
+
+  .cinema-detail-hero {
+    min-height: 240px;
+    padding: 20px 28px 16px 28px;
+  }
+
+  .cinema-detail-poster-col {
+    width: 140px;
+    gap: 8px;
+  }
+
+  .cinema-detail-title {
+    font-size: clamp(1.3rem, 2.4vw, 1.85rem);
+    line-height: 1.2;
+  }
+
+  .cinema-detail-synopsis-text {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cinema-detail-actions-row {
+    margin: 2px 0 4px 0;
+    gap: 8px;
+  }
+
+  .cinema-detail-btn-lib,
+  .cinema-detail-btn-watched {
+    padding: 6px 14px;
+    font-size: 0.74rem;
+  }
+
+  .cinema-detail-content-section {
+    padding: 16px 28px;
+  }
+
+  .cinema-quality-card {
+    padding: 10px 14px;
+  }
+
+  .cinema-ep-stream-btn {
+    padding: 6px 12px;
+    font-size: 0.74rem;
+  }
+
+  .cinema-player-hud-top {
+    padding: 10px 24px;
+  }
+
+  .cinema-player-hud-bottom {
+    padding: 10px 24px;
+    gap: 6px;
+  }
+
+  .cinema-controls-row {
+    gap: 8px;
+  }
+
+  .cinema-ctrl-btn {
+    padding: 6px 10px;
+    font-size: 0.74rem;
+  }
+
+  .cinema-ctrl-play {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* Foco de Alta Precisión para Android TV / Control Remoto */
+.cinema-detail-back-btn.is-tv-focused,
+.cinema-detail-btn-lib.is-tv-focused,
+.cinema-detail-btn-watched.is-tv-focused,
+.cinema-btn-trailer.is-tv-focused,
+.cinema-season-tab.is-tv-focused,
+.cinema-ep-stream-btn.is-tv-focused,
+.cinema-btn-load-ep-streams.is-tv-focused,
+.cinema-quality-play-btn.is-tv-focused,
+[data-action="play-movie-quality"].is-tv-focused,
+.cinema-player-back-btn.is-tv-focused,
+.cinema-ctrl-btn.is-tv-focused,
+.cinema-scrub-track.is-tv-focused,
+.cinema-sub-size-pill.is-tv-focused,
+.cinema-sub-pos-pill.is-tv-focused,
+.cinema-btn-sync.is-tv-focused,
+.cinema-sub-option.is-tv-focused,
+.cinema-speed-opt.is-tv-focused,
+#btnManualStartPlay.is-tv-focused {
+  outline: 3px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.6) !important;
+  background: rgba(0, 229, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: scale(1.03) !important;
+  z-index: 50 !important;
+}
+

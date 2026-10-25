@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.1.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.1.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.0
+    - name: Publicar Release v1.4.1
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.0"
-        name: "Antena Sur Android TV & Mobile v1.4.0 - Cine & Series"
-        body: "Versión 1.4.0: Incorporación del módulo Cine & Series (Cinema VOD) con streaming de torrents, selección de pistas de audio y subtítulos en español sincronizados, perfiles de usuario, orden de calidades (4K, 1080p, HD, 480p) y blindaje anti-anuncios/popups."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.1"
+        name: "Antena Sur Android TV & Mobile v1.4.1 - Fix Canales TV, Menú D-Pad y Cinema 4K"
+        body: "Versión 1.4.1: Corrección de canales de TV con señales oficiales limpias (eliminación de fallbacks a iframes y pantalla de error de Android), reordenamiento del menú principal (1. Radios, 2. TV, 3. Cine & Series) con salto directo abajo 1->3, corrección de títulos recortados en tarjetas hero, jerarquía correcta del botón Atrás en Cine y Series (sin pantallas de detalle fantasma), y escalado optimizado para Android TV 16:9 4K con navegación D-pad espacial en todas las pantallas de cine y reproductor."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 
