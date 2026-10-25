@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.3
+    - name: Publicar Release v1.4.4
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.3"
-        name: "Antena Sur Android TV & Mobile v1.4.3 - Motor Híbrido Directo + P2P Cinema VOD"
-        body: "Versión 1.4.3: Solución definitiva al problema de carga infinita en Películas y Series. Implementación de Motor Híbrido Multi-Servidor (Servidor 1 2Embed 1080p, Servidor 2 MultiEmbed, Servidor 3 VidSrc PM, y Servidor 4 P2P Torrent) con selector interactivo en el HUD superior y failover automático en 6 segundos. Intercepción nativa de APIs de Cinema en Android APK (MainActivity.java) para funcionamiento 100% autónomo sin daemon local. Corrección integral de navegación remota espacial en Android TV con D-pad (resolución de trampas de foco en detalles y reproductor) y ajuste ergonómico de HUD para televisores 16:9 y 4K."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.4"
+        name: "Antena Sur Android TV & Mobile v1.4.4 - Detención Automática de Radio al entrar a Cine y Series"
+        body: "Versión 1.4.4: Detención inmediata y automática de la reproducción de radio y cierre de su vista de pantalla completa al navegar a la sección de Cine y Series (exactamente igual al comportamiento de transición entre Radio y TV), garantizando cero superposición de audios."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

@@ -296,6 +296,20 @@ class App {
     const heroCardCinema = document.getElementById('heroCardCinema');
     if (heroCardCinema) {
       heroCardCinema.addEventListener('click', () => {
+        if (this.player) {
+          if (this.player.isRadioFullscreen) {
+            if (this.player.dom && this.player.dom.radioFullscreenView) {
+              this.player.dom.radioFullscreenView.classList.add('is-hidden');
+            }
+            this.player.isRadioFullscreen = false;
+          }
+          if (typeof this.player.stopRadio === 'function') {
+            this.player.stopRadio();
+          }
+          if (typeof this.player.closeTvPlayer === 'function' && this.player.currentType === 'tv') {
+            this.player.closeTvPlayer();
+          }
+        }
         if (this.cinema) {
           this.cinema.open();
         }

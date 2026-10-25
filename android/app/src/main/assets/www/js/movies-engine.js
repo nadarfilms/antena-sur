@@ -1098,6 +1098,23 @@ export class CinemaEngine {
   }
 
   open() {
+    // Detener la reproducción de radio y TV inmediatamente al entrar a Cine y Series
+    const player = window.AntenaSurPlayer || (window.__antenaSurApp ? window.__antenaSurApp.player : null);
+    if (player) {
+      if (player.isRadioFullscreen) {
+        if (player.dom && player.dom.radioFullscreenView) {
+          player.dom.radioFullscreenView.classList.add('is-hidden');
+        }
+        player.isRadioFullscreen = false;
+      }
+      if (typeof player.stopRadio === 'function') {
+        player.stopRadio();
+      }
+      if (typeof player.closeTvPlayer === 'function' && player.currentType === 'tv') {
+        player.closeTvPlayer();
+      }
+    }
+
     if (this.dom.view) {
       this.dom.view.classList.remove('is-hidden');
       this.dom.view.scrollLeft = 0;
