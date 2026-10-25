@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.2.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.2.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.2
+    - name: Publicar Release v1.4.3
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.2.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.2"
-        name: "Antena Sur Android TV & Mobile v1.4.2 - Header Adaptativo 16:9 y 9:16 Cinema VOD"
-        body: "Versión 1.4.2: Integración total y adaptativa del menú superior de Cine y Series VOD para formatos 16:9 (horizontal/TV/landscape) y 9:16 (vertical/móvil). En formato 9:16 los botones de sección (Películas, Series, Mi Biblioteca) se integran en una barra segmentada de ancho completo bajo el encabezado con buscador y avatar, garantizando visibilidad al 100%. En formato 16:9 se optimizó el ancho total a una fila compacta sin desbordamiento horizontal ni desplazamiento indeseado. Control total con D-pad en Android TV y navegación fluida en móviles."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.3.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.3"
+        name: "Antena Sur Android TV & Mobile v1.4.3 - Motor Híbrido Directo + P2P Cinema VOD"
+        body: "Versión 1.4.3: Solución definitiva al problema de carga infinita en Películas y Series. Implementación de Motor Híbrido Multi-Servidor (Servidor 1 2Embed 1080p, Servidor 2 MultiEmbed, Servidor 3 VidSrc PM, y Servidor 4 P2P Torrent) con selector interactivo en el HUD superior y failover automático en 6 segundos. Intercepción nativa de APIs de Cinema en Android APK (MainActivity.java) para funcionamiento 100% autónomo sin daemon local. Corrección integral de navegación remota espacial en Android TV con D-pad (resolución de trampas de foco en detalles y reproductor) y ajuste ergonómico de HUD para televisores 16:9 y 4K."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

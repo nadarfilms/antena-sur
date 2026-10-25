@@ -11,6 +11,11 @@ export function initTvNavigation() {
     if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
       const playerSelectors = [
         '#cinemaPlayerBackBtn',
+        '#btnServer1',
+        '#btnServer2',
+        '#btnServer3',
+        '#btnServerP2P',
+        '.cinema-server-btn',
         '#cinemaCtrlPlayBtn',
         '#cinemaCtrlRewindBtn',
         '#cinemaCtrlForwardBtn',
@@ -128,6 +133,42 @@ export function initTvNavigation() {
     let current = document.activeElement;
     if (!current || current === document.body || !document.contains(current)) {
       current = currentTvFocused || document.querySelector('.is-tv-focused');
+    }
+
+    // 0. Si el reproductor Cinema está abierto, garantizar foco interno
+    const cinemaPlayerView = document.getElementById('cinemaPlayerView');
+    if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
+      const focusable = getFocusableElements();
+      if (!current || !cinemaPlayerView.contains(current)) {
+        if (focusable.length > 0) {
+          setFocus(focusable[0]);
+          return;
+        }
+      }
+    }
+
+    // 1. Si la vista de detalles Cinema está abierta, garantizar foco interno
+    const cinemaDetailView = document.getElementById('cinemaDetailView');
+    if (cinemaDetailView && !cinemaDetailView.classList.contains('is-hidden')) {
+      const focusable = getFocusableElements();
+      if (!current || !cinemaDetailView.contains(current)) {
+        if (focusable.length > 0) {
+          setFocus(focusable[0]);
+          return;
+        }
+      }
+    }
+
+    // 2. Si la cartelera Cinema está abierta, garantizar foco interno
+    const cinemaVodView = document.getElementById('cinemaVodView');
+    if (cinemaVodView && !cinemaVodView.classList.contains('is-hidden')) {
+      const focusable = getFocusableElements();
+      if (!current || !cinemaVodView.contains(current)) {
+        if (focusable.length > 0) {
+          setFocus(focusable[0]);
+          return;
+        }
+      }
     }
 
     const heroRadio = document.getElementById('heroCardRadio');

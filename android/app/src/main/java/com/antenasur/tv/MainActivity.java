@@ -31,11 +31,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
@@ -227,6 +229,12 @@ public class MainActivity extends AppCompatActivity {
                     if (uri.getPath() != null && uri.getPath().contains("/api/live/probe")) {
                         WebResourceResponse probeResp = handleLiveProbe(request);
                         if (probeResp != null) return probeResp;
+                    }
+
+                    // Intercepción nativa de Cinema & Series VOD para Android TV / Mobile Autónomo
+                    if (uri.getPath() != null && uri.getPath().contains("/api/cinema")) {
+                        WebResourceResponse cinemaResp = handleCinemaApi(request);
+                        if (cinemaResp != null) return cinemaResp;
                     }
 
                     WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
@@ -443,6 +451,294 @@ public class MainActivity extends AppCompatActivity {
             String fallback = "{\"ok\":true,\"latencyMs\":60}";
             return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, new ByteArrayInputStream(fallback.getBytes(StandardCharsets.UTF_8)));
         }
+    }
+
+    private WebResourceResponse handleCinemaApi(WebResourceRequest request) {
+        try {
+            Uri uri = request.getUrl();
+            String path = uri.getPath() != null ? uri.getPath() : "";
+
+            // 1. Catálogo / Búsqueda de Películas: /api/cinema/movies
+            if (path.contains("/api/cinema/movies")) {
+                String query = uri.getQueryParameter("query");
+                String genre = uri.getQueryParameter("genre");
+                String sortBy = uri.getQueryParameter("sort_by");
+                String page = uri.getQueryParameter("page");
+                String limit = uri.getQueryParameter("limit");
+
+                if (query == null) query = "";
+                if (genre == null) genre = "";
+                if (sortBy == null) sortBy = "download_count";
+                if (page == null) page = "1";
+                if (limit == null) limit = "25";
+
+                String ytsSort = "download_count";
+                String minRating = "6.5";
+                if ("rating".equals(sortBy) || "imdb_rating".equals(sortBy)) {
+                    ytsSort = "rating";
+                    minRating = "7.8";
+                } else if ("year".equals(sortBy) || "latest".equals(sortBy)) {
+                    ytsSort = "year";
+                    minRating = "6.2";
+                } else if ("like_count".equals(sortBy) || "featured".equals(sortBy)) {
+                    ytsSort = "like_count";
+                    minRating = "6.8";
+                }
+
+                StringBuilder ytsUrl = new StringBuilder("https://yts.mx/api/v2/list_movies.json?sort_by=");
+                ytsUrl.append(ytsSort).append("&page=").append(page).append("&limit=").append(limit);
+                if (!query.isEmpty()) {
+                    ytsUrl.append("&query_term=").append(URLEncoder.encode(query, "UTF-8"));
+                } else {
+                    ytsUrl.append("&minimum_rating=").append(minRating);
+                }
+                if (!genre.isEmpty() && !"all".equalsIgnoreCase(genre)) {
+                    ytsUrl.append("&genre=").append(URLEncoder.encode(genre.toLowerCase(), "UTF-8"));
+                }
+
+                String ytsResp = fetchHttpUrl(ytsUrl.toString(), 6000);
+                if (ytsResp != null && !ytsResp.isEmpty()) {
+                    try {
+                        JSONObject raw = new JSONObject(ytsResp);
+                        if ("ok".equalsIgnoreCase(raw.optString("status"))) {
+                            JSONObject data = raw.optJSONObject("data");
+                            int count = data != null ? data.optInt("movie_count", 0) : 0;
+                            JSONArray movies = data != null ? data.optJSONArray("movies") : new JSONArray();
+
+                            JSONObject out = new JSONObject();
+                            out.put("ok", true);
+                            out.put("movie_count", count);
+                            out.put("movies", movies != null ? movies : new JSONArray());
+
+                            byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                        }
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 2. Detalles de Película: /api/cinema/movie?id=...
+            if (path.contains("/api/cinema/movie") && !path.contains("/movies")) {
+                String id = uri.getQueryParameter("id");
+                if (id != null && !id.isEmpty()) {
+                    String detailUrl = "https://yts.mx/api/v2/movie_details.json?movie_id=" + id + "&with_images=true&with_cast=true";
+                    String detailResp = fetchHttpUrl(detailUrl, 6000);
+                    if (detailResp != null && !detailResp.isEmpty()) {
+                        try {
+                            JSONObject raw = new JSONObject(detailResp);
+                            JSONObject data = raw.optJSONObject("data");
+                            JSONObject movie = data != null ? data.optJSONObject("movie") : null;
+                            if (movie != null) {
+                                JSONObject out = new JSONObject();
+                                out.put("ok", true);
+                                out.put("movie", movie);
+                                byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                                Map<String, String> headers = new HashMap<>();
+                                headers.put("Access-Control-Allow-Origin", "*");
+                                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            }
+
+            // 3. Catálogo / Búsqueda de Series: /api/cinema/series
+            if (path.contains("/api/cinema/series") && !path.contains("/details") && !path.contains("/episodes") && !path.contains("/episode_streams")) {
+                String query = uri.getQueryParameter("query");
+                String page = uri.getQueryParameter("page");
+                int pageNum = 1;
+                try { if (page != null) pageNum = Integer.parseInt(page); } catch (Throwable ignored) {}
+
+                String tvUrl = (query != null && !query.trim().isEmpty())
+                        ? "https://api.tvmaze.com/search/shows?q=" + URLEncoder.encode(query.trim(), "UTF-8")
+                        : "https://api.tvmaze.com/shows?page=" + Math.max(0, pageNum - 1);
+
+                String tvResp = fetchHttpUrl(tvUrl, 6000);
+                if (tvResp != null && !tvResp.isEmpty()) {
+                    try {
+                        JSONArray outShows = new JSONArray();
+                        if (query != null && !query.trim().isEmpty()) {
+                            JSONArray rawArr = new JSONArray(tvResp);
+                            for (int i = 0; i < rawArr.length(); i++) {
+                                JSONObject item = rawArr.getJSONObject(i);
+                                JSONObject s = item.optJSONObject("show");
+                                if (s != null) {
+                                    JSONObject clean = new JSONObject();
+                                    clean.put("id", s.optInt("id"));
+                                    clean.put("name", s.optString("name"));
+                                    clean.put("summary", s.optString("summary"));
+                                    clean.put("genres", s.optJSONArray("genres"));
+                                    JSONObject img = s.optJSONObject("image");
+                                    clean.put("poster", img != null ? img.optString("medium") : "");
+                                    JSONObject ext = s.optJSONObject("externals");
+                                    clean.put("imdb", ext != null ? ext.optString("imdb") : "");
+                                    JSONObject rat = s.optJSONObject("rating");
+                                    clean.put("rating", rat != null ? rat.optDouble("average", 7.5) : 7.5);
+                                    outShows.put(clean);
+                                }
+                            }
+                        } else {
+                            JSONArray rawArr = new JSONArray(tvResp);
+                            for (int i = 0; i < Math.min(rawArr.length(), 25); i++) {
+                                JSONObject s = rawArr.getJSONObject(i);
+                                JSONObject clean = new JSONObject();
+                                clean.put("id", s.optInt("id"));
+                                clean.put("name", s.optString("name"));
+                                clean.put("summary", s.optString("summary"));
+                                clean.put("genres", s.optJSONArray("genres"));
+                                JSONObject img = s.optJSONObject("image");
+                                clean.put("poster", img != null ? img.optString("medium") : "");
+                                JSONObject ext = s.optJSONObject("externals");
+                                clean.put("imdb", ext != null ? ext.optString("imdb") : "");
+                                JSONObject rat = s.optJSONObject("rating");
+                                clean.put("rating", rat != null ? rat.optDouble("average", 7.5) : 7.5);
+                                outShows.put(clean);
+                            }
+                        }
+
+                        JSONObject out = new JSONObject();
+                        out.put("ok", true);
+                        out.put("shows", outShows);
+                        byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 4. Detalles de Serie: /api/cinema/series/details
+            if (path.contains("/api/cinema/series/details")) {
+                String id = uri.getQueryParameter("id");
+                String imdb = uri.getQueryParameter("imdb");
+                String lookupUrl = (id != null && !id.isEmpty())
+                        ? "https://api.tvmaze.com/shows/" + id
+                        : "https://api.tvmaze.com/lookup/shows?imdb=" + (imdb != null ? imdb : "");
+
+                String showResp = fetchHttpUrl(lookupUrl, 6000);
+                if (showResp != null && !showResp.isEmpty()) {
+                    try {
+                        JSONObject s = new JSONObject(showResp);
+                        JSONObject out = new JSONObject();
+                        out.put("ok", true);
+                        out.put("show", s);
+                        byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("Access-Control-Allow-Origin", "*");
+                        return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // 5. Episodios de Serie: /api/cinema/series/episodes
+            if (path.contains("/api/cinema/series/episodes")) {
+                String id = uri.getQueryParameter("id");
+                if (id != null && !id.isEmpty()) {
+                    String epUrl = "https://api.tvmaze.com/shows/" + id + "/episodes";
+                    String epResp = fetchHttpUrl(epUrl, 6000);
+                    if (epResp != null && !epResp.isEmpty()) {
+                        try {
+                            JSONArray eps = new JSONArray(epResp);
+                            JSONObject out = new JSONObject();
+                            out.put("ok", true);
+                            out.put("episodes", eps);
+                            byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            }
+
+            // 6. Streams de Episodio: /api/cinema/series/episode_streams
+            if (path.contains("/api/cinema/series/episode_streams")) {
+                String imdb = uri.getQueryParameter("imdb");
+                String s = uri.getQueryParameter("season");
+                String ep = uri.getQueryParameter("episode");
+                if (imdb != null && !imdb.isEmpty()) {
+                    String streamUrl = "https://torrentio.strem.fun/stream/series/" + imdb + ":" + (s != null ? s : "1") + ":" + (ep != null ? ep : "1") + ".json";
+                    String stResp = fetchHttpUrl(streamUrl, 5000);
+                    if (stResp != null && !stResp.isEmpty()) {
+                        try {
+                            JSONObject raw = new JSONObject(stResp);
+                            JSONArray rawStreams = raw.optJSONArray("streams");
+                            JSONObject out = new JSONObject();
+                            out.put("ok", true);
+                            out.put("streams", rawStreams != null ? rawStreams : new JSONArray());
+                            byte[] outBytes = out.toString().getBytes(StandardCharsets.UTF_8);
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                        } catch (Throwable ignored) {}
+                    }
+                }
+            }
+
+            // 7. Biblioteca y Usuarios Locales Plex: /api/cinema/user/*
+            if (path.contains("/api/cinema/auth/users")) {
+                String dummy = "{\"ok\":true,\"profiles\":[{\"username\":\"helmuth\",\"displayName\":\"Helmuth\",\"avatarColor\":\"#00e5ff\"}]}";
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+
+            if (path.contains("/api/cinema/user/library")) {
+                String dummy = "{\"ok\":true,\"library\":{\"username\":\"helmuth\",\"displayName\":\"Helmuth\",\"avatarColor\":\"#00e5ff\",\"favorites\":[],\"inProgress\":[],\"watched\":[]}}";
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+
+            if (path.contains("/api/cinema/user/recommendations")) {
+                String dummy = "{\"ok\":true,\"recommended\":[]}";
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+
+            if (path.contains("/api/cinema/user/favorite") || path.contains("/api/cinema/user/mark_watched") || path.contains("/api/cinema/user/progress")) {
+                String okStr = "{\"ok\":true}";
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(okStr.getBytes(StandardCharsets.UTF_8)));
+            }
+
+        } catch (Throwable t) {
+            android.util.Log.e("AntenaSurTV", "Error en handleCinemaApi: " + t.getMessage());
+        }
+        return null;
+    }
+
+    private String fetchHttpUrl(String targetUrl, int timeoutMs) {
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(targetUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+            conn.setConnectTimeout(timeoutMs);
+            conn.setReadTimeout(timeoutMs);
+            int code = conn.getResponseCode();
+            if (code >= 200 && code < 400) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+                br.close();
+                return sb.toString();
+            }
+        } catch (Throwable ignored) {
+        } finally {
+            if (conn != null) {
+                try { conn.disconnect(); } catch (Throwable ignored) {}
+            }
+        }
+        return null;
     }
 
     private boolean isAdRequest(String url) {
