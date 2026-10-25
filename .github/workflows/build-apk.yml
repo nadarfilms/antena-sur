@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.5.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.5.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.4
+    - name: Publicar Release v1.4.5
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.4.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.4"
-        name: "Antena Sur Android TV & Mobile v1.4.4 - Detención Automática de Radio al entrar a Cine y Series"
-        body: "Versión 1.4.4: Detención inmediata y automática de la reproducción de radio y cierre de su vista de pantalla completa al navegar a la sección de Cine y Series (exactamente igual al comportamiento de transición entre Radio y TV), garantizando cero superposición de audios."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.5.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.5"
+        name: "Antena Sur Android TV & Mobile v1.4.5 - Señales de TV Nativas HLS 100% Sin Anuncios ni Carga Infinita"
+        body: "Versión 1.4.5: Depuración integral de señales de televisión nacional: Canal 13 HD en Fuente 1 directa (1080p), NTV en señal HLS nativa Mediastream sin publicidad web oficial, La Red con autoplay sonoro y fuentes Canal 13 en 2 y 3, Retro Plus TV migrado a Bozztv 720p sin errores 404, Suyai TV reactivado, corrección de bucle infinito en DPS/TurnoEnVivo y blindaje del interceptor proxy nativo para erradicar el pantallazo de error de Android."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

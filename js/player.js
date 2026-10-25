@@ -1845,11 +1845,10 @@ export class PlayerEngine {
       }
     }
 
-    const needsAutoProxy = forceProxy || source.needsProxy ||
+    const isHttp = targetUrl && targetUrl.startsWith('http://');
+    const needsAutoProxy = forceProxy || source.needsProxy || isHttp ||
       (targetUrl && (
-        targetUrl.includes('dpsgo.com') ||
         targetUrl.includes('bitred.cl') ||
-        targetUrl.includes('dps.live') ||
         targetUrl.includes('tlink.cl') ||
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
@@ -1859,7 +1858,13 @@ export class PlayerEngine {
     let streamUrl = targetUrl;
 
     if (needsAutoProxy) {
-      const refParam = encodeURIComponent(station.website || (station.id === 'cl-tv-canal13' ? 'https://www.13.cl/' : ''));
+      let defaultRef = station.website || '';
+      if (!defaultRef) {
+        if (station.id === 'cl-tv-canal13') defaultRef = 'https://www.13.cl/';
+        else if (station.id === 'cl-tv-tvchile' || station.id === 'cl-tv-tvn') defaultRef = 'https://www.tvn.cl/';
+        else if (station.id === 'cl-tv-lared') defaultRef = 'https://www.lared.cl/';
+      }
+      const refParam = encodeURIComponent(defaultRef);
       streamUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}&ref=${refParam}`;
     }
 

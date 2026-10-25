@@ -419,8 +419,8 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": true,
       "logo": "./img/logos/cl-tv-canal13.svg",
-      "streamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
-      "backupStreamUrl": "https://rudo.video/live/c13",
+      "streamUrl": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
+      "backupStreamUrl": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
       "website": "https://www.13.cl",
       "description": "Señal nacional abierta oficial de Canal 13 en alta definición (1080p).",
       "embedUrl": "https://www.13.cl/en-vivo",
@@ -429,34 +429,24 @@ window.STATIONS_DATA = {
       "channelNumber": 15,
       "sources": [
         {
-          "name": "Fuente 1 (Señal HLS Directa DPS)",
-          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (HLS HD Principal 1080p)",
+          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
           "needsProxy": true
         },
         {
-          "name": "Fuente 2 (Web Oficial En Vivo)",
-          "url": "https://www.13.cl/en-vivo",
-          "isEmbed": true
+          "name": "Fuente 2 (Señal HLS Directa DPS)",
+          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
+          "needsProxy": false
         },
         {
-          "name": "Fuente 3 (Señal Alternativa HLS)",
-          "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+          "name": "Fuente 3 (Señal Internacional 13)",
+          "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
           "needsProxy": false
         },
         {
           "name": "Fuente 4 (Reproductor Rudo Oficial)",
           "url": "https://rudo.video/live/c13",
           "isEmbed": true
-        },
-        {
-          "name": "Fuente 5 (Señal Internacional 13)",
-          "url": "https://redirector.dps.live/hls/13intav/playlist.m3u8",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 6 (HLS Respaldo HD)",
-          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
-          "needsProxy": true
         }
       ]
     },
@@ -724,29 +714,29 @@ window.STATIONS_DATA = {
       "isNational": true,
       "logo": "./img/logos/cl-tv-lared.svg",
       "streamUrl": "https://rudo.video/live/lared",
-      "backupStreamUrl": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
+      "backupStreamUrl": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
       "website": "https://www.lared.cl",
       "description": "Canal nacional de televisión abierta chileno con programación miscelánea e informativa.",
       "embedUrl": "https://rudo.video/live/lared",
       "channelNumber": 25,
       "sources": [
         {
-          "name": "Fuente 1 (Reproductor Rudo Oficial)",
+          "name": "Fuente 1 (Reproductor Rudo Oficial La Red)",
           "url": "https://rudo.video/live/lared",
           "isEmbed": true
         },
         {
-          "name": "Fuente 2 (Señal Alternativa HD)",
-          "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8",
+          "name": "Fuente 2 (Señal Canal 13 HD)",
+          "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
+          "needsProxy": true
+        },
+        {
+          "name": "Fuente 3 (Señal Canal 13 DPS)",
+          "url": "https://redirector.dps.live/hls/13cl/playlist.m3u8?PlaylistM3UCL",
           "needsProxy": false
         },
         {
-          "name": "Fuente 3 (M3U Alternativa)",
-          "url": "https://live.getcirca.run/3969875408/ts:abr.m3u8?PlaylistM3UCL",
-          "needsProxy": false
-        },
-        {
-          "name": "Fuente 4 (Web Oficial En Vivo)",
+          "name": "Fuente 4 (Web Oficial La Red)",
           "url": "https://www.lared.cl/senal-online",
           "isEmbed": true
         }
@@ -828,32 +818,28 @@ window.STATIONS_DATA = {
       "genre": "Cultura",
       "isNational": true,
       "logo": "./img/logos/cl-tv-ntv.svg",
-      "streamUrl": "https://www.tvn.cl/ntv",
-      "backupStreamUrl": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
+      "streamUrl": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
+      "backupStreamUrl": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
       "website": "https://www.tvn.cl/ntv",
       "description": "Señal pública cultural y familiar de Televisión Nacional de Chile con contenidos educativos e infantiles.",
       "embedUrl": "https://www.tvn.cl/ntv",
       "channelNumber": 28,
       "sources": [
         {
-          "name": "Fuente 1 (Web Oficial En Vivo)",
-          "url": "https://www.tvn.cl/ntv",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 2 (Reproductor Mediastream)",
-          "url": "https://mdstrm.com/live-stream/5aaabe9e2c56420918184c6d",
-          "isEmbed": true
-        },
-        {
-          "name": "Fuente 3 (Señal HLS Directa)",
+          "name": "Fuente 1 (Señal HLS Directa Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/5aaabe9e2c56420918184c6d.m3u8",
-          "needsProxy": false
+          "needsProxy": false,
+          "isEmbed": false
         },
         {
-          "name": "Fuente 4 (HLS Respaldo Oficial)",
+          "name": "Fuente 2 (HLS Respaldo Oficial)",
           "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
           "needsProxy": false
+        },
+        {
+          "name": "Fuente 3 (Web Oficial de Respaldo)",
+          "url": "https://www.tvn.cl/ntv",
+          "isEmbed": true
         }
       ]
     },
@@ -948,12 +934,12 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/4_Retro_Plus_TV.png",
-      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8?PlaylistM3UCL",
-      "backupStreamUrl": null,
+      "streamUrl": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
+      "backupStreamUrl": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8?PlaylistM3UCL",
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Señal HLS Directa HD)",
+          "url": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
           "needsProxy": false
         }
       ],
@@ -973,12 +959,12 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/5_Retro_Plus_TV_Senal_2.png",
-      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvdos/live/playlist.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
       "backupStreamUrl": null,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://tls-cl.cdnz.cl/retroplustvdos/live/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Señal HLS Directa HD)",
+          "url": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
           "needsProxy": false
         }
       ],
@@ -998,12 +984,12 @@ window.STATIONS_DATA = {
       "genre": "Música",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/465_Retro_Plus_TV_Senal_3.png",
-      "streamUrl": "https://tls-cl.cdnz.cl/retroplustvtres/live/playlist.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
       "backupStreamUrl": null,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://tls-cl.cdnz.cl/retroplustvtres/live/playlist.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Señal HLS Directa HD)",
+          "url": "https://lbgo.bozztv.com/ssh101/ssh101/retroplustvuno/playlist.m3u8",
           "needsProxy": false
         }
       ],
@@ -1048,12 +1034,12 @@ window.STATIONS_DATA = {
       "genre": "General",
       "isNational": false,
       "logo": "https://cdn.m3u.cl/logo/1288_Suyai_TV.png",
-      "streamUrl": "https://trun.suyaitv.cl/memfs/1255a743-cd41-40a8-86c4-d264ee16ebf3.m3u8?PlaylistM3UCL",
+      "streamUrl": "https://trun.suyaitv.cl/memfs/1255a743-cd41-40a8-86c4-d264ee16ebf3.m3u8",
       "backupStreamUrl": null,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
-          "url": "https://trun.suyaitv.cl/memfs/1255a743-cd41-40a8-86c4-d264ee16ebf3.m3u8?PlaylistM3UCL",
+          "name": "Fuente 1 (Señal HLS Directa)",
+          "url": "https://trun.suyaitv.cl/memfs/1255a743-cd41-40a8-86c4-d264ee16ebf3.m3u8",
           "needsProxy": false
         }
       ],
@@ -1162,15 +1148,16 @@ window.STATIONS_DATA = {
       "backupStreamUrl": null,
       "sources": [
         {
-          "name": "Fuente 1 (Principal)",
+          "name": "Fuente 1 (Señal HLS Directa DPS)",
           "url": "https://redirector.dps.live/hls/turno/playlist.m3u8?PlaylistM3UCL",
-          "needsProxy": true
+          "needsProxy": false
         }
       ],
       "website": "",
       "description": "Canal de televisión TurnoEnVivo disponible en señal abierta y web streaming de Chile.",
       "status": "online",
-      "channelNumber": 40
+      "channelNumber": 40,
+      "needsProxy": false
     },
     {
       "id": "cl-tv-tvchile",
@@ -1195,10 +1182,10 @@ window.STATIONS_DATA = {
         {
           "name": "Fuente 1 (Señal HLS Directa)",
           "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
-          "needsProxy": false
+          "needsProxy": true
         }
       ],
-      "needsProxy": false
+      "needsProxy": true
     },
     {
       "id": "cl-tv-tvmas",
@@ -4068,11 +4055,10 @@ class PlayerEngine {
       }
     }
 
-    const needsAutoProxy = forceProxy || source.needsProxy ||
+    const isHttp = targetUrl && targetUrl.startsWith('http://');
+    const needsAutoProxy = forceProxy || source.needsProxy || isHttp ||
       (targetUrl && (
-        targetUrl.includes('dpsgo.com') ||
         targetUrl.includes('bitred.cl') ||
-        targetUrl.includes('dps.live') ||
         targetUrl.includes('tlink.cl') ||
         targetUrl.includes('15.204.246.24') ||
         targetUrl.includes('15.204.')
@@ -4082,7 +4068,13 @@ class PlayerEngine {
     let streamUrl = targetUrl;
 
     if (needsAutoProxy) {
-      const refParam = encodeURIComponent(station.website || (station.id === 'cl-tv-canal13' ? 'https://www.13.cl/' : ''));
+      let defaultRef = station.website || '';
+      if (!defaultRef) {
+        if (station.id === 'cl-tv-canal13') defaultRef = 'https://www.13.cl/';
+        else if (station.id === 'cl-tv-tvchile' || station.id === 'cl-tv-tvn') defaultRef = 'https://www.tvn.cl/';
+        else if (station.id === 'cl-tv-lared') defaultRef = 'https://www.lared.cl/';
+      }
+      const refParam = encodeURIComponent(defaultRef);
       streamUrl = `/api/proxy?url=${encodeURIComponent(targetUrl)}&ref=${refParam}`;
     }
 

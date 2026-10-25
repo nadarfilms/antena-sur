@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
         settings.setSupportZoom(false);
         settings.setBuiltInZoomControls(false);
         settings.setTextZoom(100);
+        settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
@@ -323,10 +324,11 @@ public class MainActivity extends AppCompatActivity {
             if (ref == null || ref.isEmpty()) {
                 String low = targetUrl.toLowerCase();
                 if (low.contains("13") || low.contains("dpsgo.com")) ref = "https://www.13.cl/";
-                else if (low.contains("tvn") || low.contains("ntv")) ref = "https://www.tvn.cl/";
+                else if (low.contains("tvn") || low.contains("ntv") || low.contains("tvchile") || low.contains("mdstrm.com")) ref = "https://www.tvn.cl/";
                 else if (low.contains("uchile")) ref = "https://tv.uchile.cl/";
                 else if (low.contains("chv") || low.contains("rudo.video")) ref = "https://www.chilevision.cl/";
                 else if (low.contains("mega")) ref = "https://www.mega.cl/";
+                else if (low.contains("lared")) ref = "https://www.lared.cl/";
                 else ref = "https://www.13.cl/";
             }
 
@@ -364,8 +366,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            int statusCode = conn.getResponseCode();
+            if (statusCode < 200 || statusCode >= 400) {
+                Map<String, String> errHeaders = new HashMap<>();
+                errHeaders.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("text/plain", "UTF-8", statusCode >= 100 && statusCode < 600 ? statusCode : 502, "Error", errHeaders, new ByteArrayInputStream(new byte[0]));
+            }
+
             String contentType = conn.getContentType();
-            if (contentType == null) contentType = "application/octet-stream";
+            if (contentType == null || contentType.isEmpty()) {
+                contentType = "application/octet-stream";
+            } else if (contentType.contains(";")) {
+                contentType = contentType.split(";")[0].trim();
+            }
 
             boolean isM3u8 = targetUrl.toLowerCase().contains(".m3u8") || contentType.toLowerCase().contains("mpegurl");
 
@@ -403,15 +416,25 @@ public class MainActivity extends AppCompatActivity {
                 byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
                 Map<String, String> responseHeaders = new HashMap<>();
                 responseHeaders.put("Access-Control-Allow-Origin", "*");
+                responseHeaders.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
                 return new WebResourceResponse("application/vnd.apple.mpegurl", "UTF-8", 200, "OK", responseHeaders, new ByteArrayInputStream(bytes));
             }
 
             Map<String, String> headers = new HashMap<>();
             headers.put("Access-Control-Allow-Origin", "*");
-            return new WebResourceResponse(contentType, null, 200, "OK", headers, conn.getInputStream());
+            headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+            String cl = conn.getHeaderField("Content-Length");
+            if (cl != null) headers.put("Content-Length", cl);
+            String cr = conn.getHeaderField("Content-Range");
+            if (cr != null) headers.put("Content-Range", cr);
+            String ar = conn.getHeaderField("Accept-Ranges");
+            if (ar != null) headers.put("Accept-Ranges", ar);
+            return new WebResourceResponse(contentType, null, statusCode == 206 ? 206 : 200, statusCode == 206 ? "Partial Content" : "OK", headers, conn.getInputStream());
 
         } catch (Exception e) {
-            return null;
+            Map<String, String> errHeaders = new HashMap<>();
+            errHeaders.put("Access-Control-Allow-Origin", "*");
+            return new WebResourceResponse("text/plain", "UTF-8", 502, "Bad Gateway", errHeaders, new ByteArrayInputStream(new byte[0]));
         }
     }
 
