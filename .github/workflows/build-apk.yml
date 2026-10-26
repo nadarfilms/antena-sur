@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.5.0.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.5.0.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.5.0
+    - name: Publicar Release v1.5.1
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.5.0.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.5.0"
-        name: "Antena Sur Android TV & Mobile v1.5.0 - Reproductor Nativo Torrent Estilo Stremio (1 Clic, 0 Iframe)"
-        body: "Versión 1.5.0: Eliminación total de reproductores web embebidos e iframes. Reproductor 100% nativo HTML5 Video con streaming P2P directo estilo Stremio, inicio en 1 solo clic desde la selección de torrent/calidad, soporte Range Request HTTP 206 en proxy Android TV y microservicio WebTorrent en Render."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.5.1"
+        name: "Antena Sur Android TV & Mobile v1.5.1 - Motor Torrent Nativo Auto-Instalable y Reproducción Inmediata"
+        body: "Versión 1.5.1: Auto-instalador de Node.js y dependencias WebTorrent en el servidor en la nube, descarga directa de metadatos .torrent en memoria para inicio instantáneo de reproducción sin espera de DHT, y diagnóstico en tiempo real."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

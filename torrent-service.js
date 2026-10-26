@@ -314,6 +314,10 @@ function getInfoHash(torrentId) {
   if (match) {
     return match[1].toLowerCase();
   }
+  const matchHex = str.match(/([a-fA-F0-9]{40})/i);
+  if (matchHex) {
+    return matchHex[1].toLowerCase();
+  }
   return null;
 }
 
@@ -495,20 +499,58 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // Construir magnet completo si solo se envió el infoHash
-    if (/^[a-fA-F0-9]{40}$/.test(torrentParam)) {
-      torrentParam = `magnet:?xt=urn:btih:${torrentParam}&${PUBLIC_TRACKERS.map(tr => `tr=${encodeURIComponent(tr)}`).join('&')}`;
-    }
-
     let torrent = await (targetHash ? client.get(targetHash) : client.get(torrentParam));
 
     if (!torrent) {
+      let torrentInput = torrentParam;
+
+      // 1. Si es una URL http/https directa a un archivo .torrent, descargarlo como buffer en memoria
+      if (typeof torrentParam === 'string' && (torrentParam.startsWith('http://') || torrentParam.startsWith('https://'))) {
+        try {
+          console.log(`[Torrent Stream Engine] Descargando archivo .torrent desde: ${torrentParam}`);
+          const dlResp = await fetch(torrentParam, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+          });
+          if (dlResp.ok) {
+            const arrBuf = await dlResp.arrayBuffer();
+            const buf = Buffer.from(arrBuf);
+            if (buf.length > 50 && buf[0] === 0x64) {
+              torrentInput = buf;
+              console.log(`[Torrent Stream Engine] Archivo .torrent descargado con éxito (${buf.length} bytes). Metadatos inmediatos.`);
+            }
+          }
+        } catch (e) {
+          console.warn(`[Torrent Stream Engine] Error al descargar .torrent directo: ${e.message}`);
+        }
+      } else if (targetHash) {
+        // 2. Si es infoHash o magnet, intentar obtener el .torrent pre-construido de YTS para evitar espera de DHT
+        try {
+          const ytsUrl = `https://yts.gg/torrent/download/${targetHash.toUpperCase()}`;
+          const dlResp = await fetch(ytsUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+          });
+          if (dlResp.ok) {
+            const arrBuf = await dlResp.arrayBuffer();
+            const buf = Buffer.from(arrBuf);
+            if (buf.length > 50 && buf[0] === 0x64) {
+              torrentInput = buf;
+              console.log(`[Torrent Stream Engine] Metadatos .torrent cargados instantáneamente de YTS (${buf.length} bytes).`);
+            }
+          }
+        } catch (e) {}
+      }
+
+      // Si sigue siendo infohash simple de 40 caracteres, armar magnet completo con trackers públicos
+      if (typeof torrentInput === 'string' && /^[a-fA-F0-9]{40}$/.test(torrentInput)) {
+        torrentInput = `magnet:?xt=urn:btih:${torrentInput}&${PUBLIC_TRACKERS.map(tr => `tr=${encodeURIComponent(tr)}`).join('&')}`;
+      }
+
       try {
-        torrent = client.add(torrentParam, {
+        torrent = client.add(torrentInput, {
           announce: PUBLIC_TRACKERS
         });
         torrent._antenaAddedTime = Date.now();
-        console.log(`[Torrent Stream Engine] Nuevo torrent añadido: ${targetHash || torrentParam.slice(0, 50)}...`);
+        console.log(`[Torrent Stream Engine] Nuevo torrent añadido al cliente: ${targetHash || (Buffer.isBuffer(torrentInput) ? 'Buffer' : torrentInput.slice(0, 50))}...`);
       } catch (err) {
         res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Error al agregar torrent: ' + err.message);

@@ -8704,7 +8704,7 @@ class CinemaEngine {
     }
 
     const q = (torrent && torrent.quality) || '1080p';
-    const torrentId = (torrent && (torrent.magnet_url || torrent.hash)) || null;
+    const torrentId = (torrent && (torrent.url || torrent.magnet_url || torrent.hash)) || null;
     const fileIdx = (torrent && torrent.fileIdx !== undefined && torrent.fileIdx !== null) ? torrent.fileIdx : null;
     const releaseName = (torrent && (torrent.title || torrent.name)) || `${movie.title} [${q}]`;
     const title = `${movie.title} [${q}]`;
@@ -8748,13 +8748,13 @@ class CinemaEngine {
     const title = `${show.name} - S${String(s).padStart(2,'0')}E${String(epNum).padStart(2,'0')} • ${epName}`;
     const epReleaseName = (stream && (stream.title || stream.name)) || title;
 
-    let torrentId = (stream && (stream.magnet_url || stream.hash)) || null;
+    let torrentId = (stream && (stream.url || stream.magnet_url || stream.hash)) || null;
     let fileIdx = (stream && stream.fileIdx !== undefined && stream.fileIdx !== null) ? stream.fileIdx : null;
 
     if (!torrentId && episode.streams && episode.streams.length > 0) {
       episode.streams = this.sortStreamsByQuality(episode.streams);
       const best = episode.streams[0];
-      torrentId = best.magnet_url || best.hash;
+      torrentId = best.url || best.magnet_url || best.hash;
       fileIdx = (best.fileIdx !== undefined && best.fileIdx !== null) ? best.fileIdx : null;
       stream = best;
     }
@@ -10260,7 +10260,7 @@ class CinemaEngine {
           this.activeMedia.currentStreamIndex = 0;
           const first = streams[0];
           const fid = (first.fileIdx !== undefined && first.fileIdx !== null) ? first.fileIdx : null;
-          const tid = first.magnet_url || first.hash;
+          const tid = first.url || first.magnet_url || first.hash;
           const q = first.quality || 'HD';
           const tName = (this.activeMedia.type === 'movie')
             ? `${this.activeMedia.title} [${q}]`
@@ -10275,7 +10275,7 @@ class CinemaEngine {
     this.activeMedia.currentStreamIndex = nextIdx;
     this.activeMedia.torrentData = nextStream;
     this.activeMedia.streamData = nextStream;
-    const nextTorrentId = nextStream.magnet_url || nextStream.hash;
+    const nextTorrentId = nextStream.url || nextStream.magnet_url || nextStream.hash;
     const nextFileIdx = (nextStream.fileIdx !== undefined && nextStream.fileIdx !== null) ? nextStream.fileIdx : null;
     const nextQuality = nextStream.quality || 'HD';
     const nextSeeds = nextStream.seeds || 0;
