@@ -244,6 +244,12 @@ public class MainActivity extends AppCompatActivity {
                         if (cinemaResp != null) return cinemaResp;
                     }
 
+                    // Intercepción nativa de Torrent Status / Stop para Android TV / Mobile Autónomo
+                    if (uri.getPath() != null && uri.getPath().contains("/api/torrent")) {
+                        WebResourceResponse torrResp = handleTorrentApi(request);
+                        if (torrResp != null) return torrResp;
+                    }
+
                     WebResourceResponse response = mAssetLoader.shouldInterceptRequest(uri);
                     if (response != null) {
                         try {
@@ -480,6 +486,36 @@ public class MainActivity extends AppCompatActivity {
             String fallback = "{\"ok\":true,\"latencyMs\":60}";
             return new WebResourceResponse("application/json", "UTF-8", 200, "OK", null, new ByteArrayInputStream(fallback.getBytes(StandardCharsets.UTF_8)));
         }
+    }
+
+    private WebResourceResponse handleTorrentApi(WebResourceRequest request) {
+        try {
+            Uri uri = request.getUrl();
+            String path = uri.getPath() != null ? uri.getPath() : "";
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Access-Control-Allow-Origin", "*");
+            headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+            headers.put("Access-Control-Allow-Headers", "*");
+
+            if (path.contains("/api/torrent/status")) {
+                String dummy = "{\"ok\":true,\"active\":false,\"numPeers\":0,\"downloadSpeed\":0,\"downloaded\":0,\"downloadedMB\":\"0.0\",\"totalMB\":\"0.0\"}";
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+            if (path.contains("/api/torrent/stop")) {
+                String dummy = "{\"ok\":true}";
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+            if (path.contains("/api/torrent/media_info")) {
+                String dummy = "{\"ok\":true,\"streams\":[]}";
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            }
+            if (path.contains("/api/torrent/stream")) {
+                return new WebResourceResponse("text/plain", "UTF-8", 204, "No Content", headers, new ByteArrayInputStream(new byte[0]));
+            }
+        } catch (Throwable t) {
+            android.util.Log.e("AntenaSurTV", "Error en handleTorrentApi: " + t.getMessage());
+        }
+        return null;
     }
 
     private WebResourceResponse handleCinemaApi(WebResourceRequest request) {

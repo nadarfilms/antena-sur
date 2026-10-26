@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.7.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.7.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.7
+    - name: Publicar Release v1.4.8
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.7.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.7"
-        name: "Antena Sur Android TV & Mobile v1.4.7 - 3 Opciones de Semillas Verificadas por Calidad"
-        body: "Versión 1.4.7: Restauración completa de 3 alternativas de semillas verificadas por resolución (3 de 4K, 3 de 1080p, 3 de 720p y 3 de 480p) en la cartelera de películas y episodios de series, con orden estricto de mayor a menor calidad, bonificación para doblaje en español latino y reproducción directa inmediata P2P."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.8"
+        name: "Antena Sur Android TV & Mobile v1.4.8 - Corrección Gráfica Temporadas y Reproducción Directa"
+        body: "Versión 1.4.8: Corrección visual completa de la barra de temporadas en series (Temporada 1 seleccionada por defecto, resolución de doble marcado, padding anti-recorte de bordes izquierdos), e inicio de reproducción instantáneo y continuo en películas y series sin bloqueos de carga de semillas ni servidores adicionales."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

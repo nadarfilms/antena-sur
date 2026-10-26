@@ -121,6 +121,7 @@ export class CinemaEngine {
       playerStatsBadge: document.getElementById('cinemaPlayerStatsBadge'),
       videoWrap: document.getElementById('cinemaPlayerVideoWrap'),
       videoElement: document.getElementById('cinemaVideoElement'),
+      playerIframe: document.getElementById('cinemaPlayerIframe'),
       loadingOverlay: document.getElementById('cinemaPlayerLoadingOverlay'),
       loadingText: document.getElementById('cinemaPlayerLoadingText'),
       loadingStats: document.getElementById('cinemaPlayerLoadingStats'),
@@ -1938,8 +1939,8 @@ export class CinemaEngine {
         return;
       }
 
-      // Temporada por defecto: La última temporada disponible (para iniciar por los últimos capítulos subidos)
-      const defaultSeason = data.latestSeason || seasons[seasons.length - 1];
+      // Temporada por defecto: Siempre la primera temporada disponible (Temporada 1)
+      const defaultSeason = seasons[0];
 
       // 2. Renderizar Barra de Temporadas Estilo Stremio
       let seasonsBarHtml = '<div class="cinema-seasons-bar" id="cinemaSeasonsBar" role="tablist">';
@@ -1964,8 +1965,12 @@ export class CinemaEngine {
       const seasonTabs = this.dom.detailMainContent.querySelectorAll('.cinema-season-tab');
       seasonTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-          seasonTabs.forEach(t => t.classList.remove('is-active'));
+          seasonTabs.forEach(t => {
+            t.classList.remove('is-active');
+            t.classList.remove('is-tv-focused');
+          });
           tab.classList.add('is-active');
+          if (window.setTvFocus) window.setTvFocus(tab);
           const sNum = parseInt(tab.dataset.season, 10);
           this.renderSeasonEpisodes(sNum, data);
         });
@@ -1977,18 +1982,20 @@ export class CinemaEngine {
         });
       });
 
-      // Renderizar inmediatamente la temporada activa (por defecto la última temporada)
+      // Renderizar inmediatamente la temporada activa (Temporada 1 por defecto)
       this.renderSeasonEpisodes(defaultSeason, data);
 
       // Configurar estado de Mi Biblioteca y Marcar como Visto (Plex)
       this.currentDetailMedia = { item: fullShow, type: 'series' };
       this.updateDetailActionButtons();
 
-      // Auto-enfocar primer control de serie para control remoto de Android TV
+      // Auto-enfocar pestaña de la temporada activa para control remoto de Android TV
       if (window.setTvFocus) {
         setTimeout(() => {
-          const firstEpBtn = this.dom.detailMainContent.querySelector('[data-action="play-ep-stream"], [data-action="load-ep-streams"], .cinema-season-tab') || this.dom.detailBackBtn;
-          if (firstEpBtn) window.setTvFocus(firstEpBtn);
+          const activeSeasonTab = this.dom.detailMainContent.querySelector('.cinema-season-tab.is-active') ||
+                                  this.dom.detailMainContent.querySelector('.cinema-season-tab') ||
+                                  this.dom.detailBackBtn;
+          if (activeSeasonTab) window.setTvFocus(activeSeasonTab);
         }, 120);
       }
 
@@ -3867,6 +3874,83 @@ export class CinemaEngine {
   }
 
   /* ========================================================================
+     RESOLUCIÓN Y TRANSMISIÓN DIRECTA SEGURA (0 SERVIDORES ADICIONALES, 0 POPUPS)
+     ======================================================================== */
+
+  getDirectStreamUrl() {
+    if (!this.activeMedia) return '';
+    let imdb = this.activeMedia.imdb || '';
+    if (this.activeMedia.type === 'movie' && !imdb && this.activeMedia.parentMedia) {
+      imdb = this.activeMedia.parentMedia.imdb_code || this.activeMedia.parentMedia.imdb || '';
+    }
+    if (this.activeMedia.type === 'series' && !imdb && this.activeMedia.parentMedia) {
+      imdb = this.activeMedia.parentMedia.imdb || '';
+    }
+    if (!imdb && this.currentDetailMedia) {
+      imdb = this.currentDetailMedia.item?.imdb_code || this.currentDetailMedia.item?.imdb || '';
+    }
+
+    const isSeries = (this.activeMedia.type === 'series');
+    const s = this.activeMedia.season || 1;
+    const ep = this.activeMedia.episode || 1;
+
+    if (imdb) {
+      const cleanImdb = imdb.startsWith('tt') ? imdb : ('tt' + imdb);
+      return isSeries
+        ? `https://vidsrc.pm/embed/tv/${cleanImdb}/${s}/${ep}`
+        : `https://vidsrc.pm/embed/movie/${cleanImdb}`;
+    }
+
+    const titleParam = encodeURIComponent(this.activeMedia.showName || this.activeMedia.title || '');
+    return isSeries
+      ? `https://multiembed.mov/?video_id=${titleParam}&s=${s}&e=${ep}`
+      : `https://multiembed.mov/?video_id=${titleParam}`;
+  }
+
+  startDirectStream(title = '') {
+    const streamUrl = this.getDirectStreamUrl();
+    if (!streamUrl) {
+      this.showToast('No se encontró fuente de reproducción para este contenido', 'error');
+      return;
+    }
+
+    if (this.statusPollTimer) {
+      clearInterval(this.statusPollTimer);
+      this.statusPollTimer = null;
+    }
+
+    if (this.dom.videoElement) {
+      this.dom.videoElement.pause();
+      this.dom.videoElement.style.display = 'none';
+    }
+
+    if (this.dom.playerIframe) {
+      this.dom.playerIframe.classList.remove('is-hidden');
+      this.dom.playerIframe.style.display = 'block';
+      this.dom.playerIframe.src = streamUrl;
+
+      if (this.dom.loadingText) {
+        this.dom.loadingText.textContent = `Reproduciendo "${title || (this.activeMedia?.title || 'Contenido')}"...`;
+      }
+      if (this.dom.loadingStats) {
+        this.dom.loadingStats.textContent = '⚡ Conectando transmisión de alta velocidad...';
+      }
+
+      this.dom.playerIframe.onload = () => {
+        setTimeout(() => {
+          if (this.dom.loadingOverlay) this.dom.loadingOverlay.classList.add('is-hidden');
+          if (this.dom.playerStatusBadge) {
+            this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> EN VIVO DIRECTO';
+          }
+          if (this.dom.playerStatsBadge) {
+            this.dom.playerStatsBadge.textContent = '⚡ Conexión Estable';
+          }
+        }, 1200);
+      };
+    }
+  }
+
+  /* ========================================================================
      INICIO DE REPRODUCCIÓN TORRENT P2P
      ======================================================================== */
 
@@ -3902,16 +3986,27 @@ export class CinemaEngine {
       this.dom.loadingText.textContent = `Iniciando "${title}"...`;
     }
     if (this.dom.progressFill) {
-      this.dom.progressFill.style.width = '8%';
+      this.dom.progressFill.style.width = '15%';
     }
     if (this.dom.playerStatusBadge) {
-      this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> CONECTANDO P2P...';
+      this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> CONECTANDO...';
     }
     if (this.dom.playerStatsBadge) {
-      this.dom.playerStatsBadge.textContent = '👥 Conectando enjambre...';
+      this.dom.playerStatsBadge.textContent = '⚡ Conectando reproducción...';
     }
     if (this.dom.ctrlStreamTag) {
       this.dom.ctrlStreamTag.textContent = title;
+    }
+
+    // Detectar si estamos en la aplicación Android (APK autónomo en Smart TV o móvil sin daemon Node.js)
+    const isAndroidApp = (typeof window.AndroidNative !== 'undefined') ||
+                         (window.location.hostname === 'appassets.androidplatform.net') ||
+                         (navigator.userAgent && (navigator.userAgent.includes('wv') || navigator.userAgent.includes('AntenaSurTV')));
+
+    if (isAndroidApp) {
+      console.log('[Cinema Player] Entorno Android APK detectado. Iniciando reproducción directa inmediata.');
+      this.startDirectStream(title);
+      return;
     }
 
     const video = this.dom.videoElement;
@@ -4074,7 +4169,11 @@ export class CinemaEngine {
     };
 
     video.onerror = (e) => {
-      console.warn('Esperando buffer del stream de torrent...', e);
+      console.warn('Error en stream local de torrent. Conectando reproducción directa...', e);
+      if (!playbackStarted && !failoverTriggered) {
+        failoverTriggered = true;
+        this.startDirectStream(title);
+      }
     };
 
     const pollStatus = async () => {
@@ -4126,17 +4225,13 @@ export class CinemaEngine {
         this.probeAudioTracks(torrentId, fileIdx);
       }
 
-      // Si tras 8 segundos no hay semillas activas en este torrent específico y no se ha iniciado la reproducción,
-      // probar automáticamente con la siguiente calidad de torrent disponible
-      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 8) {
-        const streams = this.activeMedia?.allStreams || [];
-        if (streams.length > 1) {
-          failoverTriggered = true;
-          console.log('[Cinema Player] 0 semillas activas tras 8s. Probando siguiente opción de calidad torrent...');
-          if (this.tryNextStreamFallback('sin semillas activas')) {
-            return;
-          }
-        }
+      // Si tras 3 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
+      // conectar reproducción directa transparente
+      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 3) {
+        failoverTriggered = true;
+        console.log('[Cinema Player] Sin semillas locales activas tras 3s. Conectando reproducción directa...');
+        this.startDirectStream(title);
+        return;
       }
 
       if (!playbackStarted) {

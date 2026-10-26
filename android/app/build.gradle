@@ -10,8 +10,8 @@ android {
         applicationId "com.antenasur.tv"
         minSdk 21
         targetSdk 34
-        versionCode 45
-        versionName "1.4.7"
+        versionCode 46
+        versionName "1.4.8"
     }
 
     buildTypes {
