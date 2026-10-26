@@ -213,14 +213,21 @@ def start_torrent_service():
         print(f"⚠️ [Torrent Engine] Error al iniciar servicio torrent: {e}")
 
 TORRENT_LOCK = threading.Lock()
+TORRENT_STARTING = False
 
 def ensure_torrent_service():
-    global TORRENT_SERVICE_PROC
-    if is_port_available(8088):
+    global TORRENT_SERVICE_PROC, TORRENT_STARTING
+    if is_port_available(8088) and not TORRENT_STARTING:
         with TORRENT_LOCK:
-            if is_port_available(8088):
-                print("🔄 [Torrent Engine] Reactivando microservicio en puerto 8088...")
-                start_torrent_service()
+            if is_port_available(8088) and not TORRENT_STARTING:
+                TORRENT_STARTING = True
+                def run_start():
+                    global TORRENT_STARTING
+                    try:
+                        start_torrent_service()
+                    finally:
+                        TORRENT_STARTING = False
+                threading.Thread(target=run_start, daemon=True).start()
 
 def stop_torrent_service():
     global TORRENT_SERVICE_PROC
@@ -2111,7 +2118,8 @@ class AntenaSurHandler(SimpleHTTPRequestHandler):
                 'platform': sys.platform,
                 'node_bin': node_bin,
                 'port_8088_listening': is_listening,
-                'webtorrent_installed': os.path.isdir(os.path.join(script_dir, 'node_modules', 'webtorrent')),
+                'starting': TORRENT_STARTING,
+                'webtorrent_installed': os.path.isfile(os.path.join(script_dir, 'node_modules', 'webtorrent', 'index.js')),
                 'log_tail': log_content
             }
             self.send_json_response(diag_data)
@@ -2120,6 +2128,21 @@ class AntenaSurHandler(SimpleHTTPRequestHandler):
         # Endpoint de Proxy para Microservicio de Torrent P2P: /api/torrent/*
         if self.path.startswith('/api/torrent/'):
             ensure_torrent_service()
+            if is_port_available(8088):
+                for _ in range(20):
+                    time.sleep(0.2)
+                    if not is_port_available(8088):
+                        break
+
+            if is_port_available(8088):
+                self.send_response(503)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Retry-After', '2')
+                self.end_headers()
+                self.wfile.write(b'{"active":false,"ready":false,"peers":0,"msg":"Iniciando motor torrent..."}')
+                return
+
             target_url = f'http://127.0.0.1:8088{self.path}'
             req_headers = {
                 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
