@@ -63,6 +63,14 @@ def get_yt_embed_url(yt_url):
 # ==============================================================================
 TORRENT_SERVICE_PROC = None
 
+INSTALLER_LOGS = []
+
+def log_install(msg):
+    print(msg)
+    INSTALLER_LOGS.append(f"[{time.strftime('%H:%M:%S')}] {msg}")
+    if len(INSTALLER_LOGS) > 40:
+        INSTALLER_LOGS.pop(0)
+
 def install_local_node_bin():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     import platform
@@ -76,13 +84,13 @@ def install_local_node_bin():
         node_url = f'https://nodejs.org/dist/{node_ver}/{tar_name}'
         node_bin_dir = os.path.join(script_dir, 'node_bin')
         tar_dest = os.path.join(script_dir, tar_name)
-        print(f"⬇️ [Node Installer] Descargando Node.js completo desde {node_url}...")
+        log_install(f"⬇️ [Node Installer] Descargando Node.js completo desde {node_url}...")
         try:
             req = urllib.request.Request(node_url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=60) as resp, open(tar_dest, 'wb') as out_f:
+            with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=60) as resp, open(tar_dest, 'wb') as out_f:
                 shutil.copyfileobj(resp, out_f)
 
-            print(f"📦 [Node Installer] Extrayendo {tar_name}...")
+            log_install(f"📦 [Node Installer] Extrayendo {tar_name}...")
             os.makedirs(node_bin_dir, exist_ok=True)
             import tarfile
             with tarfile.open(tar_dest, 'r:gz') as tar:
@@ -101,10 +109,10 @@ def install_local_node_bin():
                 npm_exec = os.path.join(node_bin_dir, 'bin', 'npm')
                 if os.path.isfile(npm_exec):
                     os.chmod(npm_exec, 0o755)
-                print(f"✅ [Node Installer] Node.js y NPM instalados con éxito en: {node_bin_dir}")
+                log_install(f"✅ [Node Installer] Node.js y NPM listos en: {node_bin_dir}")
                 return node_exec
         except Exception as e:
-            print(f"❌ [Node Installer] Error descargando/instalando Node: {e}")
+            log_install(f"❌ [Node Installer] Error descargando/instalando Node: {e}")
     return None
 
 def get_or_install_node():
@@ -142,29 +150,30 @@ def ensure_node_dependencies(node_bin):
     if os.path.isfile(webtorrent_index):
         return True
 
-    print("📦 [Node Modules] Instalando dependencias requeridas (webtorrent, ffmpeg-static)...")
+    log_install("📦 [Node Modules] Instalando dependencias requeridas (webtorrent, ffmpeg-static)...")
     npm_bin = find_npm(node_bin)
 
     if not npm_bin:
-        print("📦 [Node Modules] npm no encontrado. Descargando distribución de Node.js con NPM incluido...")
+        log_install("📦 [Node Modules] npm no encontrado. Descargando distribución de Node.js con NPM incluido...")
         install_local_node_bin()
         npm_bin = os.path.join(script_dir, 'node_bin', 'bin', 'npm')
 
     if not (npm_bin and os.path.isfile(npm_bin)):
-        print("❌ [Node Modules] npm sigue sin estar disponible.")
+        log_install("❌ [Node Modules] npm sigue sin estar disponible.")
         return False
 
     env = os.environ.copy()
     node_bin_dir = os.path.dirname(node_bin) if node_bin else os.path.join(script_dir, 'node_bin', 'bin')
     env['PATH'] = f"{node_bin_dir}:{os.path.dirname(npm_bin)}:/usr/local/bin:/usr/bin:/bin:" + env.get('PATH', '')
     try:
+        log_install(f"🚀 Ejecutando {npm_bin} install --omit=dev...")
         res = subprocess.run([npm_bin, 'install', '--omit=dev'], cwd=script_dir, env=env, capture_output=True, text=True, timeout=120)
-        print(f"✅ [Node Modules] npm install completado (código {res.returncode}): {res.stdout[-300:] if res.stdout else ''}")
-        if res.returncode != 0:
-            print(f"⚠️ [Node Modules] npm install stderr: {res.stderr}")
+        log_install(f"✅ npm install exit code: {res.returncode}")
+        if res.returncode != 0 and res.stderr:
+            log_install(f"⚠️ npm install stderr: {res.stderr[:200]}")
         return os.path.isfile(webtorrent_index)
     except Exception as e:
-        print(f"❌ [Node Modules] Error al ejecutar npm install: {e}")
+        log_install(f"❌ [Node Modules] Error al ejecutar npm install: {e}")
         return False
 
 def start_torrent_service():
@@ -2120,6 +2129,7 @@ class AntenaSurHandler(SimpleHTTPRequestHandler):
                 'port_8088_listening': is_listening,
                 'starting': TORRENT_STARTING,
                 'webtorrent_installed': os.path.isfile(os.path.join(script_dir, 'node_modules', 'webtorrent', 'index.js')),
+                'installer_logs': INSTALLER_LOGS,
                 'log_tail': log_content
             }
             self.send_json_response(diag_data)
