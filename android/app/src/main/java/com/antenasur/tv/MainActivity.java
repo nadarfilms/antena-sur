@@ -816,7 +816,7 @@ public class MainActivity extends AppCompatActivity {
                     String sNum = (s != null && !s.isEmpty()) ? s : "1";
                     String epNum = (ep != null && !ep.isEmpty()) ? ep : "1";
                     String streamUrl = "https://torrentio.strem.fun/stream/series/" + cleanImdb + ":" + sNum + ":" + epNum + ".json";
-                    String stResp = fetchHttpUrl(streamUrl, 5000);
+                    String stResp = fetchHttpUrl(streamUrl, 8000);
                     if (stResp != null && !stResp.isEmpty()) {
                         try {
                             JSONObject raw = new JSONObject(stResp);
@@ -832,6 +832,11 @@ public class MainActivity extends AppCompatActivity {
                         } catch (Throwable ignored) {}
                     }
                 }
+                // Respuesta segura por defecto para evitar 404 local en WebView
+                String emptyJson = "{\"ok\":true,\"streams\":[]}";
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(emptyJson.getBytes(StandardCharsets.UTF_8)));
             }
 
             // 7. Biblioteca y Usuarios Locales Plex: /api/cinema/user/*

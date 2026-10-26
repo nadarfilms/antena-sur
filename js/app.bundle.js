@@ -8572,7 +8572,7 @@ class CinemaEngine {
 
       // Clic en la tarjeta completa del episodio para reproducir directamente o cargar calidades
       container.querySelectorAll('.cinema-episode-card').forEach(card => {
-        card.addEventListener('click', (e) => {
+        card.addEventListener('click', async (e) => {
           if (e.target.closest('button') || e.target.closest('a')) return;
           const epIdx = parseInt(card.dataset.epCardIdx, 10);
           const ep = rawEpisodes[epIdx];
@@ -8585,7 +8585,10 @@ class CinemaEngine {
             if (block) {
               block.innerHTML = '<div class="cinema-ep-streams-loading"><div class="cinema-loading-spinner" style="width:14px;height:14px;border-width:2px;margin:0;"></div> Buscando fuentes 4K, 1080p y 720p en la red...</div>';
             }
-            this.loadEpisodeStreams(show, ep, seasonNum, epN, block, epIdx);
+            await this.loadEpisodeStreams(show, ep, seasonNum, epN, block, epIdx);
+            if (ep.streams && ep.streams.length > 0) {
+              this.playEpisode(show, ep, ep.streams[0]);
+            }
           }
         });
       });
@@ -8593,8 +8596,8 @@ class CinemaEngine {
 
     wireStreamsEvents();
 
-    // Precargar automáticamente calidades para los 2 primeros episodios de la temporada activa
-    rawEpisodes.slice(0, 2).forEach((ep, idx) => {
+    // Precargar automáticamente calidades para los primeros 4 episodios de la temporada activa
+    rawEpisodes.slice(0, 4).forEach((ep, idx) => {
       if (!ep.streams || ep.streams.length === 0) {
         const epN = ep.number || (idx + 1);
         const block = document.getElementById(`epStreams_${seasonNum}_${epN}`);
@@ -8614,68 +8617,90 @@ class CinemaEngine {
       return;
     }
 
-    try {
-      const resp = await fetch(`/api/cinema/series/episode_streams?imdb=${encodeURIComponent(imdbCode)}&season=${seasonNum}&episode=${episodeNum}`);
-      const data = await resp.json();
-      if (data.ok && data.streams && data.streams.length > 0) {
-        const sortedStreams = this.processAndFilterStreams(data.streams, [], `Episodio S${seasonNum}E${episodeNum}`);
-        episode.streams = sortedStreams;
-        if (blockEl) {
-          blockEl.innerHTML = `
-            <div class="cinema-ep-streams-header">
-              <span>🎬 CALIDADES DISPONIBLES (${sortedStreams.length}):</span>
-            </div>
-            <div class="cinema-ep-streams-list">
-              ${sortedStreams.map((st, stIdx) => {
-                const qClass = (st.quality === '4K') ? 'q-4k' : ((st.quality === '1080p') ? 'q-1080p' : ((st.quality === '480p') ? 'q-480p' : 'q-720p'));
-                const audioDesc = st.audio || 'Audio Original';
-                const flagsStr = (st.flags && st.flags.length > 0) ? st.flags.slice(0, 4).join(' ') : '🇺🇸';
-                const isLatino = audioDesc.toLowerCase().includes('latino') || flagsStr.includes('🇲🇽');
-                const isDual = audioDesc.toLowerCase().includes('dual') || audioDesc.toLowerCase().includes('multi');
-                const epReleaseName = st.title || st.name || `Episodio S${seasonNum}E${episodeNum} [${st.quality}]`;
+    const cleanImdb = imdbCode.startsWith('tt') ? imdbCode : `tt${imdbCode}`;
+    let sortedStreams = [];
 
-                return `
-                  <button class="cinema-ep-stream-btn" data-action="play-ep-stream" data-ep-idx="${epIdx}" data-stream-idx="${stIdx}" title="Reproducir en ${st.quality} (${st.size}) - ${audioDesc}">
-                    <div class="cinema-ep-stream-btn-inner">
-                      <div class="cinema-ep-stream-meta-row">
-                        <span class="cinema-ep-q-tag ${qClass}">${st.quality}</span>
-                        <span class="cinema-ep-size-tag">💾 ${st.size}</span>
-                        <span class="cinema-ep-seeds-tag">⚡ ${st.seeds} semillas</span>
-                        <span class="cinema-ep-lang-tag ${isLatino ? 'is-latino' : (isDual ? 'is-dual' : '')}"><span class="cinema-flags-icon">${flagsStr}</span> ${audioDesc}</span>
-                      </div>
-                      <div class="cinema-torrent-filename" title="Nombre exacto del archivo torrent (para concordar con subtítulos)">
-                        <span class="cinema-torrent-fn-icon">📁</span>
-                        <span class="cinema-torrent-fn-text">${epReleaseName}</span>
-                      </div>
-                    </div>
-                    <span class="cinema-ep-play-text">▶ REPRODUCIR</span>
-                  </button>
-                `;
-              }).join('')}
-            </div>
-          `;
-          blockEl.querySelectorAll('[data-action="play-ep-stream"]').forEach(btn => {
-            btn.onclick = (e) => {
-              e.stopPropagation();
-              const sIdx = parseInt(btn.dataset.streamIdx, 10);
-              const stream = sortedStreams[sIdx];
-              this.playEpisode(show, episode, stream);
-            };
-          });
-        }
-      } else {
-        if (blockEl) {
-          blockEl.innerHTML = `
-            <div style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:8px;">
-              <span>No se encontraron fuentes digitales verificadas actualmente.</span>
-            </div>
-          `;
+    // 1. Consulta directa a Torrentio desde el cliente (inmediata, rápida y con CORS habilitado)
+    try {
+      const directUrl = `https://torrentio.strem.fun/stream/series/${cleanImdb}:${seasonNum}:${episodeNum}.json`;
+      const directPromise = fetch(directUrl);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4500));
+      const directResp = await Promise.race([directPromise, timeoutPromise]);
+      if (directResp && directResp.ok) {
+        const directData = await directResp.json();
+        if (directData && directData.streams && directData.streams.length > 0) {
+          sortedStreams = this.processAndFilterStreams(directData.streams, [], `Episodio S${seasonNum}E${episodeNum}`);
         }
       }
-    } catch (e) {
-      console.error('Error al cargar streams del episodio:', e);
+    } catch (errDirect) {
+      console.warn('Consulta directa Torrentio no disponible, probando backend...', errDirect);
+    }
+
+    // 2. Si la consulta directa no arrojó fuentes, consultar endpoint del servidor
+    if (!sortedStreams || sortedStreams.length === 0) {
+      try {
+        const resp = await fetch(`/api/cinema/series/episode_streams?imdb=${encodeURIComponent(imdbCode)}&season=${seasonNum}&episode=${episodeNum}`);
+        const data = await resp.json();
+        if (data && data.ok && data.streams && data.streams.length > 0) {
+          sortedStreams = this.processAndFilterStreams(data.streams, [], `Episodio S${seasonNum}E${episodeNum}`);
+        }
+      } catch (e) {
+        console.error('Error al cargar streams del episodio desde backend:', e);
+      }
+    }
+
+    if (sortedStreams && sortedStreams.length > 0) {
+      episode.streams = sortedStreams;
       if (blockEl) {
-        blockEl.innerHTML = '<div style="font-size:0.75rem; color:#ef4444;">Error de red al consultar calidades.</div>';
+        blockEl.innerHTML = `
+          <div class="cinema-ep-streams-header">
+            <span>🎬 CALIDADES DISPONIBLES (${sortedStreams.length}):</span>
+          </div>
+          <div class="cinema-ep-streams-list">
+            ${sortedStreams.map((st, stIdx) => {
+              const qClass = (st.quality === '4K') ? 'q-4k' : ((st.quality === '1080p') ? 'q-1080p' : ((st.quality === '480p') ? 'q-480p' : 'q-720p'));
+              const audioDesc = st.audio || 'Audio Original';
+              const flagsStr = (st.flags && st.flags.length > 0) ? st.flags.slice(0, 4).join(' ') : '🇺🇸';
+              const isLatino = audioDesc.toLowerCase().includes('latino') || flagsStr.includes('🇲🇽');
+              const isDual = audioDesc.toLowerCase().includes('dual') || audioDesc.toLowerCase().includes('multi');
+              const epReleaseName = st.title || st.name || `Episodio S${seasonNum}E${episodeNum} [${st.quality}]`;
+
+              return `
+                <button class="cinema-ep-stream-btn" data-action="play-ep-stream" data-ep-idx="${epIdx}" data-stream-idx="${stIdx}" title="Reproducir en ${st.quality} (${st.size}) - ${audioDesc}">
+                  <div class="cinema-ep-stream-btn-inner">
+                    <div class="cinema-ep-stream-meta-row">
+                      <span class="cinema-ep-q-tag ${qClass}">${st.quality}</span>
+                      <span class="cinema-ep-size-tag">💾 ${st.size}</span>
+                      <span class="cinema-ep-seeds-tag">⚡ ${st.seeds} semillas</span>
+                      <span class="cinema-ep-lang-tag ${isLatino ? 'is-latino' : (isDual ? 'is-dual' : '')}"><span class="cinema-flags-icon">${flagsStr}</span> ${audioDesc}</span>
+                    </div>
+                    <div class="cinema-torrent-filename" title="Nombre exacto del archivo torrent (para concordar con subtítulos)">
+                      <span class="cinema-torrent-fn-icon">📁</span>
+                      <span class="cinema-torrent-fn-text">${epReleaseName}</span>
+                    </div>
+                  </div>
+                  <span class="cinema-ep-play-text">▶ REPRODUCIR</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+        blockEl.querySelectorAll('[data-action="play-ep-stream"]').forEach(btn => {
+          btn.onclick = (e) => {
+            e.stopPropagation();
+            const sIdx = parseInt(btn.dataset.streamIdx, 10);
+            const stream = sortedStreams[sIdx];
+            this.playEpisode(show, episode, stream);
+          };
+        });
+      }
+    } else {
+      if (blockEl) {
+        blockEl.innerHTML = `
+          <div style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:8px;">
+            <span>No se encontraron fuentes digitales verificadas actualmente.</span>
+          </div>
+        `;
       }
     }
   }
@@ -8757,6 +8782,29 @@ class CinemaEngine {
       torrentId = best.url || best.magnet_url || best.hash;
       fileIdx = (best.fileIdx !== undefined && best.fileIdx !== null) ? best.fileIdx : null;
       stream = best;
+    }
+
+    if (!torrentId) {
+      const imdbCode = show.imdb || (episode.imdb || '');
+      if (imdbCode) {
+        const cleanImdb = imdbCode.startsWith('tt') ? imdbCode : `tt${imdbCode}`;
+        try {
+          const directUrl = `https://torrentio.strem.fun/stream/series/${cleanImdb}:${s}:${epNum}.json`;
+          const torrResp = await fetch(directUrl);
+          if (torrResp && torrResp.ok) {
+            const torrData = await torrResp.json();
+            if (torrData && torrData.streams && torrData.streams.length > 0) {
+              const sorted = this.processAndFilterStreams(torrData.streams, [], `Episodio S${s}E${epNum}`);
+              if (sorted.length > 0) {
+                episode.streams = sorted;
+                stream = sorted[0];
+                torrentId = stream.url || stream.magnet_url || stream.hash;
+                fileIdx = (stream.fileIdx !== undefined && stream.fileIdx !== null) ? stream.fileIdx : null;
+              }
+            }
+          }
+        } catch (e) {}
+      }
     }
 
     const imdbCode = show.imdb || (episode.imdb || '');

@@ -1351,14 +1351,19 @@ def fetch_torrentio_streams(imdb_id, season=None, ep=None):
         else:
             url = f'https://torrentio.strem.fun/stream/movie/tt{clean_imdb}.json'
 
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-        with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=5.0) as resp:
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*'
+        })
+        with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=12.0) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             raw_streams = data.get('streams', [])
             processed = process_and_filter_streams(raw_streams)
-            CINEMA_CACHE[cache_key] = {'data': processed, 'timestamp': now}
+            if processed:
+                CINEMA_CACHE[cache_key] = {'data': processed, 'timestamp': now}
             return processed
-    except Exception:
+    except Exception as e:
+        log_install(f"⚠️ [Torrentio] Error en streams {clean_imdb} (S{season}E{ep}): {str(e)}")
         return []
 
 YTS_MIRRORS = ['https://yts.lt', 'https://yts.ag', 'https://yts.am', 'https://yts.gg', 'https://yts.mx']
