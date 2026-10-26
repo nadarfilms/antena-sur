@@ -35,7 +35,7 @@ jobs:
         cd android
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.4.9.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +53,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v1.4.9.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.4.8
+    - name: Publicar Release v1.4.9
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.8.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.4.8"
-        name: "Antena Sur Android TV & Mobile v1.4.8 - Corrección Gráfica Temporadas y Reproducción Directa"
-        body: "Versión 1.4.8: Corrección visual completa de la barra de temporadas en series (Temporada 1 seleccionada por defecto, resolución de doble marcado, padding anti-recorte de bordes izquierdos), e inicio de reproducción instantáneo y continuo en películas y series sin bloqueos de carga de semillas ni servidores adicionales."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.4.9.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v1.4.9"
+        name: "Antena Sur Android TV & Mobile v1.4.9 - Desbloqueo Total de Reproductor sin Restricción Sandbox"
+        body: "Versión 1.4.9: Eliminación definitiva del atributo sandbox en el contenedor de reproducción para permitir la carga y reproducción continua de video en alta definición sin bloqueos de 'Playback blocked', manteniendo la protección nativa anti-anuncios en Android."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

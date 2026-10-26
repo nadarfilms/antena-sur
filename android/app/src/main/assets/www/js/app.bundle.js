@@ -10361,6 +10361,9 @@ class CinemaEngine {
     }
 
     if (this.dom.playerIframe) {
+      this.dom.playerIframe.removeAttribute('sandbox');
+      this.dom.playerIframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+      this.dom.playerIframe.setAttribute('allowfullscreen', 'true');
       this.dom.playerIframe.classList.remove('is-hidden');
       this.dom.playerIframe.style.display = 'block';
       this.dom.playerIframe.src = streamUrl;
