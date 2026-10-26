@@ -191,11 +191,15 @@ def start_torrent_service():
     except Exception as e:
         print(f"⚠️ [Torrent Engine] Error al iniciar servicio torrent: {e}")
 
+TORRENT_LOCK = threading.Lock()
+
 def ensure_torrent_service():
     global TORRENT_SERVICE_PROC
     if is_port_available(8088):
-        print("🔄 [Torrent Engine] Reactivando microservicio en puerto 8088...")
-        start_torrent_service()
+        with TORRENT_LOCK:
+            if is_port_available(8088):
+                print("🔄 [Torrent Engine] Reactivando microservicio en puerto 8088...")
+                start_torrent_service()
 
 def stop_torrent_service():
     global TORRENT_SERVICE_PROC
@@ -2601,8 +2605,8 @@ def run_server(base_port=8080):
 
     threading.Thread(target=background_initial_sync, daemon=True).start()
 
-    # Iniciar microservicio nativo de torrents WebTorrent en segundo plano
-    start_torrent_service()
+    # Iniciar microservicio nativo de torrents WebTorrent en segundo plano sin demorar arranque HTTP
+    threading.Thread(target=start_torrent_service, daemon=True).start()
 
     try:
         httpd.serve_forever()
