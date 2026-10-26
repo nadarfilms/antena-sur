@@ -121,7 +121,6 @@ export class CinemaEngine {
       playerStatsBadge: document.getElementById('cinemaPlayerStatsBadge'),
       videoWrap: document.getElementById('cinemaPlayerVideoWrap'),
       videoElement: document.getElementById('cinemaVideoElement'),
-      playerIframe: document.getElementById('cinemaPlayerIframe'),
       loadingOverlay: document.getElementById('cinemaPlayerLoadingOverlay'),
       loadingText: document.getElementById('cinemaPlayerLoadingText'),
       loadingStats: document.getElementById('cinemaPlayerLoadingStats'),
@@ -2417,12 +2416,6 @@ export class CinemaEngine {
     this.clearSubtitles();
     this.closeAllPopovers();
 
-    if (this.dom.playerIframe) {
-      this.dom.playerIframe.src = 'about:blank';
-      this.dom.playerIframe.classList.add('is-hidden');
-      this.dom.playerIframe.style.display = 'none';
-    }
-
     if (this.dom.videoElement) {
       this.dom.videoElement.pause();
       this.dom.videoElement.src = '';
@@ -3874,87 +3867,7 @@ export class CinemaEngine {
   }
 
   /* ========================================================================
-     RESOLUCIÓN Y TRANSMISIÓN DIRECTA SEGURA (0 SERVIDORES ADICIONALES, 0 POPUPS)
-     ======================================================================== */
-
-  getDirectStreamUrl() {
-    if (!this.activeMedia) return '';
-    let imdb = this.activeMedia.imdb || '';
-    if (this.activeMedia.type === 'movie' && !imdb && this.activeMedia.parentMedia) {
-      imdb = this.activeMedia.parentMedia.imdb_code || this.activeMedia.parentMedia.imdb || '';
-    }
-    if (this.activeMedia.type === 'series' && !imdb && this.activeMedia.parentMedia) {
-      imdb = this.activeMedia.parentMedia.imdb || '';
-    }
-    if (!imdb && this.currentDetailMedia) {
-      imdb = this.currentDetailMedia.item?.imdb_code || this.currentDetailMedia.item?.imdb || '';
-    }
-
-    const isSeries = (this.activeMedia.type === 'series');
-    const s = this.activeMedia.season || 1;
-    const ep = this.activeMedia.episode || 1;
-
-    if (imdb) {
-      const cleanImdb = imdb.startsWith('tt') ? imdb : ('tt' + imdb);
-      return isSeries
-        ? `https://vidsrc.pm/embed/tv/${cleanImdb}/${s}/${ep}`
-        : `https://vidsrc.pm/embed/movie/${cleanImdb}`;
-    }
-
-    const titleParam = encodeURIComponent(this.activeMedia.showName || this.activeMedia.title || '');
-    return isSeries
-      ? `https://multiembed.mov/?video_id=${titleParam}&s=${s}&e=${ep}`
-      : `https://multiembed.mov/?video_id=${titleParam}`;
-  }
-
-  startDirectStream(title = '') {
-    const streamUrl = this.getDirectStreamUrl();
-    if (!streamUrl) {
-      this.showToast('No se encontró fuente de reproducción para este contenido', 'error');
-      return;
-    }
-
-    if (this.statusPollTimer) {
-      clearInterval(this.statusPollTimer);
-      this.statusPollTimer = null;
-    }
-
-    if (this.dom.videoElement) {
-      this.dom.videoElement.pause();
-      this.dom.videoElement.style.display = 'none';
-    }
-
-    if (this.dom.playerIframe) {
-      this.dom.playerIframe.removeAttribute('sandbox');
-      this.dom.playerIframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
-      this.dom.playerIframe.setAttribute('allowfullscreen', 'true');
-      this.dom.playerIframe.classList.remove('is-hidden');
-      this.dom.playerIframe.style.display = 'block';
-      this.dom.playerIframe.src = streamUrl;
-
-      if (this.dom.loadingText) {
-        this.dom.loadingText.textContent = `Reproduciendo "${title || (this.activeMedia?.title || 'Contenido')}"...`;
-      }
-      if (this.dom.loadingStats) {
-        this.dom.loadingStats.textContent = '⚡ Conectando transmisión de alta velocidad...';
-      }
-
-      this.dom.playerIframe.onload = () => {
-        setTimeout(() => {
-          if (this.dom.loadingOverlay) this.dom.loadingOverlay.classList.add('is-hidden');
-          if (this.dom.playerStatusBadge) {
-            this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> EN VIVO DIRECTO';
-          }
-          if (this.dom.playerStatsBadge) {
-            this.dom.playerStatsBadge.textContent = '⚡ Conexión Estable';
-          }
-        }, 1200);
-      };
-    }
-  }
-
-  /* ========================================================================
-     INICIO DE REPRODUCCIÓN TORRENT P2P
+     INICIO DE REPRODUCCIÓN TORRENT P2P NATIVA (1 CLIC DIRECTO, ESTILO STREMIO)
      ======================================================================== */
 
   startTorrentPlayback(title, torrentId, fileIdx = null) {
@@ -3995,21 +3908,10 @@ export class CinemaEngine {
       this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> CONECTANDO...';
     }
     if (this.dom.playerStatsBadge) {
-      this.dom.playerStatsBadge.textContent = '⚡ Conectando reproducción...';
+      this.dom.playerStatsBadge.textContent = '⚡ Conectando enjambre P2P...';
     }
     if (this.dom.ctrlStreamTag) {
       this.dom.ctrlStreamTag.textContent = title;
-    }
-
-    // Detectar si estamos en la aplicación Android (APK autónomo en Smart TV o móvil sin daemon Node.js)
-    const isAndroidApp = (typeof window.AndroidNative !== 'undefined') ||
-                         (window.location.hostname === 'appassets.androidplatform.net') ||
-                         (navigator.userAgent && (navigator.userAgent.includes('wv') || navigator.userAgent.includes('AntenaSurTV')));
-
-    if (isAndroidApp) {
-      console.log('[Cinema Player] Entorno Android APK detectado. Iniciando reproducción directa inmediata.');
-      this.startDirectStream(title);
-      return;
     }
 
     const video = this.dom.videoElement;
@@ -4034,7 +3936,7 @@ export class CinemaEngine {
     let totalPollSeconds = 0;
     let failoverTriggered = false;
     let currentDownloadedBytes = 0;
-    const INITIAL_BUFFER_TARGET_BYTES = 8 * 1024 * 1024; // 8 MB de buffer inicial sólido para reproducción fluida sin cortes
+    const INITIAL_BUFFER_TARGET_BYTES = 2 * 1024 * 1024; // 2 MB de buffer inicial sólido para reproducción fluida sin cortes
 
     // Función auxiliar para calcular segundos de video listos por delante en el buffer del navegador
     const getBufferedAhead = () => {
@@ -4142,8 +4044,8 @@ export class CinemaEngine {
     const attemptPlaybackWithBuffer = () => {
       if (playbackStarted) return;
       const bufAhead = getBufferedAhead();
-      // Iniciar cuando el buffer descargado alcance 8MB O tengamos >= 5 segundos decodificados en el buffer
-      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 5.0 || totalPollSeconds >= 15) {
+      // Iniciar cuando el buffer descargado alcance 2MB O tengamos >= 2.5 segundos decodificados en el buffer
+      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 2.5 || totalPollSeconds >= 10) {
         onReadyToPlay();
       }
     };
@@ -4151,7 +4053,7 @@ export class CinemaEngine {
     video.onloadeddata = () => attemptPlaybackWithBuffer();
     video.oncanplay = () => attemptPlaybackWithBuffer();
     video.oncanplaythrough = () => {
-      if (!playbackStarted && (currentDownloadedBytes >= 4 * 1024 * 1024 || totalPollSeconds >= 8)) {
+      if (!playbackStarted && (currentDownloadedBytes >= 1.5 * 1024 * 1024 || totalPollSeconds >= 6)) {
         onReadyToPlay();
       }
     };
@@ -4172,10 +4074,10 @@ export class CinemaEngine {
     };
 
     video.onerror = (e) => {
-      console.warn('Error en stream local de torrent. Conectando reproducción directa...', e);
+      console.warn('Error en stream torrent. Probando siguiente fuente...', e);
       if (!playbackStarted && !failoverTriggered) {
         failoverTriggered = true;
-        this.startDirectStream(title);
+        this.tryNextStreamFallback('error en reproducción del stream actual');
       }
     };
 
@@ -4228,12 +4130,12 @@ export class CinemaEngine {
         this.probeAudioTracks(torrentId, fileIdx);
       }
 
-      // Si tras 3 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
-      // conectar reproducción directa transparente
-      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 3) {
+      // Si tras 12 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
+      // failover automático a la siguiente opción torrent
+      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 12) {
         failoverTriggered = true;
-        console.log('[Cinema Player] Sin semillas locales activas tras 3s. Conectando reproducción directa...');
-        this.startDirectStream(title);
+        console.log('[Cinema Player] Sin semillas activas tras 12s. Probando siguiente opción torrent...');
+        this.tryNextStreamFallback('sin semillas activas tras 12s');
         return;
       }
 

@@ -2,7 +2,7 @@ services:
   - type: web
     name: antena-sur
     runtime: python
-    buildCommand: ""
+    buildCommand: "bash scripts/render-build.sh"
     startCommand: python3 server.py
     envVars:
       - key: PYTHON_VERSION

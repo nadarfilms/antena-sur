@@ -69,8 +69,11 @@ def start_torrent_service():
         print("📡 [Torrent Engine] El puerto 8088 ya está activo (microservicio listo).")
         return
 
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_node = os.path.join(script_dir, 'node_bin', 'bin', 'node')
+
     node_bin = None
-    for c in ['/usr/local/bin/node', '/opt/homebrew/bin/node', '/usr/bin/node']:
+    for c in ['/usr/local/bin/node', '/opt/homebrew/bin/node', '/usr/bin/node', local_node]:
         if os.path.isfile(c) and os.access(c, os.X_OK):
             node_bin = c
             break
@@ -82,14 +85,14 @@ def start_torrent_service():
         print("⚠️ [Torrent Engine] Node.js no encontrado en el sistema.")
         return
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
     torrent_script = os.path.join(script_dir, 'torrent-service.js')
     if not os.path.isfile(torrent_script):
         print(f"⚠️ [Torrent Engine] {torrent_script} no encontrado.")
         return
 
     env = os.environ.copy()
-    env['PATH'] = '/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:' + env.get('PATH', '')
+    node_bin_dir = os.path.join(script_dir, 'node_bin', 'bin')
+    env['PATH'] = f"{node_bin_dir}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:" + env.get('PATH', '')
     try:
         TORRENT_SERVICE_PROC = subprocess.Popen(
             [node_bin, 'torrent-service.js'],
@@ -1988,7 +1991,8 @@ class AntenaSurHandler(SimpleHTTPRequestHandler):
 
             try:
                 req = urllib.request.Request(target_url, headers=req_headers)
-                with urllib.request.urlopen(req, timeout=60) as resp:
+                t_out = None if '/stream' in self.path else 25
+                with urllib.request.urlopen(req, timeout=t_out) as resp:
                     status_code = resp.status
                     self.send_response(status_code)
                     for h in ['Content-Type', 'Content-Range', 'Content-Length', 'Accept-Ranges']:

@@ -488,34 +488,77 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private static final String CLOUD_BACKEND_URL = "https://antena-sur.onrender.com";
+
     private WebResourceResponse handleTorrentApi(WebResourceRequest request) {
+        HttpURLConnection conn = null;
         try {
             Uri uri = request.getUrl();
             String path = uri.getPath() != null ? uri.getPath() : "";
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Access-Control-Allow-Origin", "*");
-            headers.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
-            headers.put("Access-Control-Allow-Headers", "*");
+            String query = uri.getQuery();
+            String fullPath = path + (query != null && !query.isEmpty() ? ("?" + query) : "");
+            String targetUrl = CLOUD_BACKEND_URL + fullPath;
 
-            if (path.contains("/api/torrent/status")) {
-                String dummy = "{\"ok\":true,\"active\":false,\"numPeers\":0,\"downloadSpeed\":0,\"downloaded\":0,\"downloadedMB\":\"0.0\",\"totalMB\":\"0.0\"}";
-                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+            URL url = new URL(targetUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            String method = request.getMethod() != null ? request.getMethod() : "GET";
+            conn.setRequestMethod(method);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AntenaSurTV/1.5.0");
+            conn.setRequestProperty("Accept", "*/*");
+
+            // Pasar cabecera Range para streaming continuo HTTP 206 y salto en el tiempo
+            Map<String, String> reqHeaders = request.getRequestHeaders();
+            if (reqHeaders != null) {
+                for (Map.Entry<String, String> entry : reqHeaders.entrySet()) {
+                    if (entry.getKey().equalsIgnoreCase("Range")) {
+                        conn.setRequestProperty("Range", entry.getValue());
+                        break;
+                    }
+                }
             }
-            if (path.contains("/api/torrent/stop")) {
-                String dummy = "{\"ok\":true}";
-                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+
+            conn.setConnectTimeout(15000);
+            if (path.contains("/stream")) {
+                conn.setReadTimeout(0); // Timeout infinito para streaming continuo de video sin desconexión
+            } else {
+                conn.setReadTimeout(15000);
             }
-            if (path.contains("/api/torrent/media_info")) {
-                String dummy = "{\"ok\":true,\"streams\":[]}";
-                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(dummy.getBytes(StandardCharsets.UTF_8)));
+
+            int responseCode = conn.getResponseCode();
+            String mimeType = conn.getContentType();
+            if (mimeType == null || mimeType.isEmpty()) {
+                if (path.contains("/status") || path.contains("/media_info")) {
+                    mimeType = "application/json";
+                } else {
+                    mimeType = "video/mp4";
+                }
             }
-            if (path.contains("/api/torrent/stream")) {
-                return new WebResourceResponse("text/plain", "UTF-8", 204, "No Content", headers, new ByteArrayInputStream(new byte[0]));
+            if (mimeType.contains(";")) {
+                mimeType = mimeType.split(";")[0].trim();
             }
+
+            Map<String, String> responseHeaders = new HashMap<>();
+            responseHeaders.put("Access-Control-Allow-Origin", "*");
+            responseHeaders.put("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+            responseHeaders.put("Access-Control-Allow-Headers", "Range, Accept-Ranges, Content-Range, Content-Type");
+            responseHeaders.put("Access-Control-Expose-Headers", "Content-Length, Content-Range, Accept-Ranges");
+
+            for (String key : conn.getHeaderFields().keySet()) {
+                if (key != null && (key.equalsIgnoreCase("Content-Range") || key.equalsIgnoreCase("Content-Length") || key.equalsIgnoreCase("Accept-Ranges"))) {
+                    responseHeaders.put(key, conn.getHeaderField(key));
+                }
+            }
+
+            InputStream in = (responseCode >= 200 && responseCode < 400) ? conn.getInputStream() : conn.getErrorStream();
+            return new WebResourceResponse(mimeType, "UTF-8", responseCode, conn.getResponseMessage() != null ? conn.getResponseMessage() : "OK", responseHeaders, in);
+
         } catch (Throwable t) {
-            android.util.Log.e("AntenaSurTV", "Error en handleTorrentApi: " + t.getMessage());
+            android.util.Log.e("AntenaSurTV", "Error en handleTorrentApi proxy: " + t.getMessage());
+            Map<String, String> h = new HashMap<>();
+            h.put("Access-Control-Allow-Origin", "*");
+            String fallbackJson = "{\"active\":false,\"peers\":0,\"downloadSpeed\":0,\"downloadedMB\":\"0.0\",\"totalMB\":\"0.0\"}";
+            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", h, new ByteArrayInputStream(fallbackJson.getBytes(StandardCharsets.UTF_8)));
         }
-        return null;
     }
 
     private WebResourceResponse handleCinemaApi(WebResourceRequest request) {
