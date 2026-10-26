@@ -18,6 +18,8 @@ import threading
 import subprocess
 import atexit
 import hashlib
+import shutil
+import traceback
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 # Desactivar verificación estricta de certificados SSL en Python para evitar bloqueos en macOS
