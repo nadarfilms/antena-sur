@@ -549,8 +549,14 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            InputStream in = (responseCode >= 200 && responseCode < 400) ? conn.getInputStream() : conn.getErrorStream();
-            return new WebResourceResponse(mimeType, "UTF-8", responseCode, conn.getResponseMessage() != null ? conn.getResponseMessage() : "OK", responseHeaders, in);
+            InputStream in;
+            if ("HEAD".equalsIgnoreCase(method)) {
+                in = new ByteArrayInputStream(new byte[0]);
+            } else {
+                in = (responseCode >= 200 && responseCode < 400) ? conn.getInputStream() : conn.getErrorStream();
+            }
+            String encoding = (mimeType != null && mimeType.contains("json")) ? "UTF-8" : null;
+            return new WebResourceResponse(mimeType, encoding, responseCode, conn.getResponseMessage() != null ? conn.getResponseMessage() : "OK", responseHeaders, in);
 
         } catch (Throwable t) {
             android.util.Log.e("AntenaSurTV", "Error en handleTorrentApi proxy: " + t.getMessage());
