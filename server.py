@@ -63,20 +63,8 @@ def get_yt_embed_url(yt_url):
 # ==============================================================================
 TORRENT_SERVICE_PROC = None
 
-def get_or_install_node():
+def install_local_node_bin():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    local_node = os.path.join(script_dir, 'node_bin', 'bin', 'node')
-    if os.path.isfile(local_node) and os.access(local_node, os.X_OK):
-        return local_node
-
-    for c in ['/usr/local/bin/node', '/opt/homebrew/bin/node', '/usr/bin/node']:
-        if os.path.isfile(c) and os.access(c, os.X_OK):
-            return c
-    system_node = shutil.which('node')
-    if system_node:
-        return system_node
-
-    # Descargar Node.js Linux x64 si estamos en entorno Render/Linux
     import platform
     system = platform.system().lower()
     machine = platform.machine().lower()
@@ -88,7 +76,7 @@ def get_or_install_node():
         node_url = f'https://nodejs.org/dist/{node_ver}/{tar_name}'
         node_bin_dir = os.path.join(script_dir, 'node_bin')
         tar_dest = os.path.join(script_dir, tar_name)
-        print(f"⬇️ [Node Installer] Descargando {node_url} para Render...")
+        print(f"⬇️ [Node Installer] Descargando Node.js completo desde {node_url}...")
         try:
             req = urllib.request.Request(node_url, headers={'User-Agent': 'Mozilla/5.0'})
             with urllib.request.urlopen(req, timeout=60) as resp, open(tar_dest, 'wb') as out_f:
@@ -113,35 +101,68 @@ def get_or_install_node():
                 npm_exec = os.path.join(node_bin_dir, 'bin', 'npm')
                 if os.path.isfile(npm_exec):
                     os.chmod(npm_exec, 0o755)
-                print(f"✅ [Node Installer] Node.js instalado con éxito en: {node_exec}")
+                print(f"✅ [Node Installer] Node.js y NPM instalados con éxito en: {node_bin_dir}")
                 return node_exec
         except Exception as e:
             print(f"❌ [Node Installer] Error descargando/instalando Node: {e}")
+    return None
 
+def get_or_install_node():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    local_node = os.path.join(script_dir, 'node_bin', 'bin', 'node')
+    if os.path.isfile(local_node) and os.access(local_node, os.X_OK):
+        return local_node
+
+    for c in ['/usr/local/bin/node', '/opt/homebrew/bin/node', '/usr/bin/node']:
+        if os.path.isfile(c) and os.access(c, os.X_OK):
+            return c
+    system_node = shutil.which('node')
+    if system_node:
+        return system_node
+
+    return install_local_node_bin()
+
+def find_npm(node_bin):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(os.path.dirname(node_bin), 'npm') if node_bin else None,
+        os.path.join(script_dir, 'node_bin', 'bin', 'npm'),
+        '/usr/local/bin/npm',
+        '/usr/bin/npm',
+        shutil.which('npm')
+    ]
+    for c in candidates:
+        if c and os.path.isfile(c) and os.access(c, os.X_OK):
+            return c
     return None
 
 def ensure_node_dependencies(node_bin):
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    webtorrent_dir = os.path.join(script_dir, 'node_modules', 'webtorrent')
-    if os.path.isdir(webtorrent_dir):
+    webtorrent_index = os.path.join(script_dir, 'node_modules', 'webtorrent', 'index.js')
+    if os.path.isfile(webtorrent_index):
         return True
 
     print("📦 [Node Modules] Instalando dependencias requeridas (webtorrent, ffmpeg-static)...")
-    npm_bin = os.path.join(os.path.dirname(node_bin), 'npm')
-    if not os.path.isfile(npm_bin):
-        npm_bin = shutil.which('npm')
+    npm_bin = find_npm(node_bin)
 
     if not npm_bin:
-        print("❌ [Node Modules] npm no encontrado.")
+        print("📦 [Node Modules] npm no encontrado. Descargando distribución de Node.js con NPM incluido...")
+        install_local_node_bin()
+        npm_bin = os.path.join(script_dir, 'node_bin', 'bin', 'npm')
+
+    if not (npm_bin and os.path.isfile(npm_bin)):
+        print("❌ [Node Modules] npm sigue sin estar disponible.")
         return False
 
     env = os.environ.copy()
-    node_bin_dir = os.path.dirname(node_bin)
-    env['PATH'] = f"{node_bin_dir}:/usr/local/bin:/usr/bin:/bin:" + env.get('PATH', '')
+    node_bin_dir = os.path.dirname(node_bin) if node_bin else os.path.join(script_dir, 'node_bin', 'bin')
+    env['PATH'] = f"{node_bin_dir}:{os.path.dirname(npm_bin)}:/usr/local/bin:/usr/bin:/bin:" + env.get('PATH', '')
     try:
         res = subprocess.run([npm_bin, 'install', '--omit=dev'], cwd=script_dir, env=env, capture_output=True, text=True, timeout=120)
-        print(f"✅ [Node Modules] npm install completado (código {res.returncode}).")
-        return res.returncode == 0
+        print(f"✅ [Node Modules] npm install completado (código {res.returncode}): {res.stdout[-300:] if res.stdout else ''}")
+        if res.returncode != 0:
+            print(f"⚠️ [Node Modules] npm install stderr: {res.stderr}")
+        return os.path.isfile(webtorrent_index)
     except Exception as e:
         print(f"❌ [Node Modules] Error al ejecutar npm install: {e}")
         return False
