@@ -140,67 +140,80 @@ def find_npm(node_bin):
         shutil.which('npm')
     ]
     for c in candidates:
-        if c and os.path.isfile(c) and os.access(c, os.X_OK):
-            return c
+        try:
+            if c and os.path.isfile(c) and os.access(c, os.X_OK):
+                return c
+        except Exception as e:
+            log_install(f"⚠️ Error verificando candidato npm {c}: {e}")
     return None
 
 def ensure_node_dependencies(node_bin):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    webtorrent_index = os.path.join(script_dir, 'node_modules', 'webtorrent', 'index.js')
-    if os.path.isfile(webtorrent_index):
-        return True
-
-    log_install("📦 [Node Modules] Instalando dependencias requeridas (webtorrent, ffmpeg-static)...")
-    npm_bin = find_npm(node_bin)
-
-    if not npm_bin:
-        log_install("📦 [Node Modules] npm no encontrado. Descargando distribución de Node.js con NPM incluido...")
-        install_local_node_bin()
-        npm_bin = os.path.join(script_dir, 'node_bin', 'bin', 'npm')
-
-    if not (npm_bin and os.path.isfile(npm_bin)):
-        log_install("❌ [Node Modules] npm sigue sin estar disponible.")
-        return False
-
-    env = os.environ.copy()
-    node_bin_dir = os.path.dirname(node_bin) if node_bin else os.path.join(script_dir, 'node_bin', 'bin')
-    env['PATH'] = f"{node_bin_dir}:{os.path.dirname(npm_bin)}:/usr/local/bin:/usr/bin:/bin:" + env.get('PATH', '')
     try:
-        log_install(f"🚀 Ejecutando {npm_bin} install --omit=dev...")
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        webtorrent_index = os.path.join(script_dir, 'node_modules', 'webtorrent', 'index.js')
+        if os.path.isfile(webtorrent_index):
+            return True
+
+        log_install("📦 [Node Modules] Verificando npm para instalar dependencias...")
+        npm_bin = find_npm(node_bin)
+        log_install(f"🔍 [Node Modules] npm_bin detectado: {npm_bin}")
+
+        if not npm_bin:
+            log_install("📦 [Node Modules] npm no encontrado. Descargando distribución completa de Node.js con NPM...")
+            install_local_node_bin()
+            npm_bin = os.path.join(script_dir, 'node_bin', 'bin', 'npm')
+            log_install(f"🔍 [Node Modules] npm tras descarga: {npm_bin} (existe: {os.path.isfile(npm_bin) if npm_bin else False})")
+
+        if not (npm_bin and os.path.isfile(npm_bin)):
+            log_install("❌ [Node Modules] npm sigue sin estar disponible tras intento de instalación.")
+            return False
+
+        env = os.environ.copy()
+        node_bin_dir = os.path.dirname(node_bin) if node_bin else os.path.join(script_dir, 'node_bin', 'bin')
+        env['PATH'] = f"{node_bin_dir}:{os.path.dirname(npm_bin)}:/usr/local/bin:/usr/bin:/bin:" + env.get('PATH', '')
+        log_install(f"🚀 Ejecutando {npm_bin} install --omit=dev en {script_dir}...")
         res = subprocess.run([npm_bin, 'install', '--omit=dev'], cwd=script_dir, env=env, capture_output=True, text=True, timeout=120)
-        log_install(f"✅ npm install exit code: {res.returncode}")
+        log_install(f"✅ npm install código: {res.returncode}")
         if res.returncode != 0 and res.stderr:
             log_install(f"⚠️ npm install stderr: {res.stderr[:200]}")
-        return os.path.isfile(webtorrent_index)
+        has_index = os.path.isfile(webtorrent_index)
+        log_install(f"📦 webtorrent/index.js existe: {has_index}")
+        return has_index
     except Exception as e:
-        log_install(f"❌ [Node Modules] Error al ejecutar npm install: {e}")
+        import traceback
+        log_install(f"❌ [Node Modules] Excepción en ensure_node_dependencies: {traceback.format_exc()}")
         return False
 
 def start_torrent_service():
     global TORRENT_SERVICE_PROC
-    if not is_port_available(8088):
-        print("📡 [Torrent Engine] El puerto 8088 ya está activo (microservicio listo).")
-        return
-
-    node_bin = get_or_install_node()
-    if not node_bin:
-        print("⚠️ [Torrent Engine] No se pudo obtener o instalar Node.js en el sistema.")
-        return
-
-    ensure_node_dependencies(node_bin)
-
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    torrent_script = os.path.join(script_dir, 'torrent-service.js')
-    if not os.path.isfile(torrent_script):
-        print(f"⚠️ [Torrent Engine] {torrent_script} no encontrado.")
-        return
-
-    env = os.environ.copy()
-    node_bin_dir = os.path.dirname(node_bin)
-    env['PATH'] = f"{node_bin_dir}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:" + env.get('PATH', '')
-
-    log_path = os.path.join(script_dir, 'torrent_service.log')
     try:
+        if not is_port_available(8088):
+            log_install("📡 [Torrent Engine] Puerto 8088 ya activo.")
+            return
+
+        node_bin = get_or_install_node()
+        log_install(f"🔍 [Torrent Engine] node_bin: {node_bin}")
+        if not node_bin:
+            log_install("⚠️ [Torrent Engine] No se pudo obtener o instalar Node.js.")
+            return
+
+        deps_ok = ensure_node_dependencies(node_bin)
+        log_install(f"🔍 [Torrent Engine] deps_ok: {deps_ok}")
+        if not deps_ok:
+            log_install("❌ [Torrent Engine] Dependencias Node no pudieron ser instaladas.")
+            return
+
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        torrent_script = os.path.join(script_dir, 'torrent-service.js')
+        if not os.path.isfile(torrent_script):
+            log_install(f"⚠️ [Torrent Engine] {torrent_script} no encontrado.")
+            return
+
+        env = os.environ.copy()
+        node_bin_dir = os.path.dirname(node_bin)
+        env['PATH'] = f"{node_bin_dir}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:" + env.get('PATH', '')
+
+        log_path = os.path.join(script_dir, 'torrent_service.log')
         log_f = open(log_path, 'a', encoding='utf-8')
         log_f.write(f"\n--- INICIO SERVICIO TORRENT ({time.strftime('%Y-%m-%d %H:%M:%S')}) ---\n")
         log_f.flush()
@@ -211,15 +224,16 @@ def start_torrent_service():
             stdout=log_f,
             stderr=subprocess.STDOUT
         )
-        print("🚀 [Torrent Engine] Microservicio WebTorrent Node.js lanzado en segundo plano.")
+        log_install(f"🚀 [Torrent Engine] Popen exitoso (PID: {TORRENT_SERVICE_PROC.pid}).")
 
-        for _ in range(30):
+        for _ in range(40):
             time.sleep(0.2)
             if not is_port_available(8088):
-                print("📡 [Torrent Engine] Microservicio listo y respondiendo en puerto 8088.")
+                log_install("📡 [Torrent Engine] Microservicio activo y respondiendo en puerto 8088.")
                 break
     except Exception as e:
-        print(f"⚠️ [Torrent Engine] Error al iniciar servicio torrent: {e}")
+        import traceback
+        log_install(f"❌ [Torrent Engine] Excepción en start_torrent_service: {traceback.format_exc()}")
 
 TORRENT_LOCK = threading.Lock()
 TORRENT_STARTING = False
