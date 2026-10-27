@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/player.css">
-  <link rel="stylesheet" href="./css/movies.css?v=2.0.5">
+  <link rel="stylesheet" href="./css/movies.css?v=2.0.6">
 
   <!-- Gestor visual de errores para diagnóstico en Smart TV / Android TV -->
   <script>
@@ -714,14 +714,7 @@
         </button>
         <span class="cinema-detail-breadcrumb" id="cinemaDetailBreadcrumb">DETALLES</span>
       </div>
-      <div class="cinema-detail-topbar-right">
-        <button class="cinema-btn-play-action cinema-detail-hero-play" id="cinemaDetailHeroPlayBtn" style="display:none;" title="Reproducir inmediatamente">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          REPRODUCIR
-        </button>
-      </div>
+      <div class="cinema-detail-topbar-right"></div>
     </header>
 
     <!-- Contenido Scrollable Completo -->
@@ -765,18 +758,6 @@
               <p class="cinema-detail-synopsis-text" id="cinemaDetailSynopsis">Cargando sinopsis...</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Banner de Último Capítulo Subido (Exclusivo Series) -->
-      <div class="cinema-detail-latest-ep-banner is-hidden" id="cinemaDetailLatestEpBanner" style="display: none !important;">
-        <div class="cinema-latest-ep-info">
-          <span class="cinema-latest-ep-tag">⚡ ÚLTIMO CAPÍTULO DISPONIBLE</span>
-          <h3 class="cinema-latest-ep-title" id="cinemaLatestEpTitle">Cargando último episodio...</h3>
-          <p class="cinema-latest-ep-desc" id="cinemaLatestEpDesc"></p>
-        </div>
-        <div class="cinema-latest-ep-action" id="cinemaLatestEpAction">
-          <!-- Botón de Reproducción rápida -->
         </div>
       </div>
 
@@ -924,10 +905,7 @@
 
         <div class="cinema-popover-body">
           <div class="cinema-audio-options-list" id="cinemaAudioOptionsList">
-            <!-- Rellenado dinámico con las pistas detectadas o información de la fuente -->
-          </div>
-          <div class="cinema-audio-info-tip" id="cinemaAudioInfoTip">
-            ℹ️ Si la película cuenta con pistas duales integradas (Español / Inglés), puedes seleccionarlas aquí.
+            <!-- Rellenado dinámico con las pistas detectadas de la fuente torrent -->
           </div>
         </div>
       </div>
@@ -1115,6 +1093,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
-  <script src="./js/app.bundle.js?v=2.0.5"></script>
+  <script src="./js/app.bundle.js?v=2.0.6"></script>
 </body>
 </html>

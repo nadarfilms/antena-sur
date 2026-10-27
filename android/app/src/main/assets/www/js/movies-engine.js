@@ -1737,12 +1737,7 @@ export class CinemaEngine {
       });
     }
 
-    // Configurar botón rápido REPRODUCIR en la barra superior con la mejor calidad disponible (4K -> 1080p -> HD -> 480p)
-    const bestItem = items[0];
-    if (this.dom.detailHeroPlayBtn) {
-      this.dom.detailHeroPlayBtn.style.display = 'inline-flex';
-      this.dom.detailHeroPlayBtn.onclick = () => this.playMovie(movie, bestItem);
-    }
+
 
     let html = '<div class="cinema-torrents-list">';
     items.forEach((t, idx) => {
@@ -1884,50 +1879,6 @@ export class CinemaEngine {
       }
       if (fullShow.poster && this.dom.detailPoster) {
         this.dom.detailPoster.src = fullShow.poster;
-      }
-
-      // 1. Configurar Banner de Último Capítulo Subido (Exclusivo de Series)
-      const latestEp = data.latestEpisode;
-      if (latestEp && this.dom.detailLatestEpBanner) {
-        this.dom.detailLatestEpBanner.classList.remove('is-hidden');
-        this.dom.detailLatestEpBanner.style.removeProperty('display');
-
-        if (this.dom.latestEpTitle) {
-          this.dom.latestEpTitle.textContent = `Temporada ${latestEp.season} • Episodio ${latestEp.number}: ${latestEp.name}`;
-        }
-        if (this.dom.latestEpDesc) {
-          const epAir = latestEp.airdate ? `Emitido el ${latestEp.airdate} • ` : '';
-          this.dom.latestEpDesc.textContent = `${epAir}${latestEp.summary || 'Reproduce directamente el último capítulo emitido con un solo clic.'}`;
-        }
-        if (this.dom.latestEpAction) {
-          this.dom.latestEpAction.innerHTML = `
-            <button class="cinema-btn-play-action cinema-btn-play-hero" id="btnPlayLatestEpBanner" title="Reproducir último capítulo subido" tabindex="0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-              </svg>
-              REPRODUCIR ÚLTIMO CAPÍTULO
-            </button>
-          `;
-          const playLatestBtn = document.getElementById('btnPlayLatestEpBanner');
-          if (playLatestBtn) {
-            playLatestBtn.addEventListener('click', () => {
-              const stream = (latestEp.streams && latestEp.streams[0]) || null;
-              this.playEpisode(fullShow, latestEp, stream);
-            });
-          }
-        }
-
-        // También vincular el botón del topbar HUD para reproducción rápida
-        if (this.dom.detailHeroPlayBtn) {
-          this.dom.detailHeroPlayBtn.style.display = 'inline-flex';
-          this.dom.detailHeroPlayBtn.onclick = () => {
-            const stream = (latestEp.streams && latestEp.streams[0]) || null;
-            this.playEpisode(fullShow, latestEp, stream);
-          };
-        }
-      } else if (this.dom.detailLatestEpBanner) {
-        this.dom.detailLatestEpBanner.classList.add('is-hidden');
-        this.dom.detailLatestEpBanner.style.setProperty('display', 'none', 'important');
       }
 
       const seasons = data.seasons || [];
@@ -3532,71 +3483,28 @@ export class CinemaEngine {
 
     container.innerHTML = '';
 
-    const isTranscoding = this.playerState.forceTranscode;
     const streams = this.playerState.audioStreams || [];
     const selTrack = this.playerState.selectedAudioTrack;
 
-    // 1. Selector rápido de Modo Universal AAC / Directo
-    const modeCard = document.createElement('div');
-    modeCard.style.padding = '8px 10px';
-    modeCard.style.marginBottom = '8px';
-    modeCard.style.borderRadius = '6px';
-    modeCard.style.background = isTranscoding ? 'rgba(0, 229, 255, 0.12)' : 'rgba(255, 255, 255, 0.04)';
-    modeCard.style.border = isTranscoding ? '1px solid rgba(0, 229, 255, 0.4)' : '1px solid rgba(255, 255, 255, 0.08)';
-
-    modeCard.innerHTML = `
-      <div style="font-size:0.75rem; font-weight:700; color:#00e5ff; margin-bottom:4px; display:flex; align-items:center; justify-content:space-between;">
-        <span>${isTranscoding ? '🎧 Audio Universal AAC (Activo)' : '🔊 Audio Directo (Original)'}</span>
-        <span style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:${isTranscoding ? 'rgba(0,229,255,0.2)' : 'rgba(255,255,255,0.1)'}; color:${isTranscoding ? '#00e5ff' : '#cbd5e1'};">
-          ${isTranscoding ? '100% Compatible' : 'Sin procesar'}
-        </span>
-      </div>
-      <div style="font-size:0.7rem; color:#94a3b8; line-height:1.3; margin-bottom:6px;">
-        ${isTranscoding
-          ? 'Transcodificando audio en tiempo real con FFmpeg a AAC estéreo universal. Corrige falta de sonido en AC3, Atmos y DTS.'
-          : 'Reproduciendo la pista nativa del archivo. Si tu dispositivo no reproduce sonido, activa el modo Universal AAC.'}
-      </div>
-      <button class="cinema-audio-toggle-btn" id="btnToggleUniversalAudio" style="width:100%; padding:6px 8px; font-size:0.72rem; font-weight:700; border-radius:4px; border:1px solid ${isTranscoding ? 'rgba(255,255,255,0.2)' : '#00e5ff'}; background:${isTranscoding ? 'rgba(255,255,255,0.08)' : 'rgba(0,229,255,0.18)'}; color:${isTranscoding ? '#e2e8f0' : '#00e5ff'}; cursor:pointer;">
-        ${isTranscoding ? '🔄 Probar Audio Directo Original' : '⚡ Activar Audio Universal AAC'}
-      </button>
-    `;
-    container.appendChild(modeCard);
-
-    const toggleBtn = modeCard.querySelector('#btnToggleUniversalAudio');
-    if (toggleBtn) {
-      toggleBtn.onclick = (e) => {
-        e.stopPropagation();
-        this.switchAudioTrack(selTrack, !isTranscoding);
-      };
-    }
-
-    const titleLabel = document.createElement('div');
-    titleLabel.style.fontSize = '0.68rem';
-    titleLabel.style.fontWeight = '700';
-    titleLabel.style.color = '#64748b';
-    titleLabel.style.letterSpacing = '0.5px';
-    titleLabel.style.marginBottom = '6px';
-    titleLabel.textContent = 'PISTAS DE AUDIO DISPONIBLES EN EL TORRENT:';
-    container.appendChild(titleLabel);
-
-    // 2. Si se detectaron pistas individuales en el torrent mediante sondeo FFmpeg
+    // Renderizar únicamente las capas de audio que existan en la fuente del torrent
     if (streams.length > 0) {
       streams.forEach((stream, idx) => {
         const item = document.createElement('div');
         const isActive = (selTrack === stream.trackIdx) || (selTrack === null && idx === 0);
         item.className = `cinema-audio-option ${isActive ? 'is-active' : ''}`;
+        item.tabIndex = 0;
 
         const flag = stream.icon || (stream.isLatino ? '🇲🇽' : (stream.isCastellano ? '🇪🇸' : (stream.isSpanish ? '🌎' : (stream.isEnglish ? '🇺🇸' : '🌐'))));
-        const codecBadge = `<span style="font-size:0.65rem; padding:2px 5px; border-radius:3px; background:rgba(255,255,255,0.1); margin-left:6px;">${stream.codec.toUpperCase()}</span>`;
-        const displayLabel = this.translateAudioLabelToSpanish(stream.label, stream.lang, stream.icon);
+        const codecBadge = stream.codec ? `<span style="font-size:0.65rem; padding:2px 6px; border-radius:3px; background:rgba(255,255,255,0.12); font-weight:700;">${stream.codec.toUpperCase()}</span>` : '';
+        const displayLabel = this.translateAudioLabelToSpanish(stream.label, stream.lang, stream.icon) || `Pista #${idx + 1}`;
 
         item.innerHTML = `
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
             <span>${flag}</span>
-            <span>${displayLabel}</span>
+            <span style="font-weight:600;">${displayLabel}</span>
             ${codecBadge}
           </div>
-          <span>${isActive ? '✓ Activa' : ''}</span>
+          <span style="font-size:0.75rem; font-weight:700; color:#00e5ff;">${isActive ? '✓ Activa' : ''}</span>
         `;
 
         item.addEventListener('click', (e) => {
@@ -3604,11 +3512,17 @@ export class CinemaEngine {
           this.switchAudioTrack(stream.trackIdx, true);
           this.closeAllPopovers();
         });
+        item.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+          }
+        };
 
         container.appendChild(item);
       });
     } else {
-      // 3. Fallback inteligente mientras finaliza la lectura de cabeceras del contenedor
+      // Fallback de capas de audio según metadatos del torrent
       const tData = this.activeMedia?.torrentData || this.activeMedia?.streamData || {};
       const flags = tData.flags || this.activeMedia?.flags || [];
       const audioDesc = (tData.audio || this.activeMedia?.audio || '').toLowerCase();
@@ -3620,36 +3534,22 @@ export class CinemaEngine {
       if (isDual || flags.length > 1) {
         fallbackList.push({
           trackIdx: 0,
-          label: isLatino ? 'Español Latino (Pista 1)' : (isCastellano ? 'Español España (Pista 1)' : 'Español (Pista 1)'),
+          label: isLatino ? 'Español Latino (Pista #1)' : (isCastellano ? 'Español España (Pista #1)' : 'Español (Pista #1)'),
           icon: isLatino ? '🇲🇽' : (isCastellano ? '🇪🇸' : '🌎'),
-          badge: 'DUAL'
+          codec: 'AAC'
         });
         fallbackList.push({
           trackIdx: 1,
-          label: 'Inglés Original (Pista 2)',
+          label: 'Inglés Original (Pista #2)',
           icon: '🇺🇸',
-          badge: 'DUAL'
+          codec: 'AAC'
         });
-        if (flags.length > 2 || audioDesc.includes('multi')) {
-          fallbackList.push({
-            trackIdx: 2,
-            label: 'Audio Alternativo / V.O. (Pista 3)',
-            icon: '🌐',
-            badge: 'MULTI'
-          });
-        }
       } else {
         fallbackList.push({
           trackIdx: 0,
-          label: 'Audio Principal (Pista 1 - Español / V.O.)',
+          label: 'Pista #1',
           icon: isLatino ? '🇲🇽' : (isCastellano ? '🇪🇸' : (flags[0] || '🔊')),
-          badge: 'PRIMARIA'
-        });
-        fallbackList.push({
-          trackIdx: 1,
-          label: 'Audio Secundario (Pista 2 - Inglés / Doblaje)',
-          icon: '🌐',
-          badge: 'SECUNDARIA'
+          codec: 'AAC'
         });
       }
 
@@ -3657,32 +3557,31 @@ export class CinemaEngine {
         const item = document.createElement('div');
         const isActive = (selTrack === st.trackIdx) || (selTrack === null && idx === 0);
         item.className = `cinema-audio-option ${isActive ? 'is-active' : ''}`;
+        item.tabIndex = 0;
+
         item.innerHTML = `
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
             <span>${st.icon}</span>
-            <span>${st.label}</span>
-            <span style="font-size:0.65rem; padding:2px 5px; border-radius:3px; background:rgba(255,255,255,0.08); margin-left:4px;">${st.badge}</span>
+            <span style="font-weight:600;">${st.label}</span>
+            <span style="font-size:0.65rem; padding:2px 6px; border-radius:3px; background:rgba(255,255,255,0.12); font-weight:700;">${st.codec}</span>
           </div>
-          <span>${isActive ? '✓ Activa' : ''}</span>
+          <span style="font-size:0.75rem; font-weight:700; color:#00e5ff;">${isActive ? '✓ Activa' : ''}</span>
         `;
+
         item.addEventListener('click', (e) => {
           e.stopPropagation();
           this.switchAudioTrack(st.trackIdx, true);
           this.closeAllPopovers();
         });
+        item.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            item.click();
+          }
+        };
+
         container.appendChild(item);
       });
-
-      const probingNote = document.createElement('div');
-      probingNote.style.fontSize = '0.7rem';
-      probingNote.style.color = '#94a3b8';
-      probingNote.style.marginTop = '8px';
-      probingNote.style.padding = '4px 6px';
-      probingNote.style.display = 'flex';
-      probingNote.style.alignItems = 'center';
-      probingNote.style.gap = '6px';
-      probingNote.innerHTML = '<span class="cinema-pulse-dot"></span> <span>Detectando códecs exactos del torrent en segundo plano...</span>';
-      container.appendChild(probingNote);
     }
   }
 
