@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/player.css">
-  <link rel="stylesheet" href="./css/movies.css?v=2.0.3">
+  <link rel="stylesheet" href="./css/movies.css?v=2.0.5">
 
   <!-- Gestor visual de errores para diagnóstico en Smart TV / Android TV -->
   <script>
@@ -848,12 +848,11 @@
       <!-- Pantalla de Carga y Buffer con Estadísticas P2P en Tiempo Real -->
       <div class="cinema-player-loading-overlay" id="cinemaPlayerLoadingOverlay">
         <div class="cinema-player-loading-spinner"></div>
-        <h3 class="cinema-player-loading-text" id="cinemaPlayerLoadingText">Iniciando reproducción P2P...</h3>
-        <p class="cinema-player-loading-stats" id="cinemaPlayerLoadingStats">Buscando semillas públicas en la red...</p>
+        <h3 class="cinema-player-loading-text" id="cinemaPlayerLoadingText">Iniciando...</h3>
         <div class="cinema-player-progress-bar">
           <div class="cinema-player-progress-fill" id="cinemaPlayerProgressFill" style="width: 0%;"></div>
         </div>
-        <span class="cinema-player-loading-tip">🛡️ Reproductor nativo Antena Sur • 0 Publicidad • 1 Clic Directo</span>
+        <p class="cinema-player-loading-stats" id="cinemaPlayerLoadingStats">⚡ 0 KB/s • 👥 Conectando semillas...</p>
       </div>
 
       <!-- Menú Flotante: SUBTÍTULOS -->
@@ -1116,6 +1115,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
-  <script src="./js/app.bundle.js?v=2.0.3"></script>
+  <script src="./js/app.bundle.js?v=2.0.5"></script>
 </body>
 </html>

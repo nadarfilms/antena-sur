@@ -1253,7 +1253,7 @@ def get_spanish_synopsis(title, original_summary=''):
         try:
             clean_orig = re.sub(r'<[^>]+>', '', original_summary).strip()
             if clean_orig:
-                trans_url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(clean_orig[:450])}&langpair=en|es'
+                trans_url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(clean_orig[:450])}&langpair=en|es&de=antenasurapp@gmail.com'
                 req = urllib.request.Request(trans_url, headers={'User-Agent': 'AntenaSurApp/1.0'})
                 with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=3.0) as resp:
                     t_data = json.loads(resp.read().decode('utf-8'))
@@ -1733,7 +1733,7 @@ def translate_series_episodes_concurrently(raw_episodes):
                 final_name = f'Episodio {num_s}'
             else:
                 try:
-                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(raw_name.strip())}&langpair=en|es'
+                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(raw_name.strip())}&langpair=en|es&de=antenasurapp@gmail.com'
                     req = urllib.request.Request(url, headers={'User-Agent': 'AntenaSurApp/1.0'})
                     with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=2.5) as resp:
                         data = json.loads(resp.read().decode('utf-8'))
@@ -1742,15 +1742,16 @@ def translate_series_episodes_concurrently(raw_episodes):
                             final_name = tr
                 except Exception:
                     pass
-            if not final_name:
+            if final_name and final_name != raw_name:
+                CINEMA_CACHE[name_key] = {'data': final_name, 'timestamp': now}
+            elif not final_name:
                 final_name = raw_name
-            CINEMA_CACHE[name_key] = {'data': final_name, 'timestamp': now}
 
         if not final_sum:
             if raw_sum:
                 try:
                     chunk = raw_sum[:450].strip()
-                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(chunk)}&langpair=en|es'
+                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(chunk)}&langpair=en|es&de=antenasurapp@gmail.com'
                     req = urllib.request.Request(url, headers={'User-Agent': 'AntenaSurApp/1.0'})
                     with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=3.0) as resp:
                         data = json.loads(resp.read().decode('utf-8'))
@@ -1759,18 +1760,19 @@ def translate_series_episodes_concurrently(raw_episodes):
                             final_sum = tr
                 except Exception:
                     pass
-            if not final_sum:
+            if final_sum and final_sum != raw_sum:
+                if sum_key:
+                    CINEMA_CACHE[sum_key] = {'data': final_sum, 'timestamp': now}
+            elif not final_sum:
                 final_sum = raw_sum or 'Sin sinopsis disponible.'
-            if sum_key:
-                CINEMA_CACHE[sum_key] = {'data': final_sum, 'timestamp': now}
 
         return ep_id, final_name, final_sum
 
-    max_w = min(12, len(missing_for_translation))
+    max_w = min(16, len(missing_for_translation))
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_w) as executor:
             futures = [executor.submit(worker, it) for it in missing_for_translation]
-            for f in concurrent.futures.as_completed(futures, timeout=6.0):
+            for f in concurrent.futures.as_completed(futures, timeout=25.0):
                 try:
                     eid, fn, fs = f.result()
                     results[eid] = (fn, fs)
@@ -1792,7 +1794,19 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
     if cache_key in CINEMA_CACHE:
         entry = CINEMA_CACHE[cache_key]
         if now - entry['timestamp'] < 1800:
-            return entry['data']
+            cached_data = entry.get('data') or {}
+            # Si contiene sinopsis en inglés, descartar caché para re-traducir a español
+            has_english = False
+            for s_num, eps in (cached_data.get('episodesBySeason') or {}).items():
+                for ep in eps:
+                    s_text = (ep.get('summary') or '').lower()
+                    if any(w in s_text.split() for w in ['the', 'and', 'with', 'from', 'their', 'face', 'faces']):
+                        has_english = True
+                        break
+                if has_english:
+                    break
+            if not has_english:
+                return cached_data
 
     clean_imdb = re.sub(r'^tt', '', imdb_id or '')
     show_data = {}

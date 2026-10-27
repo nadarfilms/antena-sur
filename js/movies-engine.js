@@ -2059,15 +2059,58 @@ export class CinemaEngine {
     }
   }
 
+  async translateTextToSpanish(text) {
+    if (!text || typeof text !== 'string') return text;
+    const clean = text.trim();
+    if (!clean || clean.length < 3) return clean;
+
+    const hasEnglish = /\b(the|and|with|from|their|face|faces|season|episode|investigation|crew|behind|murder|wedding|friend|planet|lifeboat|escape|riches|embarrassment|gates|heaven|once|upon|time|west|blow|up)\b/i.test(clean);
+    if (!hasEnglish) return clean;
+
+    const cacheKey = `trans_es_${clean.slice(0, 40).toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return cached;
+    } catch (e) {}
+
+    try {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(clean.slice(0, 450))}&langpair=en|es&de=antenasurapp@gmail.com`;
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = await resp.json();
+        const tr = data?.responseData?.translatedText?.trim();
+        if (tr && !tr.startsWith('MYMEMORY WARNING') && tr.toLowerCase() !== clean.toLowerCase()) {
+          try { localStorage.setItem(cacheKey, tr); } catch (e) {}
+          return tr;
+        }
+      }
+    } catch (e) {}
+    return clean;
+  }
+
   renderEpisodeCarouselHtml(streams, epIdx, seasonNum, epNum) {
     if (!streams || streams.length === 0) {
       return `
         <div class="cinema-ep-carousel-wrap">
-          <div class="cinema-ep-streams-actions">
-            <button class="cinema-btn-load-ep-streams" data-action="load-ep-streams" data-ep-idx="${epIdx}" data-season="${seasonNum}" data-episode="${epNum}" tabindex="0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              VER FUENTES (4K • 1080p • 720p) Y REPRODUCIR
-            </button>
+          <div class="cinema-ep-carousel-header">
+            <span class="cinema-ep-carousel-title">🎬 FUENTES DISPONIBLES:</span>
+            <span class="cinema-ep-carousel-nav-hint">Buscando calidades 4K, 1080p y 720p...</span>
+          </div>
+          <div class="cinema-ep-carousel" role="region" aria-label="Cargando fuentes del episodio">
+            <div class="cinema-source-card is-loading-card">
+              <div class="source-card-top">
+                <span class="cinema-ep-q-tag q-1080p">...</span>
+                <span class="source-card-seeds">⚡ Buscando</span>
+              </div>
+              <div class="source-card-filename"><span class="source-fn-text">Conectando con enjambre...</span></div>
+            </div>
+            <div class="cinema-source-card is-loading-card">
+              <div class="source-card-top">
+                <span class="cinema-ep-q-tag q-720p">...</span>
+                <span class="source-card-seeds">⚡ Buscando</span>
+              </div>
+              <div class="source-card-filename"><span class="source-fn-text">Verificando semillas...</span></div>
+            </div>
           </div>
         </div>
       `;
@@ -2147,6 +2190,34 @@ export class CinemaEngine {
         epSummary = 'Sin sinopsis disponible para este episodio.';
       }
 
+      // Detección y traducción en vivo a español si viene en inglés
+      const needsTitleTrans = /\b(the|and|with|from|their|face|faces|season|episode|investigation|crew|behind|murder|wedding|friend|planet|lifeboat|escape|riches|embarrassment|gates|heaven|once|upon|time|west|blow|up)\b/i.test(epTitle);
+      const needsSummaryTrans = /\b(the|and|with|from|their|face|faces|season|episode|investigation|crew|behind|murder|wedding|friend|planet|lifeboat|escape|riches|embarrassment|gates|heaven|once|upon|time|west|blow|up)\b/i.test(epSummary);
+
+      if (needsTitleTrans) {
+        this.translateTextToSpanish(epTitle).then(transTitle => {
+          if (transTitle && transTitle !== epTitle) {
+            ep.name = transTitle;
+            const titleEl = document.getElementById(`epTitle_${seasonNum}_${epNum}`);
+            if (titleEl) {
+              titleEl.innerHTML = `${epNum}. ${transTitle} ${isLatest ? '<span class="cinema-badge-new-ep">⚡ ÚLTIMO SUBIDO</span>' : ''}`;
+            }
+          }
+        });
+      }
+
+      if (needsSummaryTrans) {
+        this.translateTextToSpanish(epSummary).then(transSum => {
+          if (transSum && transSum !== epSummary) {
+            ep.summary = transSum;
+            const sumEl = document.getElementById(`epSummary_${seasonNum}_${epNum}`);
+            if (sumEl) {
+              sumEl.textContent = transSum;
+            }
+          }
+        });
+      }
+
       const airdate = ep.airdate || '';
       const runtime = ep.runtime ? `⏱ ${ep.runtime} min` : '';
       const thumb = ep.image || '';
@@ -2171,13 +2242,13 @@ export class CinemaEngine {
           </div>
           <div class="cinema-episode-content">
             <div class="cinema-episode-header">
-              <h5 class="cinema-episode-title">
+              <h5 class="cinema-episode-title" id="epTitle_${seasonNum}_${epNum}">
                 ${epNum}. ${epTitle}
                 ${isLatest ? '<span class="cinema-badge-new-ep">⚡ ÚLTIMO SUBIDO</span>' : ''}
               </h5>
               ${airdate ? `<span class="cinema-episode-airdate">Emitido: ${airdate}</span>` : ''}
             </div>
-            <p class="cinema-episode-summary">${epSummary}</p>
+            <p class="cinema-episode-summary" id="epSummary_${seasonNum}_${epNum}">${epSummary}</p>
             <div class="cinema-episode-streams-block" id="epStreams_${seasonNum}_${epNum}">
               ${streamsHtml}
             </div>
@@ -2255,14 +2326,14 @@ export class CinemaEngine {
 
     wireStreamsEvents();
 
-    // Precargar automáticamente calidades para los primeros 4 episodios de la temporada activa
-    rawEpisodes.slice(0, 4).forEach((ep, idx) => {
+    // Precargar automáticamente calidades para TODOS los episodios de la temporada activa (carruseles abiertos y visibles)
+    rawEpisodes.forEach((ep, idx) => {
       if (!ep.streams || ep.streams.length === 0) {
         const epN = ep.number || (idx + 1);
         const block = document.getElementById(`epStreams_${seasonNum}_${epN}`);
-        if (block) {
+        setTimeout(() => {
           this.loadEpisodeStreams(show, ep, seasonNum, epN, block, idx);
-        }
+        }, idx * 75);
       }
     });
   }
@@ -3974,9 +4045,9 @@ export class CinemaEngine {
     this.activeMedia.quality = nextQuality;
 
     if (this.dom.playerTitle) this.dom.playerTitle.textContent = nextTitle;
-    if (this.dom.loadingText) this.dom.loadingText.textContent = `Probando fuente alternativa (${nextQuality})...`;
+    if (this.dom.loadingText) this.dom.loadingText.textContent = nextTitle;
     if (this.dom.loadingStats) {
-      this.dom.loadingStats.textContent = `Conectando con opción ${nextIdx + 1} de ${streams.length} (⚡ ${nextSeeds} semillas, 💾 ${nextSize})...`;
+      this.dom.loadingStats.textContent = `⚡ 0 KB/s • 👥 Conectando semillas...`;
     }
     this.showToast(`Buscando semillas en fuente alternativa [${nextQuality}]...`, 'info');
 
@@ -4017,10 +4088,10 @@ export class CinemaEngine {
       this.dom.loadingOverlay.classList.remove('is-hidden');
     }
     if (this.dom.loadingText) {
-      this.dom.loadingText.textContent = `Iniciando "${title}"...`;
+      this.dom.loadingText.textContent = title;
     }
     if (this.dom.progressFill) {
-      this.dom.progressFill.style.width = '15%';
+      this.dom.progressFill.style.width = '0%';
     }
     if (this.dom.playerStatusBadge) {
       this.dom.playerStatusBadge.innerHTML = '<span class="cinema-pulse-dot"></span> CONECTANDO...';
@@ -4054,7 +4125,7 @@ export class CinemaEngine {
     let totalPollSeconds = 0;
     let failoverTriggered = false;
     let currentDownloadedBytes = 0;
-    const INITIAL_BUFFER_TARGET_BYTES = 2 * 1024 * 1024; // 2 MB de buffer inicial sólido para reproducción fluida sin cortes
+    const INITIAL_BUFFER_TARGET_BYTES = 8 * 1024 * 1024; // 8 MB de buffer inicial sólido (4x de carga para reproducción fluida sin cortes)
 
     // Función auxiliar para calcular segundos de video listos por delante en el buffer del navegador
     const getBufferedAhead = () => {
@@ -4071,48 +4142,17 @@ export class CinemaEngine {
       return 0;
     };
 
-    // Renderizar controles de cancelación en la pantalla de carga para que el usuario nunca quede atrapado
+    // Pantalla de carga minimalista: solo barra de carga, título, velocidad de descarga y semillas conectadas
     const renderLoadingHUD = (statsMessage) => {
-      if (!this.dom.loadingStats) return;
-      const streams = this.activeMedia?.allStreams || [];
-      const currentIdx = this.activeMedia?.currentStreamIndex || 0;
-      const hasNext = (currentIdx + 1 < streams.length);
-
-      let actionBtnsHtml = `
-        <div style="margin-top:12px; display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-          ${hasNext ? `
-            <button class="cinema-btn-load-cancel" id="btnManualNextStream" style="background:rgba(0,229,255,0.18); border-color:rgba(0,229,255,0.4); color:#00e5ff;">
-              ⚡ Probar siguiente fuente (${currentIdx + 2} de ${streams.length})
-            </button>
-          ` : ''}
-          <button class="cinema-btn-load-cancel" id="btnCancelLoadCinema">
-            ✕ Volver al menú
-          </button>
-        </div>
-      `;
-
-      this.dom.loadingStats.innerHTML = `
-        <div>${statsMessage}</div>
-        ${actionBtnsHtml}
-      `;
-
-      const nextBtn = document.getElementById('btnManualNextStream');
-      if (nextBtn) {
-        nextBtn.onclick = () => {
-          if (!failoverTriggered) {
-            failoverTriggered = true;
-            this.tryNextStreamFallback('cambio manual');
-          }
-        };
-      }
-
-      const cancelBtn = document.getElementById('btnCancelLoadCinema');
-      if (cancelBtn) {
-        cancelBtn.onclick = () => this.closeCinemaPlayer();
+      if (this.dom.loadingStats) {
+        this.dom.loadingStats.textContent = statsMessage;
       }
     };
 
-    renderLoadingHUD('Conectando con enjambre P2P y rastreadores públicos...');
+    if (this.dom.loadingText) {
+      this.dom.loadingText.textContent = title;
+    }
+    renderLoadingHUD('⚡ 0 KB/s • 👥 Conectando semillas...');
 
     const onReadyToPlay = () => {
       if (playbackStarted) return;
@@ -4162,8 +4202,8 @@ export class CinemaEngine {
     const attemptPlaybackWithBuffer = () => {
       if (playbackStarted) return;
       const bufAhead = getBufferedAhead();
-      // Iniciar cuando el buffer descargado alcance 2MB O tengamos >= 2.5 segundos decodificados en el buffer
-      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 2.5 || totalPollSeconds >= 10) {
+      // Iniciar cuando el buffer descargado alcance 8MB O tengamos >= 6.0 segundos decodificados en el buffer
+      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 6.0 || totalPollSeconds >= 18) {
         onReadyToPlay();
       }
     };
@@ -4171,7 +4211,7 @@ export class CinemaEngine {
     video.onloadeddata = () => attemptPlaybackWithBuffer();
     video.oncanplay = () => attemptPlaybackWithBuffer();
     video.oncanplaythrough = () => {
-      if (!playbackStarted && (currentDownloadedBytes >= 1.5 * 1024 * 1024 || totalPollSeconds >= 6)) {
+      if (!playbackStarted && (currentDownloadedBytes >= 4 * 1024 * 1024 || totalPollSeconds >= 12)) {
         onReadyToPlay();
       }
     };
@@ -4259,20 +4299,19 @@ export class CinemaEngine {
 
       if (!playbackStarted) {
         const bufferTarget = INITIAL_BUFFER_TARGET_BYTES;
-        const targetMB = (bufferTarget / (1024 * 1024)).toFixed(0);
-        const pct = Math.min(96, Math.round((downloadedBytes / bufferTarget) * 100));
+        const pct = Math.min(98, Math.round((downloadedBytes / bufferTarget) * 100));
 
         let statsMsg = '';
         if (peers === 0) {
-          statsMsg = `Conectando con enjambre P2P... (${secondsWithZeroPeers}s) • 👥 0 semillas detectadas`;
+          statsMsg = `⚡ 0 KB/s • 👥 Conectando semillas... (${secondsWithZeroPeers}s)`;
         } else {
-          statsMsg = `Llenando buffer inicial: ${dlMB} MB de ${targetMB} MB (${pct}%) • 👥 ${peers} semillas activas • ⚡ ${speed} KB/s`;
+          statsMsg = `⚡ ${speed} KB/s • 👥 ${peers} semillas conectadas`;
         }
 
         renderLoadingHUD(statsMsg);
 
         if (this.dom.progressFill) {
-          this.dom.progressFill.style.width = `${Math.max(8, pct)}%`;
+          this.dom.progressFill.style.width = `${Math.max(6, pct)}%`;
         }
         if (peers > 0 && this.dom.playerStatusBadge) {
           this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot"></span> ${peers} SEMILLAS ACTIVAS`;
@@ -4280,7 +4319,7 @@ export class CinemaEngine {
 
         // Disparar reproducción fluida una vez alcanzado el umbral de buffer para evitar pausas
         const bufAhead = getBufferedAhead();
-        if ((downloadedBytes >= bufferTarget || bufAhead >= 5.0 || (totalPollSeconds >= 15 && downloadedBytes >= 4 * 1024 * 1024)) && video.paused) {
+        if ((downloadedBytes >= bufferTarget || bufAhead >= 6.0 || (totalPollSeconds >= 18 && downloadedBytes >= 4 * 1024 * 1024)) && video.paused) {
           video.play().then(() => {
             onReadyToPlay();
           }).catch(() => {});

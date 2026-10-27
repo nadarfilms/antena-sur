@@ -587,13 +587,13 @@ const server = http.createServer(async (req, res) => {
       // Priorizar el inicio del archivo con alto pre-buffer inicial para evitar pausas o micro-cortes
       if (file._startPiece !== undefined && file._endPiece !== undefined) {
         try {
-          // Descargar de forma crítica e inmediata los primeros 8 pieces (cabeceras + primer buffer)
-          torrent.critical(file._startPiece, Math.min(file._startPiece + 8, file._endPiece));
-          // Pre-buffer de las siguientes 24 piezas con prioridad alta
-          torrent.select(file._startPiece, Math.min(file._startPiece + 28, file._endPiece), 1);
+          // Descargar de forma crítica e inmediata los primeros 24 pieces (cabeceras + primer buffer masivo de al menos 12MB)
+          torrent.critical(file._startPiece, Math.min(file._startPiece + 24, file._endPiece));
+          // Pre-buffer de las siguientes 96 piezas con prioridad alta (4x mayor para reproducción ultra fluida)
+          torrent.select(file._startPiece, Math.min(file._startPiece + 96, file._endPiece), 1);
           // Índice moov al final del archivo (por si el contenedor no tiene faststart)
           torrent.critical(Math.max(file._startPiece, file._endPiece - 4), file._endPiece);
-          torrent.select(Math.max(file._startPiece, file._endPiece - 6), file._endPiece, 1);
+          torrent.select(Math.max(file._startPiece, file._endPiece - 8), file._endPiece, 1);
         } catch (e) {}
       }
 

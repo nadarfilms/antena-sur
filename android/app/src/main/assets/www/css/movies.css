@@ -2039,6 +2039,17 @@
   z-index: 30 !important;
 }
 
+.cinema-source-card.is-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  border-color: rgba(0, 229, 255, 0.25);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: wait;
+}
+
 /* Fila Superior: Calidad + Peso + Semillas */
 .source-card-top {
   display: flex;
