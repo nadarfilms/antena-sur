@@ -49,8 +49,10 @@ export function initTvNavigation() {
         '#cinemaDetailWatchedBtn',
         '[data-action="play-movie-quality"]',
         '.cinema-season-tab',
+        '.cinema-source-card',
         '[data-action="play-ep-stream"]',
         '[data-action="load-ep-streams"]',
+        '.cinema-btn-load-ep-streams',
         '.cinema-ep-stream-btn',
         '.cinema-quality-play-btn',
         '#btnManualStartPlay'
@@ -110,9 +112,14 @@ export function initTvNavigation() {
     } catch (e) {
       try { element.focus(); } catch (e2) {}
     }
-    // Desplazamiento instantáneo sin animación para 60 FPS constantes en TV
+    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel
     try {
-      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const carousel = element.closest('.cinema-ep-carousel') || element.closest('.cinema-seasons-bar');
+      if (carousel) {
+        element.scrollIntoView({ block: 'nearest', inline: 'center' });
+      } else {
+        element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
     } catch (e) {
       try { element.scrollIntoView(); } catch (e2) {}
     }

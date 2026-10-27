@@ -1719,17 +1719,21 @@
    NAVEGACIÓN DE SERIES ESTILO STREMIO (TEMPORADAS & EPISODIOS)
    ========================================================================== */
 
-/* Barra Horizontal de Temporadas */
+/* Barra Horizontal de Temporadas (Alineación perfecta y sin cortes en Temporada 1) */
 .cinema-seasons-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
-  padding: 8px 14px 14px 14px;
+  overflow-y: hidden;
+  padding: 8px 6px 14px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 14px;
+  margin: 0 0 16px 0;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
+  scroll-behavior: smooth;
+  scroll-padding: 0 10px;
+  box-sizing: border-box;
 }
 
 .cinema-seasons-bar::-webkit-scrollbar {
@@ -1743,7 +1747,7 @@
 
 .cinema-season-tab {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #94a3b8;
   font-size: 0.84rem;
   font-weight: 700;
@@ -1754,25 +1758,32 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   flex-shrink: 0;
+  box-sizing: border-box;
+  margin: 0 2px;
 }
 
 .cinema-season-tab:hover {
-  background: rgba(0, 229, 255, 0.1);
-  border-color: rgba(0, 229, 255, 0.4);
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.45);
   color: #ffffff;
 }
 
 .cinema-season-tab.is-active {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.25) 0%, rgba(0, 149, 255, 0.25) 100%);
-  border-color: #00e5ff;
-  color: #ffffff;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.22) 0%, rgba(0, 149, 255, 0.22) 100%) !important;
+  border-color: #00e5ff !important;
+  color: #00e5ff !important;
+  font-weight: 800;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.35) !important;
 }
 
 .cinema-season-tab:focus-visible,
 .cinema-season-tab.is-tv-focused {
-  outline: 2px solid #00e5ff;
-  outline-offset: 1px;
+  outline: 3px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.6) !important;
+  color: #ffffff !important;
+  transform: scale(1.04);
+  z-index: 20;
 }
 
 /* Contenedor de Episodios Espacioso (Sin límite artificial de 420px) */
@@ -1920,60 +1931,252 @@
   overflow: hidden;
 }
 
-/* Lista de Fuentes/Streams dentro del Episodio */
-.cinema-ep-streams-list {
-  margin-top: 6px;
+/* ==========================================================================
+   CARRUSEL HORIZONTAL DE FUENTES POR EPISODIO (100% APTO PARA CONTROL REMOTO TV)
+   ========================================================================== */
+
+.cinema-ep-carousel-wrap {
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
-.cinema-ep-stream-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 6px 12px;
+.cinema-ep-carousel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  padding: 0 2px;
+}
+
+.cinema-ep-carousel-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.cinema-ep-carousel-nav-hint {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.cinema-ep-carousel {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px 4px 12px 4px;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, 0.4) rgba(255, 255, 255, 0.04);
+  box-sizing: border-box;
+}
+
+.cinema-ep-carousel::-webkit-scrollbar {
+  height: 5px;
+}
+
+.cinema-ep-carousel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+
+.cinema-ep-carousel::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 255, 0.35);
+  border-radius: 4px;
+}
+
+.cinema-ep-carousel::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff;
+}
+
+/* Tarjeta Rectangular de Fuente en el Carrusel (Contiene toda la info) */
+.cinema-source-card {
+  flex: 0 0 260px;
+  min-width: 260px;
+  max-width: 280px;
+  height: 120px;
+  background: linear-gradient(145deg, #121a2c 0%, #0d1424 100%);
+  border: 1px solid rgba(0, 229, 255, 0.24);
+  border-radius: 8px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.cinema-source-card:hover {
+  background: linear-gradient(145deg, rgba(0, 229, 255, 0.16) 0%, rgba(18, 28, 48, 0.98) 100%);
+  border-color: #00e5ff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 229, 255, 0.3);
+}
+
+.cinema-source-card:focus-visible,
+.cinema-source-card.is-tv-focused {
+  outline: 3px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  border-color: #00e5ff !important;
+  background: linear-gradient(145deg, rgba(0, 229, 255, 0.25) 0%, rgba(18, 32, 54, 1) 100%) !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.65), inset 0 0 10px rgba(0, 229, 255, 0.2) !important;
+  transform: scale(1.03) !important;
+  z-index: 30 !important;
+}
+
+/* Fila Superior: Calidad + Peso + Semillas */
+.source-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.source-card-size {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  font-family: var(--font-mono, monospace);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.source-card-seeds {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Fila Central: Idioma y Audio */
+.source-card-audio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #94a3b8;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.source-card-audio.is-latino {
+  color: #34d399;
+  font-weight: 700;
+}
+
+.source-card-audio.is-dual {
+  color: #93c5fd;
+  font-weight: 700;
+}
+
+.source-card-flags {
+  font-size: 0.86rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.source-card-audio-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Fila de Nombre del Archivo Torrent */
+.source-card-filename {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  color: #64748b;
+  font-family: var(--font-mono, monospace);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.source-fn-icon {
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+.source-fn-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Fila Inferior: Botón de Reproducción Inmediata */
+.source-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 2px;
+}
+
+.source-card-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 229, 255, 0.14);
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 0.67rem;
+  font-weight: 800;
+  color: #00e5ff;
+  letter-spacing: 0.5px;
   transition: all 0.15s ease;
 }
 
-.cinema-ep-stream-item:hover {
-  background: rgba(0, 229, 255, 0.05);
-  border-color: rgba(0, 229, 255, 0.25);
+.cinema-source-card:hover .source-card-play-btn,
+.cinema-source-card.is-tv-focused .source-card-play-btn {
+  background: #00e5ff;
+  color: #050b14;
+  border-color: #00e5ff;
 }
 
-.cinema-ep-stream-left {
-  display: flex;
+/* Botón para cargar fuentes bajo demanda */
+.cinema-btn-load-ep-streams {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.cinema-ep-stream-title {
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 6px;
+  padding: 8px 14px;
+  color: #00e5ff;
   font-size: 0.76rem;
-  color: #cbd5e1;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.4px;
 }
 
-.cinema-ep-stream-size {
-  font-size: 0.72rem;
-  color: #94a3b8;
-  font-family: var(--font-mono, monospace);
-  font-weight: 600;
-}
-
-.cinema-ep-stream-seeds {
-  font-size: 0.7rem;
-  color: #10b981;
-  font-weight: 700;
+.cinema-btn-load-ep-streams:hover {
+  background: #00e5ff;
+  color: #040810;
+  border-color: #00e5ff;
 }
 
 /* Etiquetas de idioma de audio y banderas */
@@ -3903,6 +4106,7 @@
 .cinema-detail-btn-watched.is-tv-focused,
 .cinema-btn-trailer.is-tv-focused,
 .cinema-season-tab.is-tv-focused,
+.cinema-source-card.is-tv-focused,
 .cinema-ep-stream-btn.is-tv-focused,
 .cinema-btn-load-ep-streams.is-tv-focused,
 .cinema-quality-play-btn.is-tv-focused,

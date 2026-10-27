@@ -20,6 +20,7 @@ import atexit
 import hashlib
 import shutil
 import traceback
+import concurrent.futures
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 # Desactivar verificación estricta de certificados SSL en Python para evitar bloqueos en macOS
@@ -743,12 +744,16 @@ def get_stream_quality_rank(q_name):
         return 4
     return 5
 
-def sort_streams_by_quality_and_seeds(streams_list, max_per_quality=3):
+def sort_streams_by_quality_and_seeds(streams_list, max_per_quality=3, is_episode=False):
     """
     Ordena y agrupa streams rigurosamente de mayor a menor calidad:
     4K primero, después 1080p, después HD (720p), y por último 480p.
     Dentro de cada calidad, prioriza mayor número de semillas verificadas (bono si contiene español).
     Retorna máximo max_per_quality por cada resolución.
+    Si is_episode=True, aplica las reglas estrictas de filtrado de series:
+    - Fuentes disponibles desde 4K hasta 720p.
+    - Si no hay fuentes en 4K o 1080p, permite desde 720p hasta 480p/SD.
+    - Nunca muestra fuentes de 480p o inferior si existen fuentes en 4K o 1080p.
     """
     if not streams_list:
         return []
@@ -764,7 +769,6 @@ def sort_streams_by_quality_and_seeds(streams_list, max_per_quality=3):
         rank = get_stream_quality_rank(s.get('quality', ''))
         buckets[rank].append(s)
 
-    result = []
     for rank in [1, 2, 3, 4, 5]:
         group = buckets[rank]
         if not group:
@@ -775,8 +779,22 @@ def sort_streams_by_quality_and_seeds(streams_list, max_per_quality=3):
             return int(item.get('seeds') or 0) + bonus
 
         group.sort(key=score, reverse=True)
-        result.extend(group[:max_per_quality])
-    return result
+        buckets[rank] = group[:max_per_quality]
+
+    if is_episode:
+        has_4k = len(buckets[1]) > 0
+        has_1080 = len(buckets[2]) > 0
+        if has_4k:
+            # 4K presente: 4K, 1080p y 720p. Excluir estrictamente 480p/SD
+            return buckets[1] + buckets[2] + buckets[3]
+        elif has_1080:
+            # 1080p presente (sin 4K): 1080p y 720p. Excluir 480p
+            return buckets[2] + buckets[3]
+        else:
+            # Sin 4K ni 1080p: permitir desde 720p hasta 480p/SD
+            return buckets[3] + buckets[4] + buckets[5]
+
+    return buckets[1] + buckets[2] + buckets[3] + buckets[4] + buckets[5]
 
 FLAG_REGEX = re.compile(r'[\U0001F1E6-\U0001F1FF]{2}')
 
@@ -1249,7 +1267,7 @@ def get_spanish_synopsis(title, original_summary=''):
     clean_fallback = re.sub(r'<[^>]+>', '', original_summary or '').strip()
     return clean_fallback
 
-def process_and_filter_streams(raw_streams):
+def process_and_filter_streams(raw_streams, is_episode=False):
     """
     Filtra y agrupa streams torrent según las reglas estrictas de Antena Sur:
     - Omite 3D y grabaciones de salas de cine (CAM, TS, TC, SCR, Telesync).
@@ -1257,6 +1275,7 @@ def process_and_filter_streams(raw_streams):
     - Máximo 3 opciones por resolución (las de mayor cantidad de semillas verificadas).
     - En orden estricto de mayor a menor: 4k primero, después 1080p, después HD (720p) y por último 480p.
     - Utiliza token boundary regex para evitar falsos positivos (ej. 384kbps confundido con 4K).
+    - Si is_episode=True, excluye 480p si hay 4K o 1080p disponibles.
     """
     buckets = {'4K': [], '1080p': [], '720p': [], '480p': []}
     seen_hashes = set()
@@ -1330,6 +1349,16 @@ def process_and_filter_streams(raw_streams):
         buckets[q].sort(key=stream_score, reverse=True)
         buckets[q] = buckets[q][:3]
 
+    if is_episode:
+        has_4k = len(buckets['4K']) > 0
+        has_1080 = len(buckets['1080p']) > 0
+        if has_4k:
+            return buckets['4K'] + buckets['1080p'] + buckets['720p']
+        elif has_1080:
+            return buckets['1080p'] + buckets['720p']
+        else:
+            return buckets['720p'] + buckets['480p']
+
     # 6. En orden estricto de mayor a menor calidad: 4K, 1080p, HD (720p), 480p
     return buckets['4K'] + buckets['1080p'] + buckets['720p'] + buckets['480p']
 
@@ -1346,7 +1375,8 @@ def fetch_torrentio_streams(imdb_id, season=None, ep=None):
             return entry['data']
 
     try:
-        if season is not None and ep is not None:
+        is_ep = (season is not None and ep is not None)
+        if is_ep:
             url = f'https://torrentio.strem.fun/stream/series/tt{clean_imdb}:{season}:{ep}.json'
         else:
             url = f'https://torrentio.strem.fun/stream/movie/tt{clean_imdb}.json'
@@ -1358,7 +1388,7 @@ def fetch_torrentio_streams(imdb_id, season=None, ep=None):
         with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=12.0) as resp:
             data = json.loads(resp.read().decode('utf-8'))
             raw_streams = data.get('streams', [])
-            processed = process_and_filter_streams(raw_streams)
+            processed = process_and_filter_streams(raw_streams, is_episode=is_ep)
             if processed:
                 CINEMA_CACHE[cache_key] = {'data': processed, 'timestamp': now}
             return processed
@@ -1649,6 +1679,113 @@ def fetch_cinema_series(query='', page=1, sort_by='imdb_popular'):
     CINEMA_CACHE[cache_key] = {'data': result, 'timestamp': now}
     return result
 
+def translate_series_episodes_concurrently(raw_episodes):
+    """
+    Traduce concurrentemente los títulos y sinopsis de los episodios de una serie al español.
+    Utiliza caché en memoria para garantizar respuestas instantáneas (0ms) en visitas posteriores.
+    """
+    if not raw_episodes:
+        return {}
+
+    now = time.time()
+    results = {}
+    missing_for_translation = []
+
+    for ep in raw_episodes:
+        ep_id = ep.get('id') or f"{ep.get('season')}_{ep.get('number')}"
+        raw_name = ep.get('name') or f"Episodio {ep.get('number', 1)}"
+        raw_sum = re.sub(r'<[^>]+>', '', ep.get('summary') or '').strip()
+
+        name_key = f'trans_name:{raw_name.strip().lower()}'
+        sum_key = f'trans_sum:{raw_sum[:100].strip().lower()}' if raw_sum else None
+
+        cached_name = None
+        if name_key in CINEMA_CACHE and (now - CINEMA_CACHE[name_key]['timestamp'] < 86400 * 14):
+            cached_name = CINEMA_CACHE[name_key]['data']
+
+        cached_sum = None
+        if sum_key and sum_key in CINEMA_CACHE and (now - CINEMA_CACHE[sum_key]['timestamp'] < 86400 * 14):
+            cached_sum = CINEMA_CACHE[sum_key]['data']
+
+        if cached_name and (cached_sum is not None or not raw_sum):
+            results[ep_id] = (cached_name, cached_sum or 'Sin sinopsis disponible.')
+        else:
+            missing_for_translation.append((ep_id, raw_name, raw_sum, name_key, sum_key, cached_name, cached_sum))
+
+    if not missing_for_translation:
+        return results
+
+    def worker(item):
+        ep_id, raw_name, raw_sum, name_key, sum_key, c_name, c_sum = item
+        final_name = c_name
+        final_sum = c_sum
+
+        if not final_name:
+            low_name = raw_name.strip().lower()
+            if low_name in ['pilot', 'series premiere']:
+                final_name = 'Piloto'
+            elif low_name in ['finale', 'season finale']:
+                final_name = 'Final de temporada'
+            elif low_name == 'series finale':
+                final_name = 'Final de la serie'
+            elif low_name.startswith('episode ') or low_name.startswith('chapter '):
+                num_s = raw_name.strip().split()[-1]
+                final_name = f'Episodio {num_s}'
+            else:
+                try:
+                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(raw_name.strip())}&langpair=en|es'
+                    req = urllib.request.Request(url, headers={'User-Agent': 'AntenaSurApp/1.0'})
+                    with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=2.5) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        tr = data.get('responseData', {}).get('translatedText', '').strip()
+                        if tr and not tr.startswith('MYMEMORY WARNING'):
+                            final_name = tr
+                except Exception:
+                    pass
+            if not final_name:
+                final_name = raw_name
+            CINEMA_CACHE[name_key] = {'data': final_name, 'timestamp': now}
+
+        if not final_sum:
+            if raw_sum:
+                try:
+                    chunk = raw_sum[:450].strip()
+                    url = f'https://api.mymemory.translated.net/get?q={urllib.parse.quote(chunk)}&langpair=en|es'
+                    req = urllib.request.Request(url, headers={'User-Agent': 'AntenaSurApp/1.0'})
+                    with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=3.0) as resp:
+                        data = json.loads(resp.read().decode('utf-8'))
+                        tr = data.get('responseData', {}).get('translatedText', '').strip()
+                        if tr and not tr.startswith('MYMEMORY WARNING'):
+                            final_sum = tr
+                except Exception:
+                    pass
+            if not final_sum:
+                final_sum = raw_sum or 'Sin sinopsis disponible.'
+            if sum_key:
+                CINEMA_CACHE[sum_key] = {'data': final_sum, 'timestamp': now}
+
+        return ep_id, final_name, final_sum
+
+    max_w = min(12, len(missing_for_translation))
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_w) as executor:
+            futures = [executor.submit(worker, it) for it in missing_for_translation]
+            for f in concurrent.futures.as_completed(futures, timeout=6.0):
+                try:
+                    eid, fn, fs = f.result()
+                    results[eid] = (fn, fs)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    for item in missing_for_translation:
+        ep_id = item[0]
+        if ep_id not in results:
+            results[ep_id] = (item[1], item[2] or 'Sin sinopsis disponible.')
+
+    return results
+
 def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
     cache_key = f'series_details:{tvmaze_id}:{imdb_id}'
     now = time.time()
@@ -1712,6 +1849,9 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
     raw_episodes = show_data.get('_embedded', {}).get('episodes', [])
     seasons_map = {}
 
+    # Traducir concurrentemente títulos y descripciones de todos los episodios al español con caché
+    trans_map = translate_series_episodes_concurrently(raw_episodes)
+
     for ep in raw_episodes:
         s_num = ep.get('season') or 1
         e_num = ep.get('number') or 1
@@ -1763,20 +1903,22 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
                 'type': 'torrent'
             })
 
-        # Ordenar estrictamente: 4K, 1080p, HD (720p), 480p (máximo 3 opciones por calidad)
-        streams = sort_streams_by_quality_and_seeds(ep_streams, max_per_quality=3)
+        # Ordenar estrictamente con regla de series: 4K, 1080p, 720p (omite 480p si hay 4K o 1080p)
+        streams = sort_streams_by_quality_and_seeds(ep_streams, max_per_quality=3, is_episode=True)
 
         ep_img = (ep.get('image') or {}).get('medium') or (ep.get('image') or {}).get('original') or ''
         summary_clean = re.sub(r'<[^>]+>', '', ep.get('summary') or '').strip()
+        ep_id = ep.get('id') or f'{s_num}_{e_num}'
+        t_name, t_sum = trans_map.get(ep_id, (ep.get('name') or f'Episodio {e_num}', summary_clean))
 
         seasons_map[s_num].append({
-            'id': ep.get('id') or f'{s_num}_{e_num}',
+            'id': ep_id,
             'season': s_num,
             'number': e_num,
-            'name': ep.get('name') or f'Episodio {e_num}',
+            'name': t_name or ep.get('name') or f'Episodio {e_num}',
             'airdate': ep.get('airdate') or '',
             'runtime': ep.get('runtime') or '',
-            'summary': summary_clean,
+            'summary': t_sum or summary_clean or 'Sin sinopsis disponible.',
             'image': ep_img,
             'streams': streams
         })
@@ -1821,14 +1963,14 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
                     'type': 'torrent'
                 })
 
-            streams = sort_streams_by_quality_and_seeds(ep_streams, max_per_quality=3)
+            streams = sort_streams_by_quality_and_seeds(ep_streams, max_per_quality=3, is_episode=True)
             seasons_map[s_num].append({
                 'id': f'{s_num}_{e_num}',
                 'season': s_num,
                 'number': e_num,
                 'name': f'Episodio {e_num}',
                 'airdate': '',
-                'summary': '',
+                'summary': 'Sin sinopsis disponible.',
                 'image': '',
                 'streams': streams
             })
@@ -1846,7 +1988,7 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
         torr_streams = fetch_torrentio_streams(clean_imdb, latest_episode.get('season'), latest_episode.get('number'))
         if torr_streams:
             combined = (latest_episode.get('streams') or []) + torr_streams
-            latest_episode['streams'] = sort_streams_by_quality_and_seeds(combined, max_per_quality=3)
+            latest_episode['streams'] = sort_streams_by_quality_and_seeds(combined, max_per_quality=3, is_episode=True)
 
     # Enriquecer también el primer episodio de la primera temporada para inicio rápido en orden estricto
     if seasons_map and 1 in seasons_map and seasons_map[1] and clean_imdb:
@@ -1855,7 +1997,7 @@ def fetch_cinema_series_details(tvmaze_id='', imdb_id=''):
             torr_extra = fetch_torrentio_streams(clean_imdb, 1, 1)
             if torr_extra:
                 combined = (first_ep.get('streams') or []) + torr_extra
-                first_ep['streams'] = sort_streams_by_quality_and_seeds(combined, max_per_quality=3)
+                first_ep['streams'] = sort_streams_by_quality_and_seeds(combined, max_per_quality=3, is_episode=True)
 
     result = {
         'ok': True,

@@ -8442,6 +8442,118 @@ class CinemaEngine {
     }
   }
 
+  filterEpisodeStreams(rawStreams) {
+    if (!rawStreams || !Array.isArray(rawStreams) || rawStreams.length === 0) return [];
+
+    const buckets = { '4K': [], '1080p': [], '720p': [], '480p': [] };
+    const seenHashes = new Set();
+
+    rawStreams.forEach(s => {
+      const h = (s.hash || s.infoHash || s.magnet_url || s.title || '').trim().toLowerCase();
+      if (h && seenHashes.has(h)) return;
+      if (h) seenHashes.add(h);
+
+      let q = s.quality || '';
+      const qUp = String(q).toUpperCase();
+      if (qUp.includes('4K') || qUp.includes('2160') || qUp.includes('UHD')) q = '4K';
+      else if (qUp.includes('1080') || qUp.includes('FHD')) q = '1080p';
+      else if (qUp.includes('720') || qUp === 'HD') q = '720p';
+      else if (qUp.includes('480') || qUp.includes('SD')) q = '480p';
+      else q = '720p';
+
+      s.quality = q;
+      if (buckets[q]) {
+        buckets[q].push(s);
+      }
+    });
+
+    ['4K', '1080p', '720p', '480p'].forEach(q => {
+      buckets[q].sort((a, b) => {
+        const hasSpaA = (a.audio && a.audio.toLowerCase().includes('latino')) || (a.flags && (a.flags.includes('🇲🇽') || a.flags.includes('🇪🇸')));
+        const hasSpaB = (b.audio && b.audio.toLowerCase().includes('latino')) || (b.flags && (b.flags.includes('🇲🇽') || b.flags.includes('🇪🇸')));
+        const scoreA = (a.seeds || 0) + (hasSpaA ? 300 : 0);
+        const scoreB = (b.seeds || 0) + (hasSpaB ? 300 : 0);
+        return scoreB - scoreA;
+      });
+      // Máximo 3 opciones por resolución
+      buckets[q] = buckets[q].slice(0, 3);
+    });
+
+    const has4K = buckets['4K'].length > 0;
+    const has1080p = buckets['1080p'].length > 0;
+
+    // Regla estricta:
+    // - Mostrar links desde 4K hasta 720p.
+    // - Si no hay fuentes en 4K o 1080p, permitir desde 720p hasta 480p/SD.
+    // - NUNCA mostrar 480p o menor si existen fuentes en 4K o 1080p.
+    if (has4K) {
+      return [...buckets['4K'], ...buckets['1080p'], ...buckets['720p']];
+    } else if (has1080p) {
+      return [...buckets['1080p'], ...buckets['720p']];
+    } else {
+      return [...buckets['720p'], ...buckets['480p']];
+    }
+  }
+
+  renderEpisodeCarouselHtml(streams, epIdx, seasonNum, epNum) {
+    if (!streams || streams.length === 0) {
+      return `
+        <div class="cinema-ep-carousel-wrap">
+          <div class="cinema-ep-streams-actions">
+            <button class="cinema-btn-load-ep-streams" data-action="load-ep-streams" data-ep-idx="${epIdx}" data-season="${seasonNum}" data-episode="${epNum}" tabindex="0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              VER FUENTES (4K • 1080p • 720p) Y REPRODUCIR
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="cinema-ep-carousel-wrap">
+        <div class="cinema-ep-carousel-header">
+          <span class="cinema-ep-carousel-title">🎬 FUENTES DISPONIBLES (${streams.length}):</span>
+          <span class="cinema-ep-carousel-nav-hint">◀ Desplaza para elegir calidad ▶</span>
+        </div>
+        <div class="cinema-ep-carousel" role="region" aria-label="Calidades disponibles del episodio">
+          ${streams.map((st, stIdx) => {
+            const qClass = (st.quality === '4K') ? 'q-4k' : ((st.quality === '1080p') ? 'q-1080p' : ((st.quality === '480p') ? 'q-480p' : 'q-720p'));
+            const audioDesc = st.audio || 'Audio Original';
+            const flagsStr = (st.flags && st.flags.length > 0) ? st.flags.slice(0, 4).join(' ') : '🇺🇸';
+            const isLatino = audioDesc.toLowerCase().includes('latino') || flagsStr.includes('🇲🇽');
+            const isDual = audioDesc.toLowerCase().includes('dual') || audioDesc.toLowerCase().includes('multi');
+            const rawTitle = st.title || st.name || `Episodio S${seasonNum}E${epNum} [${st.quality}]`;
+            const cleanTitle = String(rawTitle).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+            return `
+              <button class="cinema-source-card" data-action="play-ep-stream" data-ep-idx="${epIdx}" data-stream-idx="${stIdx}" tabindex="0" title="${cleanTitle}">
+                <div class="source-card-top">
+                  <span class="cinema-ep-q-tag ${qClass}">${st.quality}</span>
+                  <span class="source-card-size">💾 ${st.size}</span>
+                  <span class="source-card-seeds">⚡ ${st.seeds} sem</span>
+                </div>
+                <div class="source-card-audio ${isLatino ? 'is-latino' : (isDual ? 'is-dual' : '')}">
+                  <span class="source-card-flags">${flagsStr}</span>
+                  <span class="source-card-audio-text">${audioDesc}</span>
+                </div>
+                <div class="source-card-filename" title="${cleanTitle}">
+                  <span class="source-fn-icon">📁</span>
+                  <span class="source-fn-text">${cleanTitle}</span>
+                </div>
+                <div class="source-card-action">
+                  <span class="source-card-play-btn">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    REPRODUCIR
+                  </span>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   renderSeasonEpisodes(seasonNum, seriesData) {
     const container = document.getElementById('cinemaEpisodesContainer');
     if (!container) return;
@@ -8460,55 +8572,26 @@ class CinemaEngine {
     let epHtml = '';
     rawEpisodes.forEach((ep, epIdx) => {
       const epNum = ep.number || (epIdx + 1);
-      const epTitle = ep.name || `Episodio ${epNum}`;
-      const epSummary = ep.summary || 'Sin sinopsis disponible.';
+      let epTitle = ep.name || `Episodio ${epNum}`;
+      const lowTitle = epTitle.toLowerCase().trim();
+      if (lowTitle === 'pilot' || lowTitle === 'series premiere') epTitle = 'Piloto';
+      else if (lowTitle === 'season finale') epTitle = 'Final de temporada';
+      else if (lowTitle === 'series finale') epTitle = 'Final de la serie';
+
+      let epSummary = ep.summary || 'Sin sinopsis disponible.';
+      if (epSummary.toLowerCase().includes('no summary') || epSummary.toLowerCase().includes('no synopsis')) {
+        epSummary = 'Sin sinopsis disponible para este episodio.';
+      }
+
       const airdate = ep.airdate || '';
       const runtime = ep.runtime ? `⏱ ${ep.runtime} min` : '';
       const thumb = ep.image || '';
       const isLatest = isLatestSeason && (epNum === latestEpNum);
       const rawStreams = ep.streams || [];
-      const streams = this.sortStreamsByQuality(rawStreams);
+      const streams = this.filterEpisodeStreams(rawStreams);
       ep.streams = streams;
 
-      let streamsHtml = '';
-      if (streams.length > 0) {
-        streamsHtml = `
-          <div class="cinema-ep-streams-header">
-            <span>🎬 CALIDADES DISPONIBLES (${streams.length}):</span>
-          </div>
-          <div class="cinema-ep-streams-list">
-            ${streams.map((st, stIdx) => {
-              const qClass = (st.quality === '4K') ? 'q-4k' : ((st.quality === '1080p') ? 'q-1080p' : ((st.quality === '480p') ? 'q-480p' : 'q-720p'));
-              const audioDesc = st.audio || 'Audio Original';
-              const flagsStr = (st.flags && st.flags.length > 0) ? st.flags.slice(0, 4).join(' ') : '🇺🇸';
-              const isLatino = audioDesc.toLowerCase().includes('latino') || flagsStr.includes('🇲🇽');
-              const isDual = audioDesc.toLowerCase().includes('dual') || audioDesc.toLowerCase().includes('multi');
-
-              return `
-                <button class="cinema-ep-stream-btn" data-action="play-ep-stream" data-ep-idx="${epIdx}" data-stream-idx="${stIdx}" title="Reproducir en ${st.quality} (${st.size}) - ${audioDesc}">
-                  <span class="cinema-ep-q-tag ${qClass}">${st.quality}</span>
-                  <span class="cinema-ep-size-tag">💾 ${st.size}</span>
-                  <span class="cinema-ep-seeds-tag">⚡ ${st.seeds} semillas</span>
-                  <span class="cinema-ep-lang-tag ${isLatino ? 'is-latino' : (isDual ? 'is-dual' : '')}"><span class="cinema-flags-icon">${flagsStr}</span> ${audioDesc}</span>
-                  <span class="cinema-ep-play-text">▶ REPRODUCIR</span>
-                </button>
-              `;
-            }).join('')}
-          </div>
-        `;
-      } else {
-        streamsHtml = `
-          <div class="cinema-ep-streams-header">
-            <span>🎬 OPCIONES DE RESOLUCIÓN:</span>
-          </div>
-          <div class="cinema-ep-streams-actions">
-            <button class="cinema-btn-load-ep-streams" data-action="load-ep-streams" data-ep-idx="${epIdx}" data-season="${seasonNum}" data-episode="${epNum}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              VER CALIDADES (4K • 1080p • 720p) Y REPRODUCIR
-            </button>
-          </div>
-        `;
-      }
+      const streamsHtml = this.renderEpisodeCarouselHtml(streams, epIdx, seasonNum, epNum);
 
       epHtml += `
         <div class="cinema-episode-card ${isLatest ? 'is-latest-highlight' : ''}" data-ep-card-idx="${epIdx}">
@@ -8554,6 +8637,12 @@ class CinemaEngine {
             this.playEpisode(show, selectedEp, stream);
           }
         };
+        btn.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            btn.click();
+          }
+        };
       });
 
       container.querySelectorAll('[data-action="load-ep-streams"]').forEach(btn => {
@@ -8567,6 +8656,12 @@ class CinemaEngine {
             block.innerHTML = '<div class="cinema-ep-streams-loading"><div class="cinema-loading-spinner" style="width:14px;height:14px;border-width:2px;margin:0;"></div> Buscando fuentes 4K, 1080p y 720p en la red...</div>';
           }
           await this.loadEpisodeStreams(show, rawEpisodes[epIdx], sNum, eNum, block, epIdx);
+        };
+        btn.onkeydown = (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            btn.click();
+          }
         };
       });
 
@@ -8650,50 +8745,35 @@ class CinemaEngine {
     }
 
     if (sortedStreams && sortedStreams.length > 0) {
-      episode.streams = sortedStreams;
+      const filtered = this.filterEpisodeStreams(sortedStreams);
+      episode.streams = filtered.length > 0 ? filtered : sortedStreams.slice(0, 3);
       if (blockEl) {
-        blockEl.innerHTML = `
-          <div class="cinema-ep-streams-header">
-            <span>🎬 CALIDADES DISPONIBLES (${sortedStreams.length}):</span>
-          </div>
-          <div class="cinema-ep-streams-list">
-            ${sortedStreams.map((st, stIdx) => {
-              const qClass = (st.quality === '4K') ? 'q-4k' : ((st.quality === '1080p') ? 'q-1080p' : ((st.quality === '480p') ? 'q-480p' : 'q-720p'));
-              const audioDesc = st.audio || 'Audio Original';
-              const flagsStr = (st.flags && st.flags.length > 0) ? st.flags.slice(0, 4).join(' ') : '🇺🇸';
-              const isLatino = audioDesc.toLowerCase().includes('latino') || flagsStr.includes('🇲🇽');
-              const isDual = audioDesc.toLowerCase().includes('dual') || audioDesc.toLowerCase().includes('multi');
-              const epReleaseName = st.title || st.name || `Episodio S${seasonNum}E${episodeNum} [${st.quality}]`;
-
-              return `
-                <button class="cinema-ep-stream-btn" data-action="play-ep-stream" data-ep-idx="${epIdx}" data-stream-idx="${stIdx}" title="Reproducir en ${st.quality} (${st.size}) - ${audioDesc}">
-                  <div class="cinema-ep-stream-btn-inner">
-                    <div class="cinema-ep-stream-meta-row">
-                      <span class="cinema-ep-q-tag ${qClass}">${st.quality}</span>
-                      <span class="cinema-ep-size-tag">💾 ${st.size}</span>
-                      <span class="cinema-ep-seeds-tag">⚡ ${st.seeds} semillas</span>
-                      <span class="cinema-ep-lang-tag ${isLatino ? 'is-latino' : (isDual ? 'is-dual' : '')}"><span class="cinema-flags-icon">${flagsStr}</span> ${audioDesc}</span>
-                    </div>
-                    <div class="cinema-torrent-filename" title="Nombre exacto del archivo torrent (para concordar con subtítulos)">
-                      <span class="cinema-torrent-fn-icon">📁</span>
-                      <span class="cinema-torrent-fn-text">${epReleaseName}</span>
-                    </div>
-                  </div>
-                  <span class="cinema-ep-play-text">▶ REPRODUCIR</span>
-                </button>
-              `;
-            }).join('')}
-          </div>
-        `;
+        blockEl.innerHTML = this.renderEpisodeCarouselHtml(episode.streams, epIdx, seasonNum, episodeNum);
         blockEl.querySelectorAll('[data-action="play-ep-stream"]').forEach(btn => {
           btn.onclick = (e) => {
             e.stopPropagation();
             const sIdx = parseInt(btn.dataset.streamIdx, 10);
-            const stream = sortedStreams[sIdx];
+            const stream = episode.streams[sIdx];
             this.playEpisode(show, episode, stream);
+          };
+          btn.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              btn.click();
+            }
           };
         });
       }
+    } else {
+      if (blockEl) {
+        blockEl.innerHTML = `
+          <div style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:8px;">
+            <span>No se encontraron fuentes digitales verificadas actualmente.</span>
+          </div>
+        `;
+      }
+    }
+  }
     } else {
       if (blockEl) {
         blockEl.innerHTML = `
@@ -8810,7 +8890,7 @@ class CinemaEngine {
     const imdbCode = show.imdb || (episode.imdb || '');
 
     const rawStreams = (episode.streams && episode.streams.length > 0) ? episode.streams : (stream ? [stream] : []);
-    const availableStreams = this.sortStreamsByQuality(rawStreams);
+    const availableStreams = this.filterEpisodeStreams(rawStreams);
     const currentIndex = availableStreams.findIndex(st => (st.hash && stream && stream.hash && st.hash.toLowerCase() === stream.hash.toLowerCase()) || st.magnet_url === torrentId);
 
     this.activeMedia = {
@@ -10716,8 +10796,10 @@ function initTvNavigation() {
         '#cinemaDetailWatchedBtn',
         '[data-action="play-movie-quality"]',
         '.cinema-season-tab',
+        '.cinema-source-card',
         '[data-action="play-ep-stream"]',
         '[data-action="load-ep-streams"]',
+        '.cinema-btn-load-ep-streams',
         '.cinema-ep-stream-btn',
         '.cinema-quality-play-btn',
         '#btnManualStartPlay'
@@ -10777,9 +10859,14 @@ function initTvNavigation() {
     } catch (e) {
       try { element.focus(); } catch (e2) {}
     }
-    // Desplazamiento instantáneo sin animación para 60 FPS constantes en TV
+    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel
     try {
-      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const carousel = element.closest('.cinema-ep-carousel') || element.closest('.cinema-seasons-bar');
+      if (carousel) {
+        element.scrollIntoView({ block: 'nearest', inline: 'center' });
+      } else {
+        element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
     } catch (e) {
       try { element.scrollIntoView(); } catch (e2) {}
     }
