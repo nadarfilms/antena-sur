@@ -8774,16 +8774,6 @@ class CinemaEngine {
       }
     }
   }
-    } else {
-      if (blockEl) {
-        blockEl.innerHTML = `
-          <div style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:8px;">
-            <span>No se encontraron fuentes digitales verificadas actualmente.</span>
-          </div>
-        `;
-      }
-    }
-  }
 
   closeDetail() {
     if (this.dom.detailView) {
