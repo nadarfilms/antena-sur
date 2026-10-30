@@ -4112,7 +4112,7 @@ export class CinemaEngine {
     let totalPollSeconds = 0;
     let failoverTriggered = false;
     let currentDownloadedBytes = 0;
-    const INITIAL_BUFFER_TARGET_BYTES = 8 * 1024 * 1024; // 8 MB de buffer inicial sólido (4x de carga para reproducción fluida sin cortes)
+    const INITIAL_BUFFER_TARGET_BYTES = 24 * 1024 * 1024; // 24 MB de buffer inicial sólido (el triple de carga para reproducción ininterrumpida)
 
     // Función auxiliar para calcular segundos de video listos por delante en el buffer del navegador
     const getBufferedAhead = () => {
@@ -4189,8 +4189,8 @@ export class CinemaEngine {
     const attemptPlaybackWithBuffer = () => {
       if (playbackStarted) return;
       const bufAhead = getBufferedAhead();
-      // Iniciar cuando el buffer descargado alcance 8MB O tengamos >= 6.0 segundos decodificados en el buffer
-      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 6.0 || totalPollSeconds >= 18) {
+      // Iniciar cuando el buffer descargado alcance 24MB O tengamos >= 15.0 segundos decodificados en el buffer
+      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 15.0 || (totalPollSeconds >= 25 && currentDownloadedBytes >= 10 * 1024 * 1024)) {
         onReadyToPlay();
       }
     };
@@ -4198,7 +4198,8 @@ export class CinemaEngine {
     video.onloadeddata = () => attemptPlaybackWithBuffer();
     video.oncanplay = () => attemptPlaybackWithBuffer();
     video.oncanplaythrough = () => {
-      if (!playbackStarted && (currentDownloadedBytes >= 4 * 1024 * 1024 || totalPollSeconds >= 12)) {
+      const bufAhead = getBufferedAhead();
+      if (!playbackStarted && (currentDownloadedBytes >= 18 * 1024 * 1024 || bufAhead >= 15.0 || (totalPollSeconds >= 20 && currentDownloadedBytes >= 10 * 1024 * 1024))) {
         onReadyToPlay();
       }
     };
@@ -4231,6 +4232,7 @@ export class CinemaEngine {
       totalPollSeconds++;
       let hasData = false;
       let peers = 0;
+      let totalPeers = 0;
       let speed = 0;
       let dlMB = '0.0';
       let totMB = '0.0';
@@ -4247,6 +4249,7 @@ export class CinemaEngine {
           if (data && data.active) {
             hasData = true;
             peers = data.numPeers || 0;
+            totalPeers = data.totalPeers || peers;
             speed = data.downloadSpeed || 0;
             dlMB = data.downloadedMB || '0.0';
             totMB = data.totalMB || '0.0';
@@ -4264,7 +4267,11 @@ export class CinemaEngine {
 
       if (this.dom.playerStatsBadge) {
         if (peers > 0) {
-          this.dom.playerStatsBadge.textContent = `👥 ${peers} Semillas • ${speed} KB/s`;
+          if (totalPeers > peers) {
+            this.dom.playerStatsBadge.textContent = `👥 ${peers} conectadas (${totalPeers} semillas) • ${speed} KB/s`;
+          } else {
+            this.dom.playerStatsBadge.textContent = `👥 ${peers} Semillas • ${speed} KB/s`;
+          }
         } else {
           this.dom.playerStatsBadge.textContent = `Buscando semillas (${totalPollSeconds}s)...`;
         }
@@ -4275,12 +4282,12 @@ export class CinemaEngine {
         this.probeAudioTracks(torrentId, fileIdx);
       }
 
-      // Si tras 12 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
+      // Si tras 18 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
       // failover automático a la siguiente opción torrent
-      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 12) {
+      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 18) {
         failoverTriggered = true;
-        console.log('[Cinema Player] Sin semillas activas tras 12s. Probando siguiente opción torrent...');
-        this.tryNextStreamFallback('sin semillas activas tras 12s');
+        console.log('[Cinema Player] Sin semillas activas tras 18s. Probando siguiente opción torrent...');
+        this.tryNextStreamFallback('sin semillas activas tras 18s');
         return;
       }
 
@@ -4291,6 +4298,8 @@ export class CinemaEngine {
         let statsMsg = '';
         if (peers === 0) {
           statsMsg = `⚡ 0 KB/s • 👥 Conectando semillas... (${secondsWithZeroPeers}s)`;
+        } else if (totalPeers > peers) {
+          statsMsg = `⚡ ${speed} KB/s • 👥 ${peers} conectadas de ${totalPeers} semillas`;
         } else {
           statsMsg = `⚡ ${speed} KB/s • 👥 ${peers} semillas conectadas`;
         }
@@ -4301,12 +4310,13 @@ export class CinemaEngine {
           this.dom.progressFill.style.width = `${Math.max(6, pct)}%`;
         }
         if (peers > 0 && this.dom.playerStatusBadge) {
-          this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot"></span> ${peers} SEMILLAS ACTIVAS`;
+          const peerLabel = totalPeers > peers ? `${peers}/${totalPeers}` : `${peers}`;
+          this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot"></span> ${peerLabel} SEMILLAS ACTIVAS`;
         }
 
         // Disparar reproducción fluida una vez alcanzado el umbral de buffer para evitar pausas
         const bufAhead = getBufferedAhead();
-        if ((downloadedBytes >= bufferTarget || bufAhead >= 6.0 || (totalPollSeconds >= 18 && downloadedBytes >= 4 * 1024 * 1024)) && video.paused) {
+        if ((downloadedBytes >= bufferTarget || bufAhead >= 15.0 || (totalPollSeconds >= 25 && downloadedBytes >= 10 * 1024 * 1024)) && video.paused) {
           video.play().then(() => {
             onReadyToPlay();
           }).catch(() => {});

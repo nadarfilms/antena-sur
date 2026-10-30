@@ -10548,7 +10548,7 @@ class CinemaEngine {
     let totalPollSeconds = 0;
     let failoverTriggered = false;
     let currentDownloadedBytes = 0;
-    const INITIAL_BUFFER_TARGET_BYTES = 8 * 1024 * 1024; // 8 MB de buffer inicial sólido (4x de carga para reproducción fluida sin cortes)
+    const INITIAL_BUFFER_TARGET_BYTES = 24 * 1024 * 1024; // 24 MB de buffer inicial sólido (el triple de carga para reproducción ininterrumpida)
 
     // Función auxiliar para calcular segundos de video listos por delante en el buffer del navegador
     const getBufferedAhead = () => {
@@ -10625,8 +10625,8 @@ class CinemaEngine {
     const attemptPlaybackWithBuffer = () => {
       if (playbackStarted) return;
       const bufAhead = getBufferedAhead();
-      // Iniciar cuando el buffer descargado alcance 8MB O tengamos >= 6.0 segundos decodificados en el buffer
-      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 6.0 || totalPollSeconds >= 18) {
+      // Iniciar cuando el buffer descargado alcance 24MB O tengamos >= 15.0 segundos decodificados en el buffer
+      if (currentDownloadedBytes >= INITIAL_BUFFER_TARGET_BYTES || bufAhead >= 15.0 || (totalPollSeconds >= 25 && currentDownloadedBytes >= 10 * 1024 * 1024)) {
         onReadyToPlay();
       }
     };
@@ -10634,7 +10634,8 @@ class CinemaEngine {
     video.onloadeddata = () => attemptPlaybackWithBuffer();
     video.oncanplay = () => attemptPlaybackWithBuffer();
     video.oncanplaythrough = () => {
-      if (!playbackStarted && (currentDownloadedBytes >= 4 * 1024 * 1024 || totalPollSeconds >= 12)) {
+      const bufAhead = getBufferedAhead();
+      if (!playbackStarted && (currentDownloadedBytes >= 18 * 1024 * 1024 || bufAhead >= 15.0 || (totalPollSeconds >= 20 && currentDownloadedBytes >= 10 * 1024 * 1024))) {
         onReadyToPlay();
       }
     };
@@ -10667,6 +10668,7 @@ class CinemaEngine {
       totalPollSeconds++;
       let hasData = false;
       let peers = 0;
+      let totalPeers = 0;
       let speed = 0;
       let dlMB = '0.0';
       let totMB = '0.0';
@@ -10683,6 +10685,7 @@ class CinemaEngine {
           if (data && data.active) {
             hasData = true;
             peers = data.numPeers || 0;
+            totalPeers = data.totalPeers || peers;
             speed = data.downloadSpeed || 0;
             dlMB = data.downloadedMB || '0.0';
             totMB = data.totalMB || '0.0';
@@ -10700,7 +10703,11 @@ class CinemaEngine {
 
       if (this.dom.playerStatsBadge) {
         if (peers > 0) {
-          this.dom.playerStatsBadge.textContent = `👥 ${peers} Semillas • ${speed} KB/s`;
+          if (totalPeers > peers) {
+            this.dom.playerStatsBadge.textContent = `👥 ${peers} conectadas (${totalPeers} semillas) • ${speed} KB/s`;
+          } else {
+            this.dom.playerStatsBadge.textContent = `👥 ${peers} Semillas • ${speed} KB/s`;
+          }
         } else {
           this.dom.playerStatsBadge.textContent = `Buscando semillas (${totalPollSeconds}s)...`;
         }
@@ -10711,12 +10718,12 @@ class CinemaEngine {
         this.probeAudioTracks(torrentId, fileIdx);
       }
 
-      // Si tras 12 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
+      // Si tras 18 segundos no hay semillas activas en este torrent y no se ha iniciado la reproducción,
       // failover automático a la siguiente opción torrent
-      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 12) {
+      if (!playbackStarted && !failoverTriggered && secondsWithZeroPeers >= 18) {
         failoverTriggered = true;
-        console.log('[Cinema Player] Sin semillas activas tras 12s. Probando siguiente opción torrent...');
-        this.tryNextStreamFallback('sin semillas activas tras 12s');
+        console.log('[Cinema Player] Sin semillas activas tras 18s. Probando siguiente opción torrent...');
+        this.tryNextStreamFallback('sin semillas activas tras 18s');
         return;
       }
 
@@ -10727,6 +10734,8 @@ class CinemaEngine {
         let statsMsg = '';
         if (peers === 0) {
           statsMsg = `⚡ 0 KB/s • 👥 Conectando semillas... (${secondsWithZeroPeers}s)`;
+        } else if (totalPeers > peers) {
+          statsMsg = `⚡ ${speed} KB/s • 👥 ${peers} conectadas de ${totalPeers} semillas`;
         } else {
           statsMsg = `⚡ ${speed} KB/s • 👥 ${peers} semillas conectadas`;
         }
@@ -10737,12 +10746,13 @@ class CinemaEngine {
           this.dom.progressFill.style.width = `${Math.max(6, pct)}%`;
         }
         if (peers > 0 && this.dom.playerStatusBadge) {
-          this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot"></span> ${peers} SEMILLAS ACTIVAS`;
+          const peerLabel = totalPeers > peers ? `${peers}/${totalPeers}` : `${peers}`;
+          this.dom.playerStatusBadge.innerHTML = `<span class="cinema-pulse-dot"></span> ${peerLabel} SEMILLAS ACTIVAS`;
         }
 
         // Disparar reproducción fluida una vez alcanzado el umbral de buffer para evitar pausas
         const bufAhead = getBufferedAhead();
-        if ((downloadedBytes >= bufferTarget || bufAhead >= 6.0 || (totalPollSeconds >= 18 && downloadedBytes >= 4 * 1024 * 1024)) && video.paused) {
+        if ((downloadedBytes >= bufferTarget || bufAhead >= 15.0 || (totalPollSeconds >= 25 && downloadedBytes >= 10 * 1024 * 1024)) && video.paused) {
           video.play().then(() => {
             onReadyToPlay();
           }).catch(() => {});
@@ -10913,16 +10923,137 @@ function initTvNavigation() {
       current = currentTvFocused || document.querySelector('.is-tv-focused');
     }
 
-    // 0. Si el reproductor Cinema está abierto, garantizar foco interno
+    // ========================================================================
+    // 0. NAVEGACIÓN DETERMINISTA EN REPRODUCTOR CINEMA (PANTALLA COMPLETA)
+    // ========================================================================
     const cinemaPlayerView = document.getElementById('cinemaPlayerView');
     if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
-      const focusable = getFocusableElements();
-      if (!current || !cinemaPlayerView.contains(current)) {
-        if (focusable.length > 0) {
-          setFocus(focusable[0]);
+      if (window.AntenaSurCinema && typeof window.AntenaSurCinema.resetHudTimer === 'function') {
+        window.AntenaSurCinema.resetHudTimer();
+      }
+
+      // 0.A. Si hay un menú flotante abierto (Subtítulos, Audio o Velocidad)
+      const openPopover = cinemaPlayerView.querySelector('.cinema-player-popover:not(.is-hidden)');
+      const isPopoverActive = openPopover && window.getComputedStyle(openPopover).display !== 'none';
+      if (isPopoverActive) {
+        const popoverItems = Array.from(openPopover.querySelectorAll(
+          'button, [tabindex="0"], .cinema-sub-option, .cinema-sub-size-pill, .cinema-sub-pos-pill, .cinema-btn-sync, .cinema-audio-opt-btn, .cinema-speed-opt, .cinema-popover-close-btn'
+        )).filter(isVisible);
+
+        if (popoverItems.length > 0) {
+          if (!current || !openPopover.contains(current)) {
+            const activeItem = openPopover.querySelector('.is-active') || popoverItems[0];
+            setFocus(activeItem);
+            return;
+          }
+
+          const curIdx = popoverItems.indexOf(current);
+          if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+            const nextIdx = (curIdx + 1) % popoverItems.length;
+            setFocus(popoverItems[nextIdx]);
+            return;
+          } else if (direction === 'ArrowUp' || direction === 'ArrowLeft') {
+            const prevIdx = (curIdx - 1 + popoverItems.length) % popoverItems.length;
+            setFocus(popoverItems[prevIdx]);
+            return;
+          }
+        }
+        return;
+      }
+
+      // 0.B. Controles principales del Reproductor
+      const backBtn = document.getElementById('cinemaPlayerBackBtn');
+      const scrubTrack = document.getElementById('cinemaScrubTrack');
+      const bottomBtnIds = [
+        'cinemaCtrlPlayBtn',
+        'cinemaCtrlRewindBtn',
+        'cinemaCtrlForwardBtn',
+        'cinemaCtrlVolumeBtn',
+        'cinemaCtrlAudioBtn',
+        'cinemaCtrlSubtitlesBtn',
+        'cinemaCtrlSpeedBtn',
+        'cinemaCtrlAspectBtn',
+        'cinemaCtrlFullscreenBtn'
+      ];
+      const bottomBtns = bottomBtnIds
+        .map(id => document.getElementById(id))
+        .filter(isVisible);
+
+      const playBtn = document.getElementById('cinemaCtrlPlayBtn') || (bottomBtns.length > 0 ? bottomBtns[0] : null);
+
+      // Si no hay foco dentro del reproductor, enfocar Play o Salir
+      if (!current || !cinemaPlayerView.contains(current) || current === cinemaPlayerView) {
+        setFocus(playBtn || backBtn);
+        return;
+      }
+
+      // 0.B.1 Foco en Botón "◀ SALIR" (Top Header)
+      if (current === backBtn) {
+        if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+          setFocus(scrubTrack && isVisible(scrubTrack) ? scrubTrack : (playBtn || backBtn));
           return;
         }
+        return;
       }
+
+      // 0.B.2 Foco en Barra de Progreso (Scrubber Track)
+      if (current === scrubTrack) {
+        if (direction === 'ArrowUp') {
+          setFocus(backBtn && isVisible(backBtn) ? backBtn : playBtn);
+          return;
+        }
+        if (direction === 'ArrowDown') {
+          setFocus(playBtn || (bottomBtns.length > 0 ? bottomBtns[0] : backBtn));
+          return;
+        }
+        if (direction === 'ArrowLeft') {
+          if (window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(-10);
+          }
+          return;
+        }
+        if (direction === 'ArrowRight') {
+          if (window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(10);
+          }
+          return;
+        }
+        return;
+      }
+
+      // 0.B.3 Foco en la Fila de Botones Inferiores
+      const btnIdx = bottomBtns.indexOf(current);
+      if (btnIdx !== -1) {
+        if (direction === 'ArrowLeft') {
+          if (btnIdx > 0) {
+            setFocus(bottomBtns[btnIdx - 1]);
+            return;
+          } else if (backBtn && isVisible(backBtn)) {
+            setFocus(backBtn);
+            return;
+          }
+        } else if (direction === 'ArrowRight') {
+          if (btnIdx < bottomBtns.length - 1) {
+            setFocus(bottomBtns[btnIdx + 1]);
+            return;
+          }
+        } else if (direction === 'ArrowUp') {
+          if (scrubTrack && isVisible(scrubTrack)) {
+            setFocus(scrubTrack);
+            return;
+          } else if (backBtn && isVisible(backBtn)) {
+            setFocus(backBtn);
+            return;
+          }
+        } else if (direction === 'ArrowDown') {
+          return;
+        }
+        return;
+      }
+
+      // Foco de respaldo
+      setFocus(playBtn || backBtn);
+      return;
     }
 
     // Helper: determinar si un elemento es visible en pantalla
@@ -11630,7 +11761,7 @@ function initTvNavigation() {
         if (!current || current === document.body || current === cinemaPlayerView) {
           current = document.querySelector('.is-tv-focused');
         }
-        if (current && typeof current.click === 'function' && current !== cinemaPlayerView) {
+        if (current && typeof current.click === 'function' && current !== cinemaPlayerView && current.id !== 'cinemaScrubTrack') {
           current.click();
         } else if (window.AntenaSurCinema && typeof window.AntenaSurCinema.togglePlayPause === 'function') {
           window.AntenaSurCinema.togglePlayPause();

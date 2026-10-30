@@ -150,16 +150,137 @@ export function initTvNavigation() {
       current = currentTvFocused || document.querySelector('.is-tv-focused');
     }
 
-    // 0. Si el reproductor Cinema está abierto, garantizar foco interno
+    // ========================================================================
+    // 0. NAVEGACIÓN DETERMINISTA EN REPRODUCTOR CINEMA (PANTALLA COMPLETA)
+    // ========================================================================
     const cinemaPlayerView = document.getElementById('cinemaPlayerView');
     if (cinemaPlayerView && !cinemaPlayerView.classList.contains('is-hidden')) {
-      const focusable = getFocusableElements();
-      if (!current || !cinemaPlayerView.contains(current)) {
-        if (focusable.length > 0) {
-          setFocus(focusable[0]);
+      if (window.AntenaSurCinema && typeof window.AntenaSurCinema.resetHudTimer === 'function') {
+        window.AntenaSurCinema.resetHudTimer();
+      }
+
+      // 0.A. Si hay un menú flotante abierto (Subtítulos, Audio o Velocidad)
+      const openPopover = cinemaPlayerView.querySelector('.cinema-player-popover:not(.is-hidden)');
+      const isPopoverActive = openPopover && window.getComputedStyle(openPopover).display !== 'none';
+      if (isPopoverActive) {
+        const popoverItems = Array.from(openPopover.querySelectorAll(
+          'button, [tabindex="0"], .cinema-sub-option, .cinema-sub-size-pill, .cinema-sub-pos-pill, .cinema-btn-sync, .cinema-audio-opt-btn, .cinema-speed-opt, .cinema-popover-close-btn'
+        )).filter(isVisible);
+
+        if (popoverItems.length > 0) {
+          if (!current || !openPopover.contains(current)) {
+            const activeItem = openPopover.querySelector('.is-active') || popoverItems[0];
+            setFocus(activeItem);
+            return;
+          }
+
+          const curIdx = popoverItems.indexOf(current);
+          if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+            const nextIdx = (curIdx + 1) % popoverItems.length;
+            setFocus(popoverItems[nextIdx]);
+            return;
+          } else if (direction === 'ArrowUp' || direction === 'ArrowLeft') {
+            const prevIdx = (curIdx - 1 + popoverItems.length) % popoverItems.length;
+            setFocus(popoverItems[prevIdx]);
+            return;
+          }
+        }
+        return;
+      }
+
+      // 0.B. Controles principales del Reproductor
+      const backBtn = document.getElementById('cinemaPlayerBackBtn');
+      const scrubTrack = document.getElementById('cinemaScrubTrack');
+      const bottomBtnIds = [
+        'cinemaCtrlPlayBtn',
+        'cinemaCtrlRewindBtn',
+        'cinemaCtrlForwardBtn',
+        'cinemaCtrlVolumeBtn',
+        'cinemaCtrlAudioBtn',
+        'cinemaCtrlSubtitlesBtn',
+        'cinemaCtrlSpeedBtn',
+        'cinemaCtrlAspectBtn',
+        'cinemaCtrlFullscreenBtn'
+      ];
+      const bottomBtns = bottomBtnIds
+        .map(id => document.getElementById(id))
+        .filter(isVisible);
+
+      const playBtn = document.getElementById('cinemaCtrlPlayBtn') || (bottomBtns.length > 0 ? bottomBtns[0] : null);
+
+      // Si no hay foco dentro del reproductor, enfocar Play o Salir
+      if (!current || !cinemaPlayerView.contains(current) || current === cinemaPlayerView) {
+        setFocus(playBtn || backBtn);
+        return;
+      }
+
+      // 0.B.1 Foco en Botón "◀ SALIR" (Top Header)
+      if (current === backBtn) {
+        if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+          setFocus(scrubTrack && isVisible(scrubTrack) ? scrubTrack : (playBtn || backBtn));
           return;
         }
+        return;
       }
+
+      // 0.B.2 Foco en Barra de Progreso (Scrubber Track)
+      if (current === scrubTrack) {
+        if (direction === 'ArrowUp') {
+          setFocus(backBtn && isVisible(backBtn) ? backBtn : playBtn);
+          return;
+        }
+        if (direction === 'ArrowDown') {
+          setFocus(playBtn || (bottomBtns.length > 0 ? bottomBtns[0] : backBtn));
+          return;
+        }
+        if (direction === 'ArrowLeft') {
+          if (window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(-10);
+          }
+          return;
+        }
+        if (direction === 'ArrowRight') {
+          if (window.AntenaSurCinema && typeof window.AntenaSurCinema.seekRelative === 'function') {
+            window.AntenaSurCinema.seekRelative(10);
+          }
+          return;
+        }
+        return;
+      }
+
+      // 0.B.3 Foco en la Fila de Botones Inferiores
+      const btnIdx = bottomBtns.indexOf(current);
+      if (btnIdx !== -1) {
+        if (direction === 'ArrowLeft') {
+          if (btnIdx > 0) {
+            setFocus(bottomBtns[btnIdx - 1]);
+            return;
+          } else if (backBtn && isVisible(backBtn)) {
+            setFocus(backBtn);
+            return;
+          }
+        } else if (direction === 'ArrowRight') {
+          if (btnIdx < bottomBtns.length - 1) {
+            setFocus(bottomBtns[btnIdx + 1]);
+            return;
+          }
+        } else if (direction === 'ArrowUp') {
+          if (scrubTrack && isVisible(scrubTrack)) {
+            setFocus(scrubTrack);
+            return;
+          } else if (backBtn && isVisible(backBtn)) {
+            setFocus(backBtn);
+            return;
+          }
+        } else if (direction === 'ArrowDown') {
+          return;
+        }
+        return;
+      }
+
+      // Foco de respaldo
+      setFocus(playBtn || backBtn);
+      return;
     }
 
     // Helper: determinar si un elemento es visible en pantalla
@@ -867,7 +988,7 @@ export function initTvNavigation() {
         if (!current || current === document.body || current === cinemaPlayerView) {
           current = document.querySelector('.is-tv-focused');
         }
-        if (current && typeof current.click === 'function' && current !== cinemaPlayerView) {
+        if (current && typeof current.click === 'function' && current !== cinemaPlayerView && current.id !== 'cinemaScrubTrack') {
           current.click();
         } else if (window.AntenaSurCinema && typeof window.AntenaSurCinema.togglePlayPause === 'function') {
           window.AntenaSurCinema.togglePlayPause();

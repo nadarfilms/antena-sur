@@ -281,12 +281,20 @@ const PUBLIC_TRACKERS = [
   'udp://p4p.arenabg.com:1337/announce',
   'udp://tracker.qu.ax:6969/announce',
   'udp://tracker.moeking.me:6969/announce',
+  'udp://opentracker.i2p.rocks:6969/announce',
+  'udp://tracker.altrosky.nl:6969/announce',
+  'udp://open.free-tracker.ga:6969/announce',
+  'udp://tracker.filemail.com:6969/announce',
+  'udp://tracker.srv00.com:6969/announce',
+  'http://tracker.openbittorrent.com:80/announce',
+  'http://tracker.opentrackr.org:1337/announce',
   'wss://tracker.btorrent.xyz',
-  'wss://tracker.openwebtorrent.com'
+  'wss://tracker.openwebtorrent.com',
+  'wss://tracker.fastcast.nz'
 ];
 
 const client = new WebTorrent({
-  maxConns: 120,
+  maxConns: 350,
   dht: {
     bootstrap: [
       'router.bittorrent.com:6881',
@@ -397,6 +405,9 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    const activePeers = t.numPeers || (t.wires ? t.wires.length : 0);
+    const swarmPeers = t._peers ? Object.keys(t._peers).length : 0;
+    const totalPeers = Math.max(activePeers, swarmPeers);
     const downloadedMB = (t.downloaded / (1024 * 1024)).toFixed(1);
     const totalMB = ((t.length || 0) / (1024 * 1024)).toFixed(1);
     const elapsedSec = t._antenaAddedTime ? Math.round((Date.now() - t._antenaAddedTime) / 1000) : 0;
@@ -409,7 +420,8 @@ const server = http.createServer(async (req, res) => {
       progress: Math.min(100, Math.round((t.progress || 0) * 100)),
       downloadSpeed: Math.round((t.downloadSpeed || 0) / 1024), // KB/s
       uploadSpeed: Math.round((t.uploadSpeed || 0) / 1024),
-      numPeers: t.numPeers || 0,
+      numPeers: activePeers,
+      totalPeers: totalPeers,
       downloaded: t.downloaded || 0,
       length: t.length || 0,
       downloadedMB,
@@ -547,7 +559,8 @@ const server = http.createServer(async (req, res) => {
 
       try {
         torrent = client.add(torrentInput, {
-          announce: PUBLIC_TRACKERS
+          announce: PUBLIC_TRACKERS,
+          maxWebConns: 30
         });
         torrent._antenaAddedTime = Date.now();
         console.log(`[Torrent Stream Engine] Nuevo torrent añadido al cliente: ${targetHash || (Buffer.isBuffer(torrentInput) ? 'Buffer' : torrentInput.slice(0, 50))}...`);
@@ -587,13 +600,13 @@ const server = http.createServer(async (req, res) => {
       // Priorizar el inicio del archivo con alto pre-buffer inicial para evitar pausas o micro-cortes
       if (file._startPiece !== undefined && file._endPiece !== undefined) {
         try {
-          // Descargar de forma crítica e inmediata los primeros 24 pieces (cabeceras + primer buffer masivo de al menos 12MB)
-          torrent.critical(file._startPiece, Math.min(file._startPiece + 24, file._endPiece));
-          // Pre-buffer de las siguientes 96 piezas con prioridad alta (4x mayor para reproducción ultra fluida)
-          torrent.select(file._startPiece, Math.min(file._startPiece + 96, file._endPiece), 1);
+          // Descargar de forma crítica e inmediata los primeros 48 pieces (cabeceras + primer buffer masivo de al menos 24MB-48MB)
+          torrent.critical(file._startPiece, Math.min(file._startPiece + 48, file._endPiece));
+          // Pre-buffer de las siguientes 160 piezas con prioridad alta para reproducción ultra fluida
+          torrent.select(file._startPiece, Math.min(file._startPiece + 160, file._endPiece), 1);
           // Índice moov al final del archivo (por si el contenedor no tiene faststart)
-          torrent.critical(Math.max(file._startPiece, file._endPiece - 4), file._endPiece);
-          torrent.select(Math.max(file._startPiece, file._endPiece - 8), file._endPiece, 1);
+          torrent.critical(Math.max(file._startPiece, file._endPiece - 6), file._endPiece);
+          torrent.select(Math.max(file._startPiece, file._endPiece - 16), file._endPiece, 1);
         } catch (e) {}
       }
 
@@ -698,9 +711,9 @@ const server = http.createServer(async (req, res) => {
         // Priorizar piezas del rango solicitado con amplia ventana de anticipación
         if (torrent.pieceLength && file.offset !== undefined) {
           const startPiece = Math.floor((start + file.offset) / torrent.pieceLength);
-          const endPiece = Math.min(torrent.pieces.length - 1, startPiece + 14);
+          const endPiece = Math.min(torrent.pieces.length - 1, startPiece + 32);
           try {
-            torrent.critical(startPiece, Math.min(torrent.pieces.length - 1, startPiece + 6));
+            torrent.critical(startPiece, Math.min(torrent.pieces.length - 1, startPiece + 12));
             torrent.select(startPiece, endPiece, 1);
           } catch (e) {}
         }

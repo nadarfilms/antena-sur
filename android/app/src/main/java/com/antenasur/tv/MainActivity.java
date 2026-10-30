@@ -5,6 +5,7 @@ import android.app.UiModeManager;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -184,6 +185,12 @@ public class MainActivity extends AppCompatActivity {
         }, "AndroidNative");
 
         mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public Bitmap getDefaultVideoPoster() {
+                // Elimina por completo el gigantesco icono de play que Android WebView muestra por defecto de fondo en el video
+                return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            }
+
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, android.os.Message resultMsg) {
                 // Bloquea por completo cualquier ventana emergente o popup publicitario
