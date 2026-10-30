@@ -53,11 +53,14 @@ export class CinemaEngine {
       sortSelect: document.getElementById('cinemaSortSelect'),
       genresList: document.getElementById('cinemaGenresList'),
       resultsCount: document.getElementById('cinemaResultsCount'),
+      catalogTitle: document.getElementById('cinemaCatalogTitle'),
       contentArea: document.getElementById('cinemaContentArea'),
       grid: document.getElementById('cinemaGrid'),
       loadingState: document.getElementById('cinemaLoadingState'),
       emptyState: document.getElementById('cinemaEmptyState'),
       loadMoreBtn: document.getElementById('cinemaLoadMoreBtn'),
+      infiniteSentinel: document.getElementById('cinemaInfiniteSentinel'),
+      infiniteLoading: document.getElementById('cinemaInfiniteLoading'),
 
       // Carruseles Horizontales Plex (Continuar Viendo y Recomendados)
       continueSection: document.getElementById('cinemaContinueSection'),
@@ -347,11 +350,35 @@ export class CinemaEngine {
       });
     }
 
-    // Botón Cargar Más
+    // Carga de Más Contenido Automática / Scroll Infinito
+    if (this.dom.contentArea) {
+      this.dom.contentArea.addEventListener('scroll', () => {
+        if (this.state.isLoading || !this.state.hasMore || this.state.mode === 'library') return;
+        const { scrollTop, scrollHeight, clientHeight } = this.dom.contentArea;
+        if (scrollTop + clientHeight >= scrollHeight - 380) {
+          this.loadNextPage();
+        }
+      }, { passive: true });
+    }
+
+    if (window.IntersectionObserver && this.dom.infiniteSentinel) {
+      try {
+        const sentinelObserver = new IntersectionObserver((entries) => {
+          if (entries[0] && entries[0].isIntersecting) {
+            if (!this.state.isLoading && this.state.hasMore && this.state.mode !== 'library') {
+              this.loadNextPage();
+            }
+          }
+        }, { root: this.dom.contentArea, rootMargin: '300px' });
+        sentinelObserver.observe(this.dom.infiniteSentinel);
+      } catch (e) {
+        console.warn('[Cinema] Sentinel observer failed:', e);
+      }
+    }
+
     if (this.dom.loadMoreBtn) {
       this.dom.loadMoreBtn.addEventListener('click', () => {
-        this.state.page += 1;
-        this.loadCatalog(false);
+        this.loadNextPage();
       });
     }
 
@@ -532,17 +559,29 @@ export class CinemaEngine {
     if (mode === 'series' && this.dom.modeSeriesBtn) this.dom.modeSeriesBtn.classList.add('is-active');
     if (mode === 'library' && this.dom.modeLibraryBtn) this.dom.modeLibraryBtn.classList.add('is-active');
 
+    if (this.dom.catalogTitle) {
+      if (mode === 'movies') {
+        this.dom.catalogTitle.textContent = 'EXPLORAR PELÍCULAS';
+      } else if (mode === 'series') {
+        this.dom.catalogTitle.textContent = 'EXPLORAR SERIES';
+      } else if (mode === 'library') {
+        this.dom.catalogTitle.textContent = 'MI BIBLIOTECA';
+      }
+    }
+
     if (this.dom.genresList) {
       this.dom.genresList.style.display = (mode === 'library') ? 'none' : 'flex';
     }
     if (this.dom.rankingFilters) {
-      this.dom.rankingFilters.style.display = (mode === 'library') ? 'none' : 'flex';
+      // Los filtros de ranking (Populares, Top IMDb, RT) son exclusivos de Películas YTS
+      this.dom.rankingFilters.style.display = (mode === 'movies') ? 'flex' : 'none';
     }
     if (this.dom.sortSelect) {
       this.dom.sortSelect.style.display = (mode === 'movies') ? 'block' : 'none';
     }
 
     this.state.page = 1;
+    this.state.hasMore = true;
     if (mode !== 'library') {
       this.renderGenres();
       this.loadCatalog(true);
@@ -1142,17 +1181,28 @@ export class CinemaEngine {
     }
   }
 
+  loadNextPage() {
+    if (this.state.isLoading || !this.state.hasMore || this.state.mode === 'library') return;
+    this.state.page += 1;
+    if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'flex';
+    this.loadCatalog(false);
+  }
+
   async loadCatalog(reset = false) {
     if (this.state.isLoading) return;
     this.state.isLoading = true;
 
     if (reset) {
       this.state.page = 1;
+      this.state.hasMore = true;
       this.state.items = [];
       if (this.dom.grid) this.dom.grid.innerHTML = '';
       if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
       if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
       if (this.dom.loadingState) this.dom.loadingState.style.display = 'flex';
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
+    } else {
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'flex';
     }
 
     try {
@@ -1164,12 +1214,32 @@ export class CinemaEngine {
           page: this.state.page,
           limit: 25
         });
-        const resp = await fetch(`/api/cinema/movies?${queryParams.toString()}`);
-        const data = await resp.json();
+
+        let data = null;
+        try {
+          const resp = await fetch(`/api/cinema/movies?${queryParams.toString()}`);
+          data = await resp.json();
+        } catch (localErr) {
+          console.warn('[Cinema] Local fetch failed, fallback to cloud backend:', localErr);
+        }
+
+        // Si falló el proxy local de Android WebView o YTS retornó vacío, intentar backend Render en la nube
+        if (!data || !data.ok || !data.movies || data.movies.length === 0) {
+          try {
+            const cloudResp = await fetch(`https://antena-sur.onrender.com/api/cinema/movies?${queryParams.toString()}`);
+            const cloudData = await cloudResp.json();
+            if (cloudData && cloudData.ok && cloudData.movies && cloudData.movies.length > 0) {
+              data = cloudData;
+            }
+          } catch (cloudErr) {
+            console.warn('[Cinema] Cloud fallback failed:', cloudErr);
+          }
+        }
 
         if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+        if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
 
-        if (data.ok && data.movies && data.movies.length > 0) {
+        if (data && data.ok && data.movies && data.movies.length > 0) {
           if (reset) {
             this.state.items = data.movies;
           } else {
@@ -1177,19 +1247,18 @@ export class CinemaEngine {
           }
           this.renderMovies(data.movies, !reset);
 
+          this.state.hasMore = data.movies.length >= 25;
+
           if (this.dom.resultsCount) {
             const total = data.movie_count || this.state.items.length;
             this.dom.resultsCount.textContent = `${total.toLocaleString()} títulos`;
           }
-          if (this.dom.loadMoreBtn) {
-            this.dom.loadMoreBtn.style.display = data.movies.length >= 25 ? 'block' : 'none';
-          }
         } else {
+          this.state.hasMore = false;
           if (reset) {
             if (this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
             if (this.dom.resultsCount) this.dom.resultsCount.textContent = '0 títulos';
           }
-          if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
         }
       } else {
         // Modo Series
@@ -1197,12 +1266,31 @@ export class CinemaEngine {
           query: this.state.query,
           page: this.state.page
         });
-        const resp = await fetch(`/api/cinema/series?${queryParams.toString()}`);
-        const data = await resp.json();
+
+        let data = null;
+        try {
+          const resp = await fetch(`/api/cinema/series?${queryParams.toString()}`);
+          data = await resp.json();
+        } catch (localErr) {
+          console.warn('[Cinema] Local series fetch failed, fallback to cloud backend:', localErr);
+        }
+
+        if (!data || !data.ok || !data.shows || data.shows.length === 0) {
+          try {
+            const cloudResp = await fetch(`https://antena-sur.onrender.com/api/cinema/series?${queryParams.toString()}`);
+            const cloudData = await cloudResp.json();
+            if (cloudData && cloudData.ok && cloudData.shows && cloudData.shows.length > 0) {
+              data = cloudData;
+            }
+          } catch (cloudErr) {
+            console.warn('[Cinema] Cloud series fallback failed:', cloudErr);
+          }
+        }
 
         if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+        if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
 
-        if (data.ok && data.shows && data.shows.length > 0) {
+        if (data && data.ok && data.shows && data.shows.length > 0) {
           let filteredShows = data.shows;
           if (this.state.genre && this.state.genre !== 'all') {
             filteredShows = data.shows.filter(s =>
@@ -1218,23 +1306,23 @@ export class CinemaEngine {
 
           this.renderSeries(filteredShows, !reset);
 
+          this.state.hasMore = (!this.state.query && data.shows.length >= 25);
+
           if (this.dom.resultsCount) {
             this.dom.resultsCount.textContent = `${this.state.items.length} series`;
           }
-          if (this.dom.loadMoreBtn) {
-            this.dom.loadMoreBtn.style.display = (!this.state.query && data.shows.length >= 25) ? 'block' : 'none';
-          }
         } else {
+          this.state.hasMore = false;
           if (reset) {
             if (this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
             if (this.dom.resultsCount) this.dom.resultsCount.textContent = '0 series';
           }
-          if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
         }
       }
     } catch (err) {
       console.error('Error al cargar cartelera:', err);
       if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
       if (reset && this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
       this.showToast('No se pudo conectar con el catálogo de cine', 'warning');
     } finally {

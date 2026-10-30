@@ -489,6 +489,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static final String CLOUD_BACKEND_URL = "https://antena-sur.onrender.com";
+    private static final String[] YTS_MIRRORS_JAVA = new String[] {
+        "https://yts.lt",
+        "https://yts.ag",
+        "https://yts.am",
+        "https://yts.gg",
+        "https://yts.mx"
+    };
 
     private WebResourceResponse handleTorrentApi(WebResourceRequest request) {
         HttpURLConnection conn = null;
@@ -599,18 +606,44 @@ public class MainActivity extends AppCompatActivity {
                     minRating = "6.8";
                 }
 
-                StringBuilder ytsUrl = new StringBuilder("https://yts.mx/api/v2/list_movies.json?sort_by=");
-                ytsUrl.append(ytsSort).append("&page=").append(page).append("&limit=").append(limit);
+                StringBuilder queryParams = new StringBuilder("sort_by=").append(ytsSort)
+                    .append("&page=").append(page)
+                    .append("&limit=").append(limit);
                 if (!query.isEmpty()) {
-                    ytsUrl.append("&query_term=").append(URLEncoder.encode(query, "UTF-8"));
+                    queryParams.append("&query_term=").append(URLEncoder.encode(query, "UTF-8"));
                 } else {
-                    ytsUrl.append("&minimum_rating=").append(minRating);
+                    queryParams.append("&minimum_rating=").append(minRating);
                 }
                 if (!genre.isEmpty() && !"all".equalsIgnoreCase(genre)) {
-                    ytsUrl.append("&genre=").append(URLEncoder.encode(genre.toLowerCase(), "UTF-8"));
+                    queryParams.append("&genre=").append(URLEncoder.encode(genre.toLowerCase(), "UTF-8"));
                 }
 
-                String ytsResp = fetchHttpUrl(ytsUrl.toString(), 6000);
+                String ytsResp = null;
+                // 1. Probar espejos de YTS
+                for (String mirror : YTS_MIRRORS_JAVA) {
+                    try {
+                        String target = mirror + "/api/v2/list_movies.json?" + queryParams.toString();
+                        ytsResp = fetchHttpUrl(target, 4000);
+                        if (ytsResp != null && !ytsResp.isEmpty() && ytsResp.contains("\"status\":\"ok\"")) {
+                            break;
+                        }
+                    } catch (Throwable ignored) {}
+                }
+
+                // 2. Si los espejos directos fallan, consultar backend cloud en Render
+                if (ytsResp == null || !ytsResp.contains("\"status\":\"ok\"")) {
+                    try {
+                        String cloudUrl = CLOUD_BACKEND_URL + "/api/cinema/movies?" + queryParams.toString();
+                        String cloudResp = fetchHttpUrl(cloudUrl, 6000);
+                        if (cloudResp != null && !cloudResp.isEmpty() && cloudResp.contains("\"ok\":true")) {
+                            byte[] outBytes = cloudResp.getBytes(StandardCharsets.UTF_8);
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            return new WebResourceResponse("application/json", "UTF-8", 200, "OK", headers, new ByteArrayInputStream(outBytes));
+                        }
+                    } catch (Throwable ignored) {}
+                }
+
                 if (ytsResp != null && !ytsResp.isEmpty()) {
                     try {
                         JSONObject raw = new JSONObject(ytsResp);
@@ -631,14 +664,38 @@ public class MainActivity extends AppCompatActivity {
                         }
                     } catch (Throwable ignored) {}
                 }
+
+                // Respuesta de seguridad para evitar 404 local en WebView
+                JSONObject fallbackOut = new JSONObject();
+                fallbackOut.put("ok", false);
+                fallbackOut.put("movie_count", 0);
+                fallbackOut.put("movies", new JSONArray());
+                byte[] fbBytes = fallbackOut.toString().getBytes(StandardCharsets.UTF_8);
+                Map<String, String> fbHeaders = new HashMap<>();
+                fbHeaders.put("Access-Control-Allow-Origin", "*");
+                return new WebResourceResponse("application/json", "UTF-8", 200, "OK", fbHeaders, new ByteArrayInputStream(fbBytes));
             }
 
             // 2. Detalles de Película: /api/cinema/movie?id=...
             if (path.contains("/api/cinema/movie") && !path.contains("/movies") && !path.contains("/movie_torrents")) {
                 String id = uri.getQueryParameter("id");
                 if (id != null && !id.isEmpty()) {
-                    String detailUrl = "https://yts.mx/api/v2/movie_details.json?movie_id=" + id + "&with_images=true&with_cast=true";
-                    String detailResp = fetchHttpUrl(detailUrl, 6000);
+                    String detailResp = null;
+                    for (String mirror : YTS_MIRRORS_JAVA) {
+                        try {
+                            String detailUrl = mirror + "/api/v2/movie_details.json?movie_id=" + id + "&with_images=true&with_cast=true";
+                            detailResp = fetchHttpUrl(detailUrl, 4000);
+                            if (detailResp != null && !detailResp.isEmpty() && detailResp.contains("\"status\":\"ok\"")) {
+                                break;
+                            }
+                        } catch (Throwable ignored) {}
+                    }
+                    if (detailResp == null || !detailResp.contains("\"status\":\"ok\"")) {
+                        try {
+                            detailResp = fetchHttpUrl(CLOUD_BACKEND_URL + "/api/cinema/movie?id=" + id, 6000);
+                        } catch (Throwable ignored) {}
+                    }
+
                     if (detailResp != null && !detailResp.isEmpty()) {
                         try {
                             JSONObject raw = new JSONObject(detailResp);

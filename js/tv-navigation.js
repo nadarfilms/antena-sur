@@ -76,8 +76,7 @@ export function initTvNavigation() {
         '#cinemaUserBtn',
         '.cinema-rank-chip',
         '.cinema-genre-chip',
-        '.cinema-card',
-        '.cinema-load-more-btn'
+        '.cinema-card'
       ];
       return Array.from(cinemaVodView.querySelectorAll(vodSelectors.join(',')))
         .filter(el => {
@@ -112,9 +111,13 @@ export function initTvNavigation() {
     } catch (e) {
       try { element.focus(); } catch (e2) {}
     }
-    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel
+    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel o barra de chips
     try {
-      const carousel = element.closest('.cinema-ep-carousel') || element.closest('.cinema-seasons-bar');
+      const carousel = element.closest('.cinema-ep-carousel') ||
+                       element.closest('.cinema-seasons-bar') ||
+                       element.closest('.cinema-subbar') ||
+                       element.closest('.cinema-genres-list') ||
+                       element.closest('.cinema-ranking-filters');
       if (carousel) {
         element.scrollIntoView({ block: 'nearest', inline: 'center' });
       } else {
@@ -298,6 +301,91 @@ export function initTvNavigation() {
         return;
       }
       return;
+    }
+
+    // ========================================================================
+    // 3.1 NAVEGACIÓN EN CATÁLOGO CINEMA & SERIES (.cinema-card)
+    // ========================================================================
+    if (current.classList && current.classList.contains('cinema-card')) {
+      const allCinemaCards = Array.from(document.querySelectorAll('#cinemaGrid .cinema-card'));
+      const total = allCinemaCards.length;
+      if (total > 0) {
+        const idx = allCinemaCards.indexOf(current);
+        if (idx !== -1) {
+          // Detectar columnas dinámicamente comparando offsetTop
+          let cols = 1;
+          const top0 = allCinemaCards[0].offsetTop;
+          while (cols < total && allCinemaCards[cols].offsetTop === top0) {
+            cols++;
+          }
+
+          if (direction === 'ArrowUp') {
+            if (idx < cols) {
+              // Subir a los chips de género o ranking
+              const chips = document.querySelectorAll('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip.is-active, .cinema-subbar .cinema-genre-chip, .cinema-subbar .cinema-rank-chip');
+              if (chips.length > 0) {
+                setFocus(chips[0]);
+                return;
+              }
+            } else {
+              setFocus(allCinemaCards[idx - cols]);
+              return;
+            }
+          }
+
+          if (direction === 'ArrowDown') {
+            const nextIdx = idx + cols;
+            // Si nos acercamos a las últimas filas, disparar carga de la siguiente página
+            if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+              if (nextIdx >= total - (cols * 2)) {
+                window.AntenaSurCinema.loadNextPage();
+              }
+            }
+            if (nextIdx < total) {
+              setFocus(allCinemaCards[nextIdx]);
+              return;
+            } else {
+              // Fin de la lista actual: forzar carga de siguiente página
+              if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+                window.AntenaSurCinema.loadNextPage();
+              }
+              return;
+            }
+          }
+
+          if (direction === 'ArrowLeft') {
+            if (idx > 0) {
+              setFocus(allCinemaCards[idx - 1]);
+              return;
+            }
+          }
+
+          if (direction === 'ArrowRight') {
+            if (idx < total - 1) {
+              setFocus(allCinemaCards[idx + 1]);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // Navegación en Chips de Género y Ranking Cinema
+    if (current.classList && (current.classList.contains('cinema-genre-chip') || current.classList.contains('cinema-rank-chip'))) {
+      if (direction === 'ArrowDown') {
+        const firstCard = document.querySelector('#cinemaGrid .cinema-card');
+        if (firstCard) {
+          setFocus(firstCard);
+          return;
+        }
+      }
+      if (direction === 'ArrowUp') {
+        const activeTab = document.querySelector('.cinema-nav-tabs .cinema-tab-btn.is-active, .cinema-nav-tabs .cinema-tab-btn, #cinemaBackBtn');
+        if (activeTab) {
+          setFocus(activeTab);
+          return;
+        }
+      }
     }
 
     // ========================================================================

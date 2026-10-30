@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/components.css">
   <link rel="stylesheet" href="./css/player.css">
-  <link rel="stylesheet" href="./css/movies.css?v=2.0.6">
+  <link rel="stylesheet" href="./css/movies.css?v=2.0.7">
 
   <!-- Gestor visual de errores para diagnóstico en Smart TV / Android TV -->
   <script>
@@ -563,16 +563,16 @@
       <!-- Filtros de Ranking IMDb y Rotten Tomatoes -->
       <div class="cinema-ranking-filters" id="cinemaRankingFilters">
         <button class="cinema-rank-chip is-active" data-sort="imdb_popular" tabindex="0">
-          🔥 Más Populares (IMDb & RT)
+          🔥 Populares
         </button>
         <button class="cinema-rank-chip" data-sort="imdb_rating" tabindex="0">
-          ⭐ Top Valoradas (IMDb 8+)
+          ⭐ Top IMDb
         </button>
         <button class="cinema-rank-chip" data-sort="rotten_fresh" tabindex="0">
-          🍅 Certified Fresh (Rotten Tomatoes)
+          🍅 Rotten Tomatoes
         </button>
         <button class="cinema-rank-chip" data-sort="latest" tabindex="0">
-          🆕 Estrenos Destacados
+          🆕 Estrenos
         </button>
       </div>
 
@@ -631,10 +631,13 @@
       <!-- Cuadrícula de Pósters (Máximo 5 por fila en 16:9) -->
       <div class="cinema-grid" id="cinemaGrid"></div>
 
-      <!-- Botón Cargar Más Títulos -->
-      <button class="cinema-load-more-btn" id="cinemaLoadMoreBtn" style="display:none;" tabindex="0">
-        Cargar más títulos...
-      </button>
+      <!-- Centinela y Spinner para Carga Infinita Automática al Desplazarse -->
+      <div class="cinema-infinite-sentinel" id="cinemaInfiniteSentinel">
+        <div class="cinema-infinite-loading" id="cinemaInfiniteLoading" style="display:none;">
+          <div class="cinema-loading-spinner" style="width:22px;height:22px;border-width:2.5px;margin:0;"></div>
+          <span>Cargando más títulos...</span>
+        </div>
+      </div>
     </main>
 
     <!-- Modal de Usuario y Biblioteca Plex -->
@@ -1093,6 +1096,6 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Script Principal de la Aplicación Autónomo (con base de datos de canales y motor TV autónomo) -->
-  <script src="./js/app.bundle.js?v=2.0.6"></script>
+  <script src="./js/app.bundle.js?v=2.0.7"></script>
 </body>
 </html>

@@ -6489,11 +6489,14 @@ class CinemaEngine {
       sortSelect: document.getElementById('cinemaSortSelect'),
       genresList: document.getElementById('cinemaGenresList'),
       resultsCount: document.getElementById('cinemaResultsCount'),
+      catalogTitle: document.getElementById('cinemaCatalogTitle'),
       contentArea: document.getElementById('cinemaContentArea'),
       grid: document.getElementById('cinemaGrid'),
       loadingState: document.getElementById('cinemaLoadingState'),
       emptyState: document.getElementById('cinemaEmptyState'),
       loadMoreBtn: document.getElementById('cinemaLoadMoreBtn'),
+      infiniteSentinel: document.getElementById('cinemaInfiniteSentinel'),
+      infiniteLoading: document.getElementById('cinemaInfiniteLoading'),
 
       // Carruseles Horizontales Plex (Continuar Viendo y Recomendados)
       continueSection: document.getElementById('cinemaContinueSection'),
@@ -6783,11 +6786,35 @@ class CinemaEngine {
       });
     }
 
-    // Botón Cargar Más
+    // Carga de Más Contenido Automática / Scroll Infinito
+    if (this.dom.contentArea) {
+      this.dom.contentArea.addEventListener('scroll', () => {
+        if (this.state.isLoading || !this.state.hasMore || this.state.mode === 'library') return;
+        const { scrollTop, scrollHeight, clientHeight } = this.dom.contentArea;
+        if (scrollTop + clientHeight >= scrollHeight - 380) {
+          this.loadNextPage();
+        }
+      }, { passive: true });
+    }
+
+    if (window.IntersectionObserver && this.dom.infiniteSentinel) {
+      try {
+        const sentinelObserver = new IntersectionObserver((entries) => {
+          if (entries[0] && entries[0].isIntersecting) {
+            if (!this.state.isLoading && this.state.hasMore && this.state.mode !== 'library') {
+              this.loadNextPage();
+            }
+          }
+        }, { root: this.dom.contentArea, rootMargin: '300px' });
+        sentinelObserver.observe(this.dom.infiniteSentinel);
+      } catch (e) {
+        console.warn('[Cinema] Sentinel observer failed:', e);
+      }
+    }
+
     if (this.dom.loadMoreBtn) {
       this.dom.loadMoreBtn.addEventListener('click', () => {
-        this.state.page += 1;
-        this.loadCatalog(false);
+        this.loadNextPage();
       });
     }
 
@@ -6968,17 +6995,29 @@ class CinemaEngine {
     if (mode === 'series' && this.dom.modeSeriesBtn) this.dom.modeSeriesBtn.classList.add('is-active');
     if (mode === 'library' && this.dom.modeLibraryBtn) this.dom.modeLibraryBtn.classList.add('is-active');
 
+    if (this.dom.catalogTitle) {
+      if (mode === 'movies') {
+        this.dom.catalogTitle.textContent = 'EXPLORAR PELÍCULAS';
+      } else if (mode === 'series') {
+        this.dom.catalogTitle.textContent = 'EXPLORAR SERIES';
+      } else if (mode === 'library') {
+        this.dom.catalogTitle.textContent = 'MI BIBLIOTECA';
+      }
+    }
+
     if (this.dom.genresList) {
       this.dom.genresList.style.display = (mode === 'library') ? 'none' : 'flex';
     }
     if (this.dom.rankingFilters) {
-      this.dom.rankingFilters.style.display = (mode === 'library') ? 'none' : 'flex';
+      // Los filtros de ranking (Populares, Top IMDb, RT) son exclusivos de Películas YTS
+      this.dom.rankingFilters.style.display = (mode === 'movies') ? 'flex' : 'none';
     }
     if (this.dom.sortSelect) {
       this.dom.sortSelect.style.display = (mode === 'movies') ? 'block' : 'none';
     }
 
     this.state.page = 1;
+    this.state.hasMore = true;
     if (mode !== 'library') {
       this.renderGenres();
       this.loadCatalog(true);
@@ -7578,17 +7617,28 @@ class CinemaEngine {
     }
   }
 
+  loadNextPage() {
+    if (this.state.isLoading || !this.state.hasMore || this.state.mode === 'library') return;
+    this.state.page += 1;
+    if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'flex';
+    this.loadCatalog(false);
+  }
+
   async loadCatalog(reset = false) {
     if (this.state.isLoading) return;
     this.state.isLoading = true;
 
     if (reset) {
       this.state.page = 1;
+      this.state.hasMore = true;
       this.state.items = [];
       if (this.dom.grid) this.dom.grid.innerHTML = '';
       if (this.dom.emptyState) this.dom.emptyState.style.display = 'none';
       if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
       if (this.dom.loadingState) this.dom.loadingState.style.display = 'flex';
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
+    } else {
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'flex';
     }
 
     try {
@@ -7600,12 +7650,32 @@ class CinemaEngine {
           page: this.state.page,
           limit: 25
         });
-        const resp = await fetch(`/api/cinema/movies?${queryParams.toString()}`);
-        const data = await resp.json();
+
+        let data = null;
+        try {
+          const resp = await fetch(`/api/cinema/movies?${queryParams.toString()}`);
+          data = await resp.json();
+        } catch (localErr) {
+          console.warn('[Cinema] Local fetch failed, fallback to cloud backend:', localErr);
+        }
+
+        // Si falló el proxy local de Android WebView o YTS retornó vacío, intentar backend Render en la nube
+        if (!data || !data.ok || !data.movies || data.movies.length === 0) {
+          try {
+            const cloudResp = await fetch(`https://antena-sur.onrender.com/api/cinema/movies?${queryParams.toString()}`);
+            const cloudData = await cloudResp.json();
+            if (cloudData && cloudData.ok && cloudData.movies && cloudData.movies.length > 0) {
+              data = cloudData;
+            }
+          } catch (cloudErr) {
+            console.warn('[Cinema] Cloud fallback failed:', cloudErr);
+          }
+        }
 
         if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+        if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
 
-        if (data.ok && data.movies && data.movies.length > 0) {
+        if (data && data.ok && data.movies && data.movies.length > 0) {
           if (reset) {
             this.state.items = data.movies;
           } else {
@@ -7613,19 +7683,18 @@ class CinemaEngine {
           }
           this.renderMovies(data.movies, !reset);
 
+          this.state.hasMore = data.movies.length >= 25;
+
           if (this.dom.resultsCount) {
             const total = data.movie_count || this.state.items.length;
             this.dom.resultsCount.textContent = `${total.toLocaleString()} títulos`;
           }
-          if (this.dom.loadMoreBtn) {
-            this.dom.loadMoreBtn.style.display = data.movies.length >= 25 ? 'block' : 'none';
-          }
         } else {
+          this.state.hasMore = false;
           if (reset) {
             if (this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
             if (this.dom.resultsCount) this.dom.resultsCount.textContent = '0 títulos';
           }
-          if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
         }
       } else {
         // Modo Series
@@ -7633,12 +7702,31 @@ class CinemaEngine {
           query: this.state.query,
           page: this.state.page
         });
-        const resp = await fetch(`/api/cinema/series?${queryParams.toString()}`);
-        const data = await resp.json();
+
+        let data = null;
+        try {
+          const resp = await fetch(`/api/cinema/series?${queryParams.toString()}`);
+          data = await resp.json();
+        } catch (localErr) {
+          console.warn('[Cinema] Local series fetch failed, fallback to cloud backend:', localErr);
+        }
+
+        if (!data || !data.ok || !data.shows || data.shows.length === 0) {
+          try {
+            const cloudResp = await fetch(`https://antena-sur.onrender.com/api/cinema/series?${queryParams.toString()}`);
+            const cloudData = await cloudResp.json();
+            if (cloudData && cloudData.ok && cloudData.shows && cloudData.shows.length > 0) {
+              data = cloudData;
+            }
+          } catch (cloudErr) {
+            console.warn('[Cinema] Cloud series fallback failed:', cloudErr);
+          }
+        }
 
         if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+        if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
 
-        if (data.ok && data.shows && data.shows.length > 0) {
+        if (data && data.ok && data.shows && data.shows.length > 0) {
           let filteredShows = data.shows;
           if (this.state.genre && this.state.genre !== 'all') {
             filteredShows = data.shows.filter(s =>
@@ -7654,23 +7742,23 @@ class CinemaEngine {
 
           this.renderSeries(filteredShows, !reset);
 
+          this.state.hasMore = (!this.state.query && data.shows.length >= 25);
+
           if (this.dom.resultsCount) {
             this.dom.resultsCount.textContent = `${this.state.items.length} series`;
           }
-          if (this.dom.loadMoreBtn) {
-            this.dom.loadMoreBtn.style.display = (!this.state.query && data.shows.length >= 25) ? 'block' : 'none';
-          }
         } else {
+          this.state.hasMore = false;
           if (reset) {
             if (this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
             if (this.dom.resultsCount) this.dom.resultsCount.textContent = '0 series';
           }
-          if (this.dom.loadMoreBtn) this.dom.loadMoreBtn.style.display = 'none';
         }
       }
     } catch (err) {
       console.error('Error al cargar cartelera:', err);
       if (this.dom.loadingState) this.dom.loadingState.style.display = 'none';
+      if (this.dom.infiniteLoading) this.dom.infiniteLoading.style.display = 'none';
       if (reset && this.dom.emptyState) this.dom.emptyState.style.display = 'flex';
       this.showToast('No se pudo conectar con el catálogo de cine', 'warning');
     } finally {
@@ -10751,8 +10839,7 @@ function initTvNavigation() {
         '#cinemaUserBtn',
         '.cinema-rank-chip',
         '.cinema-genre-chip',
-        '.cinema-card',
-        '.cinema-load-more-btn'
+        '.cinema-card'
       ];
       return Array.from(cinemaVodView.querySelectorAll(vodSelectors.join(',')))
         .filter(el => {
@@ -10787,9 +10874,13 @@ function initTvNavigation() {
     } catch (e) {
       try { element.focus(); } catch (e2) {}
     }
-    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel
+    // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel o barra de chips
     try {
-      const carousel = element.closest('.cinema-ep-carousel') || element.closest('.cinema-seasons-bar');
+      const carousel = element.closest('.cinema-ep-carousel') ||
+                       element.closest('.cinema-seasons-bar') ||
+                       element.closest('.cinema-subbar') ||
+                       element.closest('.cinema-genres-list') ||
+                       element.closest('.cinema-ranking-filters');
       if (carousel) {
         element.scrollIntoView({ block: 'nearest', inline: 'center' });
       } else {
@@ -10973,6 +11064,91 @@ function initTvNavigation() {
         return;
       }
       return;
+    }
+
+    // ========================================================================
+    // 3.1 NAVEGACIÓN EN CATÁLOGO CINEMA & SERIES (.cinema-card)
+    // ========================================================================
+    if (current.classList && current.classList.contains('cinema-card')) {
+      const allCinemaCards = Array.from(document.querySelectorAll('#cinemaGrid .cinema-card'));
+      const total = allCinemaCards.length;
+      if (total > 0) {
+        const idx = allCinemaCards.indexOf(current);
+        if (idx !== -1) {
+          // Detectar columnas dinámicamente comparando offsetTop
+          let cols = 1;
+          const top0 = allCinemaCards[0].offsetTop;
+          while (cols < total && allCinemaCards[cols].offsetTop === top0) {
+            cols++;
+          }
+
+          if (direction === 'ArrowUp') {
+            if (idx < cols) {
+              // Subir a los chips de género o ranking
+              const chips = document.querySelectorAll('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip.is-active, .cinema-subbar .cinema-genre-chip, .cinema-subbar .cinema-rank-chip');
+              if (chips.length > 0) {
+                setFocus(chips[0]);
+                return;
+              }
+            } else {
+              setFocus(allCinemaCards[idx - cols]);
+              return;
+            }
+          }
+
+          if (direction === 'ArrowDown') {
+            const nextIdx = idx + cols;
+            // Si nos acercamos a las últimas filas, disparar carga de la siguiente página
+            if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+              if (nextIdx >= total - (cols * 2)) {
+                window.AntenaSurCinema.loadNextPage();
+              }
+            }
+            if (nextIdx < total) {
+              setFocus(allCinemaCards[nextIdx]);
+              return;
+            } else {
+              // Fin de la lista actual: forzar carga de siguiente página
+              if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+                window.AntenaSurCinema.loadNextPage();
+              }
+              return;
+            }
+          }
+
+          if (direction === 'ArrowLeft') {
+            if (idx > 0) {
+              setFocus(allCinemaCards[idx - 1]);
+              return;
+            }
+          }
+
+          if (direction === 'ArrowRight') {
+            if (idx < total - 1) {
+              setFocus(allCinemaCards[idx + 1]);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    // Navegación en Chips de Género y Ranking Cinema
+    if (current.classList && (current.classList.contains('cinema-genre-chip') || current.classList.contains('cinema-rank-chip'))) {
+      if (direction === 'ArrowDown') {
+        const firstCard = document.querySelector('#cinemaGrid .cinema-card');
+        if (firstCard) {
+          setFocus(firstCard);
+          return;
+        }
+      }
+      if (direction === 'ArrowUp') {
+        const activeTab = document.querySelector('.cinema-nav-tabs .cinema-tab-btn.is-active, .cinema-nav-tabs .cinema-tab-btn, #cinemaBackBtn');
+        if (activeTab) {
+          setFocus(activeTab);
+          return;
+        }
+      }
     }
 
     // ========================================================================
