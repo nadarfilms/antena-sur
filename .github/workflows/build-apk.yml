@@ -33,9 +33,11 @@ jobs:
         
         echo "sdk.dir=$ANDROID_HOME" > android/local.properties
         cd android
+        APP_VER=$(grep "versionName" app/build.gradle | awk -F '"' '{print $2}')
+        echo "APP_VER=$APP_VER" >> $GITHUB_ENV
         $GRADLE_BIN assembleDebug --no-daemon --stacktrace 2>&1 | tee ../gradle_build.log
         cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
-        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk
+        cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/AntenaSur-v${APP_VER}.apk
 
     - name: Guardar registro de error si falla
       if: failure()
@@ -53,16 +55,16 @@ jobs:
       with:
         name: AntenaSur-AndroidTV
         path: |
-          android/app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk
+          android/app/build/outputs/apk/debug/AntenaSur-v${{ env.APP_VER }}.apk
           android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk
 
-    - name: Publicar Release v1.5.1
+    - name: Publicar Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v1.5.1.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
-        tag: "v1.5.1"
-        name: "Antena Sur Android TV & Mobile v1.5.1 - Motor Torrent Nativo Auto-Instalable y Reproducción Inmediata"
-        body: "Versión 1.5.1: Auto-instalador de Node.js y dependencias WebTorrent en el servidor en la nube, descarga directa de metadatos .torrent en memoria para inicio instantáneo de reproducción sin espera de DHT, y diagnóstico en tiempo real."
+        artifacts: "android/app/build/outputs/apk/debug/AntenaSur-v${{ env.APP_VER }}.apk,android/app/build/outputs/apk/debug/AntenaSur-AndroidTV.apk"
+        tag: "v${{ env.APP_VER }}"
+        name: "Antena Sur Android TV & Mobile v${{ env.APP_VER }} - Navegación TV Fluida y Catálogo Optimizado"
+        body: "Versión ${{ env.APP_VER }}: Navegación espacial determinista 100% fluida para control remoto de Android TV (en cartelera y vista de detalles), 5 columnas en TV, scroll infinito automático y carga garantizada."
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
 

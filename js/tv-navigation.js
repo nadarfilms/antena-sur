@@ -113,6 +113,16 @@ export function initTvNavigation() {
     }
     // Desplazamiento inteligente para TV: centrado horizontal si está en carrusel o barra de chips
     try {
+      if (element.id === 'cinemaDetailBackBtn') {
+        const scrollWrap = document.getElementById('cinemaDetailScrollWrap');
+        if (scrollWrap) scrollWrap.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      const epCard = element.closest('.cinema-episode-card') || element.closest('.cinema-torrent-item');
+      if (epCard) {
+        epCard.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      }
+
       const carousel = element.closest('.cinema-ep-carousel') ||
                        element.closest('.cinema-seasons-bar') ||
                        element.closest('.cinema-subbar') ||
@@ -120,7 +130,7 @@ export function initTvNavigation() {
                        element.closest('.cinema-ranking-filters');
       if (carousel) {
         element.scrollIntoView({ block: 'nearest', inline: 'center' });
-      } else {
+      } else if (!epCard && element.id !== 'cinemaDetailBackBtn') {
         element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
     } catch (e) {
@@ -152,28 +162,398 @@ export function initTvNavigation() {
       }
     }
 
-    // 1. Si la vista de detalles Cinema está abierta, garantizar foco interno
+    // Helper: determinar si un elemento es visible en pantalla
+    const isVisible = el => el && (el.offsetWidth > 0 || el.offsetHeight > 0 || (el.getClientRects && el.getClientRects().length > 0)) && window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).visibility !== 'hidden';
+
+    // ========================================================================
+    // 1. NAVEGACIÓN DETERMINISTA EN VISTA DE DETALLES (PELÍCULAS Y SERIES)
+    // ========================================================================
     const cinemaDetailView = document.getElementById('cinemaDetailView');
     if (cinemaDetailView && !cinemaDetailView.classList.contains('is-hidden')) {
-      const focusable = getFocusableElements();
+      const backBtn = document.getElementById('cinemaDetailBackBtn');
+      const favBtn = document.getElementById('cinemaDetailFavBtn');
+      const watchedBtn = document.getElementById('cinemaDetailWatchedBtn');
+
+      // Garantizar que si no hay foco válido dentro de detalles, se inicie en VOLVER A CARTELERA o en la primera calidad
       if (!current || !cinemaDetailView.contains(current)) {
-        if (focusable.length > 0) {
-          setFocus(focusable[0]);
+        const firstPlayable = cinemaDetailView.querySelector('[data-action="play-movie-quality"], .cinema-season-tab.is-active, .cinema-season-tab, .cinema-source-card') || backBtn;
+        if (firstPlayable) setFocus(firstPlayable);
+        return;
+      }
+
+      // 1.1 Foco en Botón "◀ VOLVER A CARTELERA"
+      if (current === backBtn || current.id === 'cinemaDetailBackBtn') {
+        if (direction === 'ArrowRight' || direction === 'ArrowDown') {
+          // Prioridad: ir al contenido principal abajo o a las acciones de biblioteca
+          if (isVisible(favBtn)) { setFocus(favBtn); return; }
+          if (isVisible(watchedBtn)) { setFocus(watchedBtn); return; }
+          const firstQuality = cinemaDetailView.querySelector('[data-action="play-movie-quality"]');
+          if (firstQuality && isVisible(firstQuality)) { setFocus(firstQuality); return; }
+          const activeSeason = cinemaDetailView.querySelector('.cinema-season-tab.is-active, .cinema-season-tab');
+          if (activeSeason && isVisible(activeSeason)) { setFocus(activeSeason); return; }
+          const firstEpStream = cinemaDetailView.querySelector('.cinema-episodes-container .cinema-source-card, .cinema-episodes-container [data-action="play-ep-stream"], .cinema-episodes-container [data-action="load-ep-streams"]');
+          if (firstEpStream && isVisible(firstEpStream)) { setFocus(firstEpStream); return; }
+        }
+        return;
+      }
+
+      // 1.2 Foco en Botones de Acciones Plex (Mi Biblioteca y Marcar como Visto)
+      if (current === favBtn || current.id === 'cinemaDetailFavBtn') {
+        if (direction === 'ArrowUp' || direction === 'ArrowLeft') {
+          setFocus(backBtn);
           return;
         }
+        if (direction === 'ArrowRight') {
+          if (isVisible(watchedBtn)) { setFocus(watchedBtn); return; }
+        }
+        if (direction === 'ArrowDown') {
+          const firstQuality = cinemaDetailView.querySelector('[data-action="play-movie-quality"]');
+          if (firstQuality && isVisible(firstQuality)) { setFocus(firstQuality); return; }
+          const activeSeason = cinemaDetailView.querySelector('.cinema-season-tab.is-active, .cinema-season-tab');
+          if (activeSeason && isVisible(activeSeason)) { setFocus(activeSeason); return; }
+          const firstEpStream = cinemaDetailView.querySelector('.cinema-episodes-container .cinema-source-card, .cinema-episodes-container [data-action="play-ep-stream"], .cinema-episodes-container [data-action="load-ep-streams"]');
+          if (firstEpStream && isVisible(firstEpStream)) { setFocus(firstEpStream); return; }
+        }
+        return;
       }
+
+      if (current === watchedBtn || current.id === 'cinemaDetailWatchedBtn') {
+        if (direction === 'ArrowUp') {
+          setFocus(backBtn);
+          return;
+        }
+        if (direction === 'ArrowLeft') {
+          if (isVisible(favBtn)) { setFocus(favBtn); return; }
+          setFocus(backBtn);
+          return;
+        }
+        if (direction === 'ArrowDown') {
+          const firstQuality = cinemaDetailView.querySelector('[data-action="play-movie-quality"]');
+          if (firstQuality && isVisible(firstQuality)) { setFocus(firstQuality); return; }
+          const activeSeason = cinemaDetailView.querySelector('.cinema-season-tab.is-active, .cinema-season-tab');
+          if (activeSeason && isVisible(activeSeason)) { setFocus(activeSeason); return; }
+          const firstEpStream = cinemaDetailView.querySelector('.cinema-episodes-container .cinema-source-card, .cinema-episodes-container [data-action="play-ep-stream"], .cinema-episodes-container [data-action="load-ep-streams"]');
+          if (firstEpStream && isVisible(firstEpStream)) { setFocus(firstEpStream); return; }
+        }
+        return;
+      }
+
+      // 1.3 Foco en Calidades de Películas ([data-action="play-movie-quality"])
+      if (current.dataset && current.dataset.action === 'play-movie-quality') {
+        const qualities = Array.from(cinemaDetailView.querySelectorAll('[data-action="play-movie-quality"]')).filter(isVisible);
+        const qIdx = qualities.indexOf(current);
+        if (direction === 'ArrowDown') {
+          if (qIdx !== -1 && qIdx < qualities.length - 1) {
+            setFocus(qualities[qIdx + 1]);
+            return;
+          }
+        }
+        if (direction === 'ArrowUp') {
+          if (qIdx > 0) {
+            setFocus(qualities[qIdx - 1]);
+            return;
+          }
+          if (isVisible(favBtn)) { setFocus(favBtn); return; }
+          setFocus(backBtn);
+          return;
+        }
+        if (direction === 'ArrowLeft') {
+          setFocus(backBtn);
+          return;
+        }
+        return;
+      }
+
+      // 1.4 Foco en Pestañas de Temporadas de Series (.cinema-season-tab)
+      if (current.classList && current.classList.contains('cinema-season-tab')) {
+        const tabs = Array.from(cinemaDetailView.querySelectorAll('.cinema-season-tab')).filter(isVisible);
+        const tIdx = tabs.indexOf(current);
+        if (direction === 'ArrowLeft') {
+          if (tIdx > 0) {
+            setFocus(tabs[tIdx - 1]);
+            return;
+          }
+          if (isVisible(favBtn)) { setFocus(favBtn); return; }
+          setFocus(backBtn);
+          return;
+        }
+        if (direction === 'ArrowRight') {
+          if (tIdx !== -1 && tIdx < tabs.length - 1) {
+            setFocus(tabs[tIdx + 1]);
+            return;
+          }
+        }
+        if (direction === 'ArrowUp') {
+          if (isVisible(favBtn)) { setFocus(favBtn); return; }
+          setFocus(backBtn);
+          return;
+        }
+        if (direction === 'ArrowDown') {
+          const firstEpStream = cinemaDetailView.querySelector('.cinema-episodes-container .cinema-source-card, .cinema-episodes-container [data-action="play-ep-stream"], .cinema-episodes-container [data-action="load-ep-streams"]');
+          if (firstEpStream && isVisible(firstEpStream)) {
+            setFocus(firstEpStream);
+            return;
+          }
+        }
+        return;
+      }
+
+      // 1.5 Foco en Fuentes de Episodios (.cinema-source-card / streams)
+      const currentSourceCard = current.closest('.cinema-source-card') || current.closest('[data-action="play-ep-stream"]') || current.closest('[data-action="load-ep-streams"]') || (current.classList && current.classList.contains('cinema-source-card') ? current : null);
+      if (currentSourceCard) {
+        const currentEpCard = currentSourceCard.closest('.cinema-episode-card');
+        const allEpCards = Array.from(cinemaDetailView.querySelectorAll('.cinema-episode-card')).filter(isVisible);
+
+        if (currentEpCard) {
+          const epIdx = allEpCards.indexOf(currentEpCard);
+          const epSources = Array.from(currentEpCard.querySelectorAll('.cinema-source-card, [data-action="play-ep-stream"], [data-action="load-ep-streams"]')).filter(isVisible);
+          const sIdx = epSources.indexOf(currentSourceCard);
+
+          if (direction === 'ArrowLeft') {
+            if (sIdx > 0) {
+              setFocus(epSources[sIdx - 1]);
+              return;
+            }
+          }
+          if (direction === 'ArrowRight') {
+            if (sIdx !== -1 && sIdx < epSources.length - 1) {
+              setFocus(epSources[sIdx + 1]);
+              return;
+            }
+          }
+          if (direction === 'ArrowDown') {
+            if (epIdx !== -1 && epIdx < allEpCards.length - 1) {
+              const nextEp = allEpCards[epIdx + 1];
+              const nextSources = Array.from(nextEp.querySelectorAll('.cinema-source-card, [data-action="play-ep-stream"], [data-action="load-ep-streams"]')).filter(isVisible);
+              if (nextSources.length > 0) {
+                const target = nextSources[Math.min(Math.max(0, sIdx), nextSources.length - 1)];
+                setFocus(target);
+                return;
+              }
+            }
+          }
+          if (direction === 'ArrowUp') {
+            if (epIdx > 0) {
+              const prevEp = allEpCards[epIdx - 1];
+              const prevSources = Array.from(prevEp.querySelectorAll('.cinema-source-card, [data-action="play-ep-stream"], [data-action="load-ep-streams"]')).filter(isVisible);
+              if (prevSources.length > 0) {
+                const target = prevSources[Math.min(Math.max(0, sIdx), prevSources.length - 1)];
+                setFocus(target);
+                return;
+              }
+            } else {
+              const activeSeason = cinemaDetailView.querySelector('.cinema-season-tab.is-active, .cinema-season-tab');
+              if (activeSeason && isVisible(activeSeason)) {
+                setFocus(activeSeason);
+                return;
+              }
+              if (isVisible(favBtn)) { setFocus(favBtn); return; }
+              setFocus(backBtn);
+              return;
+            }
+          }
+        }
+        return;
+      }
+      return;
     }
 
-    // 2. Si la cartelera Cinema está abierta, garantizar foco interno
+    // ========================================================================
+    // 2. NAVEGACIÓN DETERMINISTA EN CARTELERA PRINCIPAL (CINEMA VOD)
+    // ========================================================================
     const cinemaVodView = document.getElementById('cinemaVodView');
     if (cinemaVodView && !cinemaVodView.classList.contains('is-hidden')) {
-      const focusable = getFocusableElements();
+      const backBtn = document.getElementById('cinemaBackBtn');
+      const moviesBtn = document.getElementById('cinemaModeMoviesBtn');
+      const seriesBtn = document.getElementById('cinemaModeSeriesBtn');
+      const libraryBtn = document.getElementById('cinemaModeLibraryBtn');
+      const searchInput = document.getElementById('cinemaSearchInput');
+      const userBtn = document.getElementById('cinemaUserBtn');
+
+      // Garantizar foco inicial dentro de la cartelera
       if (!current || !cinemaVodView.contains(current)) {
-        if (focusable.length > 0) {
-          setFocus(focusable[0]);
+        setFocus(moviesBtn || backBtn);
+        return;
+      }
+
+      // 2.1 Barra Superior Header HUD: ATRÁS <-> PELÍCULAS <-> SERIES <-> MI BIBLIOTECA <-> BUSCADOR <-> USUARIO
+      if (current === backBtn || current.id === 'cinemaBackBtn') {
+        if (direction === 'ArrowRight') {
+          // El camino más corto y natural: ir a PELÍCULAS
+          setFocus(moviesBtn || seriesBtn);
           return;
         }
+        if (direction === 'ArrowDown') {
+          // Bajar a la primera categoría de la subbarra
+          const firstChip = cinemaVodView.querySelector('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip.is-active, .cinema-subbar .cinema-rank-chip, .cinema-subbar .cinema-genre-chip');
+          if (firstChip && isVisible(firstChip)) { setFocus(firstChip); return; }
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
       }
+
+      if (current === moviesBtn || current.id === 'cinemaModeMoviesBtn') {
+        if (direction === 'ArrowLeft') { setFocus(backBtn); return; }
+        if (direction === 'ArrowRight') { setFocus(seriesBtn || libraryBtn); return; }
+        if (direction === 'ArrowDown') {
+          const activeChip = cinemaVodView.querySelector('.cinema-subbar .cinema-rank-chip.is-active, .cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip, .cinema-subbar .cinema-genre-chip');
+          if (activeChip && isVisible(activeChip)) { setFocus(activeChip); return; }
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
+      }
+
+      if (current === seriesBtn || current.id === 'cinemaModeSeriesBtn') {
+        if (direction === 'ArrowLeft') { setFocus(moviesBtn || backBtn); return; }
+        if (direction === 'ArrowRight') { setFocus(libraryBtn || searchInput); return; }
+        if (direction === 'ArrowDown') {
+          const activeChip = cinemaVodView.querySelector('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-genre-chip');
+          if (activeChip && isVisible(activeChip)) { setFocus(activeChip); return; }
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
+      }
+
+      if (current === libraryBtn || current.id === 'cinemaModeLibraryBtn') {
+        if (direction === 'ArrowLeft') { setFocus(seriesBtn || moviesBtn); return; }
+        if (direction === 'ArrowRight') { setFocus(searchInput || userBtn); return; }
+        if (direction === 'ArrowDown') {
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
+      }
+
+      if (current === searchInput || current.id === 'cinemaSearchInput') {
+        if (direction === 'ArrowLeft') { setFocus(libraryBtn || seriesBtn || moviesBtn); return; }
+        if (direction === 'ArrowRight') { setFocus(userBtn); return; }
+        if (direction === 'ArrowDown') {
+          const activeChip = cinemaVodView.querySelector('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-genre-chip, .cinema-subbar .cinema-rank-chip');
+          if (activeChip && isVisible(activeChip)) { setFocus(activeChip); return; }
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
+      }
+
+      if (current === userBtn || current.id === 'cinemaUserBtn') {
+        if (direction === 'ArrowLeft') { setFocus(searchInput || libraryBtn); return; }
+        if (direction === 'ArrowDown') {
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) { setFocus(firstCard); return; }
+        }
+        return;
+      }
+
+      // 2.2 Barra de Categorías / Chips (.cinema-subbar)
+      if (current.classList && (current.classList.contains('cinema-genre-chip') || current.classList.contains('cinema-rank-chip'))) {
+        const chips = Array.from(cinemaVodView.querySelectorAll('.cinema-subbar .cinema-rank-chip, .cinema-subbar .cinema-genre-chip')).filter(isVisible);
+        const cIdx = chips.indexOf(current);
+
+        if (direction === 'ArrowLeft') {
+          if (cIdx > 0) {
+            setFocus(chips[cIdx - 1]);
+            return;
+          }
+          // Si está en el primer chip y va a la izquierda, subir directamente a ATRÁS
+          setFocus(backBtn);
+          return;
+        }
+
+        if (direction === 'ArrowRight') {
+          if (cIdx !== -1 && cIdx < chips.length - 1) {
+            setFocus(chips[cIdx + 1]);
+            return;
+          }
+        }
+
+        if (direction === 'ArrowUp') {
+          // Subir a la pestaña de modo actualmente activa
+          const activeModeTab = cinemaVodView.querySelector('.cinema-nav-tabs .cinema-tab-btn.is-active') || moviesBtn || backBtn;
+          setFocus(activeModeTab);
+          return;
+        }
+
+        if (direction === 'ArrowDown') {
+          // Bajar inmediatamente al primer póster de la cuadrícula
+          const firstCard = cinemaVodView.querySelector('#cinemaGrid .cinema-card');
+          if (firstCard && isVisible(firstCard)) {
+            setFocus(firstCard);
+            return;
+          }
+        }
+        return;
+      }
+
+      // 2.3 Cuadrícula de Pósters (.cinema-card)
+      if (current.classList && current.classList.contains('cinema-card')) {
+        const allCinemaCards = Array.from(cinemaVodView.querySelectorAll('#cinemaGrid .cinema-card')).filter(isVisible);
+        const total = allCinemaCards.length;
+        if (total > 0) {
+          const idx = allCinemaCards.indexOf(current);
+          if (idx !== -1) {
+            let cols = 1;
+            const top0 = allCinemaCards[0].offsetTop;
+            while (cols < total && allCinemaCards[cols].offsetTop === top0) {
+              cols++;
+            }
+
+            if (direction === 'ArrowUp') {
+              if (idx < cols) {
+                // Primera fila: subir a las categorías
+                const activeChip = cinemaVodView.querySelector('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip.is-active') ||
+                                   cinemaVodView.querySelector('.cinema-subbar .cinema-genre-chip, .cinema-subbar .cinema-rank-chip');
+                if (activeChip && isVisible(activeChip)) {
+                  setFocus(activeChip);
+                  return;
+                }
+                setFocus(moviesBtn || backBtn);
+                return;
+              } else {
+                setFocus(allCinemaCards[idx - cols]);
+                return;
+              }
+            }
+
+            if (direction === 'ArrowDown') {
+              const nextIdx = idx + cols;
+              if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+                if (nextIdx >= total - (cols * 2)) {
+                  window.AntenaSurCinema.loadNextPage();
+                }
+              }
+              if (nextIdx < total) {
+                setFocus(allCinemaCards[nextIdx]);
+                return;
+              } else {
+                if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
+                  window.AntenaSurCinema.loadNextPage();
+                }
+                return;
+              }
+            }
+
+            if (direction === 'ArrowLeft') {
+              if (idx > 0) {
+                setFocus(allCinemaCards[idx - 1]);
+                return;
+              }
+            }
+
+            if (direction === 'ArrowRight') {
+              if (idx < total - 1) {
+                setFocus(allCinemaCards[idx + 1]);
+                return;
+              }
+            }
+          }
+        }
+        return;
+      }
+      return;
     }
 
     const heroRadio = document.getElementById('heroCardRadio');
@@ -301,91 +681,6 @@ export function initTvNavigation() {
         return;
       }
       return;
-    }
-
-    // ========================================================================
-    // 3.1 NAVEGACIÓN EN CATÁLOGO CINEMA & SERIES (.cinema-card)
-    // ========================================================================
-    if (current.classList && current.classList.contains('cinema-card')) {
-      const allCinemaCards = Array.from(document.querySelectorAll('#cinemaGrid .cinema-card'));
-      const total = allCinemaCards.length;
-      if (total > 0) {
-        const idx = allCinemaCards.indexOf(current);
-        if (idx !== -1) {
-          // Detectar columnas dinámicamente comparando offsetTop
-          let cols = 1;
-          const top0 = allCinemaCards[0].offsetTop;
-          while (cols < total && allCinemaCards[cols].offsetTop === top0) {
-            cols++;
-          }
-
-          if (direction === 'ArrowUp') {
-            if (idx < cols) {
-              // Subir a los chips de género o ranking
-              const chips = document.querySelectorAll('.cinema-subbar .cinema-genre-chip.is-active, .cinema-subbar .cinema-rank-chip.is-active, .cinema-subbar .cinema-genre-chip, .cinema-subbar .cinema-rank-chip');
-              if (chips.length > 0) {
-                setFocus(chips[0]);
-                return;
-              }
-            } else {
-              setFocus(allCinemaCards[idx - cols]);
-              return;
-            }
-          }
-
-          if (direction === 'ArrowDown') {
-            const nextIdx = idx + cols;
-            // Si nos acercamos a las últimas filas, disparar carga de la siguiente página
-            if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
-              if (nextIdx >= total - (cols * 2)) {
-                window.AntenaSurCinema.loadNextPage();
-              }
-            }
-            if (nextIdx < total) {
-              setFocus(allCinemaCards[nextIdx]);
-              return;
-            } else {
-              // Fin de la lista actual: forzar carga de siguiente página
-              if (window.AntenaSurCinema && typeof window.AntenaSurCinema.loadNextPage === 'function') {
-                window.AntenaSurCinema.loadNextPage();
-              }
-              return;
-            }
-          }
-
-          if (direction === 'ArrowLeft') {
-            if (idx > 0) {
-              setFocus(allCinemaCards[idx - 1]);
-              return;
-            }
-          }
-
-          if (direction === 'ArrowRight') {
-            if (idx < total - 1) {
-              setFocus(allCinemaCards[idx + 1]);
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    // Navegación en Chips de Género y Ranking Cinema
-    if (current.classList && (current.classList.contains('cinema-genre-chip') || current.classList.contains('cinema-rank-chip'))) {
-      if (direction === 'ArrowDown') {
-        const firstCard = document.querySelector('#cinemaGrid .cinema-card');
-        if (firstCard) {
-          setFocus(firstCard);
-          return;
-        }
-      }
-      if (direction === 'ArrowUp') {
-        const activeTab = document.querySelector('.cinema-nav-tabs .cinema-tab-btn.is-active, .cinema-nav-tabs .cinema-tab-btn, #cinemaBackBtn');
-        if (activeTab) {
-          setFocus(activeTab);
-          return;
-        }
-      }
     }
 
     // ========================================================================
